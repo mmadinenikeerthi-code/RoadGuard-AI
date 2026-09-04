@@ -1,0 +1,50 @@
+<!-- frontend/map.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadGuard AI — Map Intelligence</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/map.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🛣️ RoadGuard AI</div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="detect.html">Detect</a>
+            <a href="map.html" class="active">Map & Hotspots</a>
+            <a href="reports.html">Reports</a>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 100%; padding: 0 20px;">
+        <h2>Geographic Hotspot Intelligence Engine</h2>
+        
+        <div class="map-layout">
+            <div id="map"></div>
+            <div class="map-sidebar">
+                <h3>Hotspot Legend</h3>
+                <ul class="legend-list">
+                    <li><span class="dot green"></span> Low Reports (0 - 1)</li>
+                    <li><span class="dot yellow"></span> Moderate Repeated (2 - 3)</li>
+                    <li><span class="dot red"></span> High Critical Hotspot (4+)</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
+                <h3>Active Hotspot Zones</h3>
+                <div id="hotspot-list-container">
+                    <p style="color: #888;">Analyzing spatial clusters...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="js/map.js"></script>
+</body>
+</html>

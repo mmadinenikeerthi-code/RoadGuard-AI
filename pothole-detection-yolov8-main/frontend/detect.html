@@ -1,0 +1,85 @@
+<!-- frontend/detect.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadGuard AI — Detect</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🛣️ RoadGuard AI</div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="detect.html" class="active">Detect</a>
+            <a href="map.html">Map & Hotspots</a>
+            <a href="reports.html">Reports</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h2>Pothole Inspection Portal</h2>
+        
+        <div class="card form-card">
+            <div class="input-type-selector">
+                <button class="tab-btn active" onclick="switchInput('image')">📷 Image</button>
+                <button class="tab-btn" onclick="switchInput('video')">🎥 Video</button>
+                <button class="tab-btn" onclick="switchInput('camera')">📱 Camera</button>
+            </div>
+
+            <form id="detection-form">
+                <div id="file-input-container" class="input-group">
+                    <label id="file-label" for="media-file">Choose Road Image File</label>
+                    <input type="file" id="media-file" accept="image/*">
+                </div>
+
+                <div id="camera-container" class="input-group" style="display: none;">
+                    <video id="camera-stream" autoplay playsinline width="100%" style="border-radius: 8px; background: #000;"></video>
+                    <button type="button" class="btn btn-secondary" onclick="captureSnapshot()" style="margin-top: 10px;">📸 Capture Snapshot</button>
+                    <canvas id="snapshot-canvas" style="display: none;"></canvas>
+                </div>
+
+                <div class="input-group">
+                    <label>Location Source</label>
+                    <div class="location-options">
+                        <label><input type="radio" name="loc_type" value="gps" checked onclick="toggleLocationInput('gps')"> Use GPS Location</label>
+                        <label><input type="radio" name="loc_type" value="manual" onclick="toggleLocationInput('manual')"> Enter Manually</label>
+                        <label><input type="radio" name="loc_type" value="unknown" onclick="toggleLocationInput('unknown')"> Location Unknown</label>
+                    </div>
+                </div>
+
+                <div id="manual-loc-group" class="input-group" style="display: none;">
+                    <label for="manual-location-name">Location Name / Area</label>
+                    <input type="text" id="manual-location-name" placeholder="e.g. MG Road, Bangalore">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="number" step="any" id="manual-lat" placeholder="Latitude (optional)">
+                        <input type="number" step="any" id="manual-lon" placeholder="Longitude (optional)">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Analyze Road Condition</button>
+            </form>
+        </div>
+
+        <div id="result-container" class="card result-card" style="display: none;">
+            <h3>Inspection Analysis Result</h3>
+            <div class="result-grid">
+                <div>
+                    <img id="result-preview" src="" alt="Detection Output" style="width: 100%; border-radius: 8px;">
+                </div>
+                <div>
+                    <p><strong>Potholes Detected:</strong> <span id="res-count">0</span></p>
+                    <p><strong>Confidence:</strong> <span id="res-conf">0</span>%</p>
+                    <p><strong>Severity Status:</strong> <span id="res-severity">--</span></p>
+                    <p><strong>Location Tag:</strong> <span id="res-location">--</span></p>
+                    <a href="map.html" class="btn btn-primary" style="margin-top: 15px; display: inline-block;">View on Map Engine</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/detection.js"></script>
+</body>
+</html>

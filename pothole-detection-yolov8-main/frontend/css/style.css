@@ -1,0 +1,84 @@
+/* frontend/css/style.css */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    line-height: 1.5;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #161b22;
+    padding: 15px 30px;
+    border-bottom: 1px solid #30363d;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #58a6ff;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: #8b949e;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: #58a6ff;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #238636;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #2ea043;
+}
+
+.btn-secondary {
+    background-color: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+}
+
+.btn-secondary:hover {
+    background-color: #30363d;
+}
+
+.text-danger { color: #f85149 !important; }
+.text-warning { color: #d29922 !important; }
+.text-success { color: #3fb950 !important; }

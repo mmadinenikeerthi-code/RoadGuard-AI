@@ -1,0 +1,47 @@
+<!-- frontend/reports.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadGuard AI — Reports History</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🛣️ RoadGuard AI</div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="detect.html">Detect</a>
+            <a href="map.html">Map & Hotspots</a>
+            <a href="reports.html" class="active">Reports</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h2>Persistent Road Damage Logs</h2>
+        
+        <div class="table-responsive" style="margin-top: 20px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Location</th>
+                        <th>Potholes</th>
+                        <th>Severity</th>
+                        <th>Confidence</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="full-reports-table">
+                    <tr><td colspan="7" style="text-align: center;">Loading system database records...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="js/reports.js"></script>
+</body>
+</html>

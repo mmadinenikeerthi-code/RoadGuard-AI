@@ -1,0 +1,74 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadGuard AI — Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🛣️ RoadGuard AI</div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Dashboard</a>
+            <a href="detect.html">Detect</a>
+            <a href="map.html">Map & Hotspots</a>
+            <a href="reports.html">Reports</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="hero">
+            <h1>Detect. Locate. Monitor. Prioritize.</h1>
+            <p>AI-Powered Pothole Detection & Location-Based Road Monitoring Engine</p>
+            <div class="action-buttons">
+                <a href="detect.html" class="btn btn-primary">📷 Detect Pothole</a>
+                <a href="map.html" class="btn btn-secondary">🗺️ View Map Hotspots</a>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Reports</h3>
+                <p id="stat-reports">--</p>
+            </div>
+            <div class="stat-card">
+                <h3>Potholes Detected</h3>
+                <p id="stat-potholes">--</p>
+            </div>
+            <div class="stat-card">
+                <h3>Critical Reports</h3>
+                <p id="stat-critical" class="text-danger">--</p>
+            </div>
+            <div class="stat-card">
+                <h3>Active Hotspots</h3>
+                <p id="stat-hotspots" class="text-warning">--</p>
+            </div>
+        </section>
+
+        <section class="recent-section">
+            <h2>Recent Road Damage Reports</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Location</th>
+                            <th>Potholes</th>
+                            <th>Severity</th>
+                            <th>Confidence</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-reports-table">
+                        <tr><td colspan="5" style="text-align: center;">Loading system statistics...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
