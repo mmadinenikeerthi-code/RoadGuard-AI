@@ -1,48 +1,80 @@
+# =========================
 # Python
+# =========================
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyc
 
-# Virtual environment
+# =========================
+# Virtual Environments
+# =========================
 .venv/
 venv/
 env/
 
-# Environment / secrets
+# =========================
+# Environment / Secrets
+# =========================
 .env
 .env.*
 !.env.example
 
+# =========================
 # VS Code
+# =========================
 .vscode/
 
-# Python tools
+# =========================
+# Python Tools / Cache
+# =========================
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 
+# =========================
 # Database
+# =========================
 *.db
 *.sqlite
 *.sqlite3
+*.sql
 
-# Uploaded/generated files
+# =========================
+# YOLO / AI Model Files
+# =========================
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+
+# =========================
+# Uploaded / Generated Files
+# =========================
 uploads/
 results/
 outputs/
 runs/
 
-# Generated YOLO files
+# =========================
+# Generated Videos
+# =========================
 *.mp4
 *.avi
 *.mov
 *.mkv
 *.webm
 
-# Temporary files
+# =========================
+# Temporary Files
+# =========================
 *.tmp
 *.temp
+*.log
 
-# OS files
+# =========================
+# OS Files
+# =========================
 .DS_Store
 Thumbs.db
