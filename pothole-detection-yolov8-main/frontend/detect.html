@@ -1,85 +1,663 @@
-<!-- frontend/detect.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoadGuard AI — Detect</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Detection | RoadGuard AI</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/detect.css"
+    >
+
 </head>
+
+
 <body>
-    <nav class="navbar">
-        <div class="logo">🛣️ RoadGuard AI</div>
-        <div class="nav-links">
-            <a href="index.html">Dashboard</a>
-            <a href="detect.html" class="active">Detect</a>
-            <a href="map.html">Map & Hotspots</a>
-            <a href="reports.html">Reports</a>
-        </div>
-    </nav>
 
-    <main class="container">
-        <h2>Pothole Inspection Portal</h2>
-        
-        <div class="card form-card">
-            <div class="input-type-selector">
-                <button class="tab-btn active" onclick="switchInput('image')">📷 Image</button>
-                <button class="tab-btn" onclick="switchInput('video')">🎥 Video</button>
-                <button class="tab-btn" onclick="switchInput('camera')">📱 Camera</button>
+
+<!-- ===================================================== -->
+<!-- HEADER -->
+<!-- ===================================================== -->
+
+<header class="main-header">
+
+    <div class="brand">
+
+        <h1>🛣️ RoadGuard AI</h1>
+
+        <p>
+            AI-Powered Pothole Detection
+            & Road Monitoring System
+        </p>
+
+    </div>
+
+</header>
+
+
+
+<!-- ===================================================== -->
+<!-- NAVIGATION -->
+<!-- ===================================================== -->
+
+<nav class="navbar">
+
+    <a href="index.html">
+        🏠 Home
+    </a>
+
+    <a
+        href="detect.html"
+        class="active"
+    >
+        🔍 Detection
+    </a>
+
+    <a href="map.html">
+        🗺 Map
+    </a>
+
+    <a href="reports.html">
+        📊 Reports
+    </a>
+
+    <a href="three_d.html">
+        🌐 3D Visualization
+    </a>
+
+</nav>
+
+
+
+<!-- ===================================================== -->
+<!-- MAIN CONTENT -->
+<!-- ===================================================== -->
+
+<main class="container">
+
+
+    <!-- ================================================= -->
+    <!-- PAGE TITLE -->
+    <!-- ================================================= -->
+
+    <section class="page-heading">
+
+        <h2>
+            AI Pothole Detection
+        </h2>
+
+        <p>
+
+            Upload road images or videos,
+            or use your live camera for
+            real-time road inspection.
+
+        </p>
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- DETECTION MODE SELECTOR -->
+    <!-- ================================================= -->
+
+    <section class="mode-section">
+
+        <div class="mode-tabs">
+
+
+            <button
+                class="mode-btn active"
+                data-mode="image"
+            >
+
+                📷
+
+                <span>Upload Image</span>
+
+            </button>
+
+
+
+            <button
+                class="mode-btn"
+                data-mode="video"
+            >
+
+                🎥
+
+                <span>Upload Video</span>
+
+            </button>
+
+
+
+            <button
+                class="mode-btn"
+                data-mode="camera"
+            >
+
+                📹
+
+                <span>Live Camera</span>
+
+            </button>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- IMAGE UPLOAD -->
+    <!-- ================================================= -->
+
+    <section
+        id="imageMode"
+        class="detection-panel"
+    >
+
+        <div class="panel-header">
+
+            <h3>
+                📷 Upload Road Image
+            </h3>
+
+            <p>
+                Upload a road image for
+                AI pothole detection.
+            </p>
+
+        </div>
+
+
+        <div
+            class="upload-zone"
+            id="imageUploadZone"
+        >
+
+            <input
+                type="file"
+                id="imageInput"
+                accept="image/*"
+                hidden
+            >
+
+
+            <div class="upload-content">
+
+                <div class="upload-icon">
+                    📷
+                </div>
+
+
+                <h3>
+                    Select Road Image
+                </h3>
+
+
+                <p>
+                    JPG, JPEG, PNG, WEBP
+                </p>
+
+
+                <button
+                    type="button"
+                    id="selectImageBtn"
+                    class="primary-btn"
+                >
+
+                    Choose Image
+
+                </button>
+
+
             </div>
 
-            <form id="detection-form">
-                <div id="file-input-container" class="input-group">
-                    <label id="file-label" for="media-file">Choose Road Image File</label>
-                    <input type="file" id="media-file" accept="image/*">
-                </div>
 
-                <div id="camera-container" class="input-group" style="display: none;">
-                    <video id="camera-stream" autoplay playsinline width="100%" style="border-radius: 8px; background: #000;"></video>
-                    <button type="button" class="btn btn-secondary" onclick="captureSnapshot()" style="margin-top: 10px;">📸 Capture Snapshot</button>
-                    <canvas id="snapshot-canvas" style="display: none;"></canvas>
-                </div>
-
-                <div class="input-group">
-                    <label>Location Source</label>
-                    <div class="location-options">
-                        <label><input type="radio" name="loc_type" value="gps" checked onclick="toggleLocationInput('gps')"> Use GPS Location</label>
-                        <label><input type="radio" name="loc_type" value="manual" onclick="toggleLocationInput('manual')"> Enter Manually</label>
-                        <label><input type="radio" name="loc_type" value="unknown" onclick="toggleLocationInput('unknown')"> Location Unknown</label>
-                    </div>
-                </div>
-
-                <div id="manual-loc-group" class="input-group" style="display: none;">
-                    <label for="manual-location-name">Location Name / Area</label>
-                    <input type="text" id="manual-location-name" placeholder="e.g. MG Road, Bangalore">
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <input type="number" step="any" id="manual-lat" placeholder="Latitude (optional)">
-                        <input type="number" step="any" id="manual-lon" placeholder="Longitude (optional)">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Analyze Road Condition</button>
-            </form>
         </div>
 
-        <div id="result-container" class="card result-card" style="display: none;">
-            <h3>Inspection Analysis Result</h3>
-            <div class="result-grid">
-                <div>
-                    <img id="result-preview" src="" alt="Detection Output" style="width: 100%; border-radius: 8px;">
+
+        <div
+            id="imagePreviewContainer"
+            class="preview-container hidden"
+        >
+
+            <img
+                id="imagePreview"
+                alt="Selected road image"
+            >
+
+        </div>
+
+
+        <button
+            id="detectImageBtn"
+            class="primary-btn detect-btn"
+            disabled
+        >
+
+            🔍 Detect Potholes
+
+        </button>
+
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- VIDEO UPLOAD -->
+    <!-- ================================================= -->
+
+    <section
+        id="videoMode"
+        class="detection-panel hidden"
+    >
+
+        <div class="panel-header">
+
+            <h3>
+                🎥 Upload Road Video
+            </h3>
+
+            <p>
+                Upload a road video for
+                AI-powered pothole analysis.
+            </p>
+
+        </div>
+
+
+        <div
+            class="upload-zone"
+            id="videoUploadZone"
+        >
+
+            <input
+                type="file"
+                id="videoInput"
+                accept="video/*"
+                hidden
+            >
+
+
+            <div class="upload-content">
+
+                <div class="upload-icon">
+                    🎥
                 </div>
-                <div>
-                    <p><strong>Potholes Detected:</strong> <span id="res-count">0</span></p>
-                    <p><strong>Confidence:</strong> <span id="res-conf">0</span>%</p>
-                    <p><strong>Severity Status:</strong> <span id="res-severity">--</span></p>
-                    <p><strong>Location Tag:</strong> <span id="res-location">--</span></p>
-                    <a href="map.html" class="btn btn-primary" style="margin-top: 15px; display: inline-block;">View on Map Engine</a>
-                </div>
+
+
+                <h3>
+                    Select Road Video
+                </h3>
+
+
+                <p>
+                    MP4, AVI, MOV, WEBM
+                </p>
+
+
+                <button
+                    type="button"
+                    id="selectVideoBtn"
+                    class="primary-btn"
+                >
+
+                    Choose Video
+
+                </button>
+
+
             </div>
-        </div>
-    </main>
 
-    <script src="js/detection.js"></script>
+
+        </div>
+
+
+        <div
+            id="videoPreviewContainer"
+            class="preview-container hidden"
+        >
+
+            <video
+                id="videoPreview"
+                controls
+            ></video>
+
+        </div>
+
+
+        <button
+            id="detectVideoBtn"
+            class="primary-btn detect-btn"
+            disabled
+        >
+
+            ▶ Process Video
+
+        </button>
+
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- LIVE CAMERA -->
+    <!-- ================================================= -->
+
+    <section
+        id="cameraMode"
+        class="detection-panel hidden"
+    >
+
+
+        <div class="panel-header">
+
+            <h3>
+                📹 Live Road Camera Detection
+            </h3>
+
+            <p>
+
+                Start your camera,
+                capture road images,
+                or record a video for detection.
+
+            </p>
+
+        </div>
+
+
+
+        <!-- CAMERA -->
+
+        <div class="camera-wrapper">
+
+            <video
+                id="cameraVideo"
+                autoplay
+                playsinline
+            ></video>
+
+
+            <canvas
+                id="cameraCanvas"
+                hidden
+            ></canvas>
+
+
+            <div
+                id="cameraPlaceholder"
+                class="camera-placeholder"
+            >
+
+                📹
+
+                <p>
+                    Camera is not started
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- CAMERA CONTROLS -->
+
+        <div class="camera-controls">
+
+
+            <button
+                id="startCameraBtn"
+                class="primary-btn"
+            >
+
+                ▶ Start Camera
+
+            </button>
+
+
+
+            <button
+                id="captureImageBtn"
+                class="secondary-btn"
+                disabled
+            >
+
+                📸 Capture Picture
+
+            </button>
+
+
+
+            <button
+                id="startRecordingBtn"
+                class="danger-btn"
+                disabled
+            >
+
+                🔴 Start Recording
+
+            </button>
+
+
+
+            <button
+                id="stopRecordingBtn"
+                class="secondary-btn"
+                disabled
+            >
+
+                ⏹ Stop Recording
+
+            </button>
+
+
+
+            <button
+                id="stopCameraBtn"
+                class="secondary-btn"
+                disabled
+            >
+
+                ⏹ Stop Camera
+
+            </button>
+
+
+        </div>
+
+
+
+        <!-- RECORDING STATUS -->
+
+        <div
+            id="recordingStatus"
+            class="recording-status"
+        >
+
+            Camera not active
+
+        </div>
+
+
+
+        <!-- CAPTURED IMAGES -->
+
+        <section
+            id="capturedImagesSection"
+            class="captured-section hidden"
+        >
+
+            <h3>
+                📸 Captured Pictures
+            </h3>
+
+
+            <div
+                id="capturedImages"
+                class="captured-gallery"
+            ></div>
+
+
+        </section>
+
+
+
+        <!-- RECORDED VIDEO -->
+
+        <section
+            id="recordedVideoSection"
+            class="captured-section hidden"
+        >
+
+            <h3>
+                🎥 Recorded Video
+            </h3>
+
+
+            <video
+                id="recordedVideo"
+                controls
+            ></video>
+
+
+            <button
+                id="processRecordedVideoBtn"
+                class="primary-btn"
+            >
+
+                🔍 Process Recorded Video
+
+            </button>
+
+
+        </section>
+
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- PROCESSING STATUS -->
+    <!-- ================================================= -->
+
+    <section
+        id="processingSection"
+        class="processing-card hidden"
+    >
+
+        <div class="loader"></div>
+
+        <div>
+
+            <h3>
+                AI Processing
+            </h3>
+
+            <p id="processingMessage">
+
+                Uploading media...
+
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- DETECTION RESULTS -->
+    <!-- ================================================= -->
+
+    <section
+        class="results-section"
+    >
+
+        <div class="results-header">
+
+            <h2>
+                Detection Results
+            </h2>
+
+
+            <button
+                id="clearResultsBtn"
+                class="small-btn"
+            >
+
+                Clear
+
+            </button>
+
+
+        </div>
+
+
+
+        <div
+            id="detectionResult"
+            class="result-card empty-result"
+        >
+
+            <div class="empty-icon">
+                🔍
+            </div>
+
+
+            <h3>
+                No Detection Yet
+            </h3>
+
+
+            <p>
+
+                Upload an image,
+                video, or use the
+                live camera to begin detection.
+
+            </p>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+
+<script src="js/config.js"></script>
+
+<script src="js/detect.js"></script>
+
+
 </body>
+
 </html>

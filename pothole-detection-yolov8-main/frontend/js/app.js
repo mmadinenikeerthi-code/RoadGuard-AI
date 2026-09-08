@@ -1,39 +1,171 @@
-// frontend/js/app.js
-const API_BASE = "http://localhost:8000/api";
+// ==========================================================
+// ROADGUARD AI
+// FRONTEND API CONFIGURATION
+// ==========================================================
 
-document.addEventListener("DOMContentLoaded", async () => {
+
+// Backend URL
+
+const API_BASE_URL = "http://127.0.0.1:8000";
+
+
+// ==========================================================
+// FETCH HOTSPOTS
+// ==========================================================
+
+async function fetchHotspots() {
+
+
+    // ------------------------------------------------------
+    // GET HTML ELEMENTS
+    // ------------------------------------------------------
+
+    const output =
+        document.getElementById("output");
+
+
+    const status =
+        document.getElementById("status");
+
+
+    const button =
+        document.getElementById("fetchButton");
+
+
+    // ------------------------------------------------------
+    // LOADING STATE
+    // ------------------------------------------------------
+
+    status.textContent =
+        "⏳ Fetching hotspot data...";
+
+
+    output.textContent =
+        "Loading data from backend...";
+
+
+    button.disabled = true;
+
+
     try {
-        const reportsRes = await fetch(`${API_BASE}/reports/`);
-        const reports = await reportsRes.json();
-        
-        const hotspotsRes = await fetch(`${API_BASE}/map/hotspots`);
-        const hotspots = await hotspotsRes.json();
-        
-        let totalPotholes = reports.reduce((sum, r) => sum + r.pothole_count, 0);
-        let criticalCount = reports.filter(r => r.severity === "Critical").length;
-        
-        document.getElementById("stat-reports").innerText = reports.length;
-        document.getElementById("stat-potholes").innerText = totalPotholes;
-        document.getElementById("stat-critical").innerText = criticalCount;
-        document.getElementById("stat-hotspots").innerText = hotspots.length;
-        
-        const tbody = document.getElementById("recent-reports-table");
-        if (reports.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No reports filed yet. Run an inspection!</td></tr>`;
+
+
+        // --------------------------------------------------
+        // API REQUEST
+        // --------------------------------------------------
+
+        const response = await fetch(
+
+            `${API_BASE_URL}/hotspots/`
+
+        );
+
+
+        // --------------------------------------------------
+        // READ RESPONSE
+        // --------------------------------------------------
+
+        const data =
+            await response.json();
+
+
+        // --------------------------------------------------
+        // HANDLE API ERROR
+        // --------------------------------------------------
+
+        if (!response.ok) {
+
+
+            status.textContent =
+                `❌ API Error: ${response.status}`;
+
+
+            output.textContent =
+                JSON.stringify(
+                    data,
+                    null,
+                    2
+                );
+
+
             return;
+
         }
-        
-        tbody.innerHTML = reports.slice(0, 5).map(r => `
-            <tr>
-                <td>📍 ${r.location_name}</td>
-                <td>${r.pothole_count}</td>
-                <td><span class="text-${r.severity === 'Critical' ? 'danger' : (r.severity === 'Moderate' ? 'warning' : 'success')}">${r.severity}</span></td>
-                <td>${r.confidence}%</td>
-                <td>${new Date(r.created_at).toLocaleDateString()}</td>
-            </tr>
-        `).join('');
-        
-    } catch (e) {
-        console.error("Dashboard synchronization error:", e);
+
+
+        // --------------------------------------------------
+        // SUCCESS
+        // --------------------------------------------------
+
+        status.textContent =
+            "✅ Hotspot data loaded successfully!";
+
+
+        output.textContent =
+            JSON.stringify(
+                data,
+                null,
+                2
+            );
+
+
+        console.log(
+            "Hotspots API Response:",
+            data
+        );
+
+
     }
-});
+
+
+    catch (error) {
+
+
+        // --------------------------------------------------
+        // CONNECTION ERROR
+        // --------------------------------------------------
+
+        console.error(
+            "Backend connection error:",
+            error
+        );
+
+
+        status.textContent =
+            "❌ Cannot connect to backend";
+
+
+        output.textContent =
+
+`Error connecting to backend:
+
+${error.message}
+
+Make sure:
+
+1. FastAPI backend is running
+2. Backend URL is correct
+3. Backend is running on port 8000
+
+Backend URL:
+
+${API_BASE_URL}`;
+
+
+    }
+
+
+    finally {
+
+
+        // --------------------------------------------------
+        // ENABLE BUTTON AGAIN
+        // --------------------------------------------------
+
+        button.disabled = false;
+
+
+    }
+
+
+}

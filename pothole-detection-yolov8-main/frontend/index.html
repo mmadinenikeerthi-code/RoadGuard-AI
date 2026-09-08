@@ -1,74 +1,218 @@
-<!-- frontend/index.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoadGuard AI — Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>RoadGuard AI</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
 </head>
+
+
 <body>
-    <nav class="navbar">
-        <div class="logo">🛣️ RoadGuard AI</div>
-        <div class="nav-links">
-            <a href="index.html" class="active">Dashboard</a>
-            <a href="detect.html">Detect</a>
-            <a href="map.html">Map & Hotspots</a>
-            <a href="reports.html">Reports</a>
-        </div>
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header>
+
+        <h1>🚧 RoadGuard AI</h1>
+
+        <p>
+            AI-Powered Pothole Detection &
+            Road Monitoring System
+        </p>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         NAVIGATION
+    ====================================================== -->
+
+    <nav>
+
+        <a href="index.html">
+            🏠 Home
+        </a>
+
+        <a href="detect.html">
+            🔍 Detection
+        </a>
+
+        <a href="map.html">
+            🗺️ Hotspots
+        </a>
+
+        <a href="three_d.html">
+            🌐 3D Visualization
+        </a>
+
+        <a href="reports.html">
+            📊 Reports
+        </a>
+
     </nav>
 
-    <main class="container">
-        <header class="hero">
-            <h1>Detect. Locate. Monitor. Prioritize.</h1>
-            <p>AI-Powered Pothole Detection & Location-Based Road Monitoring Engine</p>
-            <div class="action-buttons">
-                <a href="detect.html" class="btn btn-primary">📷 Detect Pothole</a>
-                <a href="map.html" class="btn btn-secondary">🗺️ View Map Hotspots</a>
-            </div>
-        </header>
 
-        <section class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Reports</h3>
-                <p id="stat-reports">--</p>
+
+    <!-- =====================================================
+         MAIN DASHBOARD
+    ====================================================== -->
+
+    <main>
+
+
+        <section class="hero">
+
+            <h2>
+                Smart Road Monitoring with AI
+            </h2>
+
+            <p>
+
+                Detect potholes using Artificial Intelligence,
+                analyze road conditions, identify dangerous
+                hotspots and visualize road data.
+
+            </p>
+
+
+            <div class="button-container">
+
+
+                <a
+                    href="detect.html"
+                    class="dashboard-button"
+                >
+
+                    🔍 Start Detection
+
+                </a>
+
+
+
+                <a
+                    href="map.html"
+                    class="dashboard-button"
+                >
+
+                    🔥 View Hotspots
+
+                </a>
+
+
+
+                <a
+                    href="three_d.html"
+                    class="dashboard-button"
+                >
+
+                    🌐 Open 3D Visualization
+
+                </a>
+
+
             </div>
-            <div class="stat-card">
-                <h3>Potholes Detected</h3>
-                <p id="stat-potholes">--</p>
-            </div>
-            <div class="stat-card">
-                <h3>Critical Reports</h3>
-                <p id="stat-critical" class="text-danger">--</p>
-            </div>
-            <div class="stat-card">
-                <h3>Active Hotspots</h3>
-                <p id="stat-hotspots" class="text-warning">--</p>
-            </div>
+
+
         </section>
 
-        <section class="recent-section">
-            <h2>Recent Road Damage Reports</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Location</th>
-                            <th>Potholes</th>
-                            <th>Severity</th>
-                            <th>Confidence</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-reports-table">
-                        <tr><td colspan="5" style="text-align: center;">Loading system statistics...</td></tr>
-                    </tbody>
-                </table>
+
+
+        <!-- ================================================
+             FEATURES
+        ================================================= -->
+
+        <section class="features">
+
+
+            <div class="feature-card">
+
+                <h3>
+                    🔍 AI Detection
+                </h3>
+
+                <p>
+
+                    Upload road images or videos and detect
+                    potholes using YOLO AI.
+
+                </p>
+
             </div>
+
+
+
+            <div class="feature-card">
+
+                <h3>
+                    🔥 Hotspot Monitoring
+                </h3>
+
+                <p>
+
+                    Identify locations with multiple pothole
+                    reports and prioritize dangerous roads.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="feature-card">
+
+                <h3>
+                    🌐 3D Visualization
+                </h3>
+
+                <p>
+
+                    Visualize pothole and road information
+                    in an interactive 3D environment.
+
+                </p>
+
+            </div>
+
+
         </section>
+
+
     </main>
 
-    <script src="js/app.js"></script>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer>
+
+        <p>
+
+            © 2026 RoadGuard AI
+
+        </p>
+
+    </footer>
+
+
 </body>
+
 </html>

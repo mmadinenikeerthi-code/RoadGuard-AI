@@ -1,27 +1,41 @@
-# backend/routers/map.py
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import Dict, Any, List
+
 from backend.database import get_db
 from backend.models import ReportModel
-from backend.schemas import HotspotResponse
-from backend.services.hotspot_service import get_hotspots_service
+from backend.schemas import MapLocationResponse
 
-router = APIRouter(prefix="/api/map", tags=["Map Intelligence"])
+router = APIRouter(
+    prefix="/api/map",
+    tags=["Map"]
+)
 
-@router.get("/reports")
-def get_map_reports(db: Session = Depends(get_db)):
-    reports = db.query(ReportModel).filter(ReportModel.latitude.isnot(None), ReportModel.longitude.isnot(None)).all()
-    return [{
-        "id": r.id,
-        "latitude": r.latitude,
-        "longitude": r.longitude,
-        "location_name": r.location_name,
-        "pothole_count": r.pothole_count,
-        "severity": r.severity,
-        "created_at": r.created_at
-    } for r in reports]
 
-@router.get("/hotspots", response_model=List[HotspotResponse])
-def get_hotspots(db: Session = Depends(get_db)):
-    return get_hotspots_service(db)
+@router.get("/locations", response_model=Dict[str, Any])
+def get_map_locations(db: Session = Depends(get_db)):
+    try:
+        reports = db.query(ReportModel).filter(
+            ReportModel.latitude.isnot(None),
+            ReportModel.longitude.isnot(None)
+        ).all()
+
+        locations = [
+            {
+                "id": r.id,
+                "latitude": r.latitude,
+                "longitude": r.longitude,
+                "location_name": r.location_name or "Unknown Location",
+                "pothole_count": r.pothole_count or 0,
+                "severity": r.severity or "LOW",
+                "confidence": r.confidence or 0.0
+            }
+            for r in reports
+        ]
+
+        return {
+            "success": True,
+            "locations": locations
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving map locations: {str(e)}")
