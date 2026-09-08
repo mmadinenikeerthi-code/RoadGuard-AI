@@ -15,5 +15,5 @@ results/
 *.avi
 *.mov
 *.mkv
-
+*.zip
 .env
