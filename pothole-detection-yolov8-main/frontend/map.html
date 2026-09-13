@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        RoadGuard AI - Live Pothole Map
+    </title>
+
+
+    <!-- =====================================================
+         MAIN CSS
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+
+    <!-- =====================================================
+         LEAFLET CSS
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="main-header">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            🛣️
+        </div>
+
+        <div>
+
+            <h1>
+                RoadGuard AI
+            </h1>
+
+            <p>
+                AI-Powered Pothole Detection & Road Monitoring
+            </p>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================================================
+     NAVIGATION
+========================================================= -->
+
+<nav class="navbar">
+
+    <a href="index.html">
+        🏠 Home
+    </a>
+
+
+    <a href="detect.html">
+        🔍 Detection
+    </a>
+
+
+    <a
+        href="map.html"
+        class="active"
+    >
+        🗺️ Live Map
+    </a>
+
+
+    <a href="three_d.html">
+        🌐 3D Visualization
+    </a>
+
+
+    <a href="reports.html">
+        📊 Reports
+    </a>
+
+</nav>
+
+
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
+
+<main class="container">
+
+
+    <!-- =====================================================
+         MAP SECTION
+    ====================================================== -->
+
+    <section class="card">
+
+
+        <!-- MAP TITLE -->
+
+        <div class="section-header">
+
+            <h2>
+                📍 Live Pothole Monitoring Map
+            </h2>
+
+            <p>
+                Monitor your live location and view potholes
+                detected by RoadGuard AI.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             MAP CONTROLS
+        ================================================== -->
+
+        <div class="map-controls">
+
+
+            <button
+                id="startTrackingBtn"
+                class="primary-btn"
+            >
+                ▶ Start Live Tracking
+            </button>
+
+
+            <button
+                id="stopTrackingBtn"
+                class="danger-btn"
+                disabled
+            >
+                ■ Stop Tracking
+            </button>
+
+
+            <button
+                id="loadLocationsBtn"
+                class="secondary-btn"
+            >
+                🔄 Refresh Potholes
+            </button>
+
+
+            <button
+                id="centerMapBtn"
+                class="secondary-btn"
+            >
+                🎯 My Location
+            </button>
+
+
+        </div>
+
+
+        <!-- =================================================
+             MAP STATUS
+        ================================================== -->
+
+        <div
+            id="mapStatus"
+            class="status-message"
+        >
+
+            🗺️ Initializing RoadGuard AI Map...
+
+        </div>
+
+
+        <!-- =================================================
+             MAP
+        ================================================== -->
+
+        <div
+            id="map"
+            class="map-container"
+        ></div>
+
+
+    </section>
+
+
+
+    <!-- =====================================================
+         LIVE TRACKING INFORMATION
+    ====================================================== -->
+
+    <section class="card">
+
+
+        <h2>
+            📊 Live Tracking Information
+        </h2>
+
+
+        <p style="margin-bottom: 20px;">
+
+            Real-time GPS information while monitoring
+            the road.
+
+        </p>
+
+
+        <div class="stats-grid">
+
+
+            <!-- LATITUDE -->
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    📍 Current Latitude
+                </span>
+
+                <strong id="latitude">
+                    --
+                </strong>
+
+            </div>
+
+
+
+            <!-- LONGITUDE -->
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    📍 Current Longitude
+                </span>
+
+                <strong id="longitude">
+                    --
+                </strong>
+
+            </div>
+
+
+
+            <!-- GPS ACCURACY -->
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    🎯 GPS Accuracy
+                </span>
+
+                <strong id="accuracy">
+                    --
+                </strong>
+
+            </div>
+
+
+
+            <!-- ROUTE POINTS -->
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    🛣️ Route Points
+                </span>
+
+                <strong id="routePoints">
+                    0
+                </strong>
+
+            </div>
+
+
+            <!-- DETECTED POTHOLES -->
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    ⚠️ Detected Potholes
+                </span>
+
+                <strong id="potholeCount">
+                    0
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =====================================================
+         MAP INFORMATION
+    ====================================================== -->
+
+    <section class="card">
+
+
+        <h2>
+            ℹ️ RoadGuard AI Map Features
+        </h2>
+
+
+        <div class="features">
+
+
+            <div class="feature-card">
+
+                <h3>
+                    📡 Live GPS Tracking
+                </h3>
+
+                <p>
+                    Track your current location in real time
+                    while travelling.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <h3>
+                    ⚠️ Pothole Locations
+                </h3>
+
+                <p>
+                    View potholes detected by the AI system
+                    directly on the map.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <h3>
+                    🛣️ Route Monitoring
+                </h3>
+
+                <p>
+                    Visualize the route travelled during
+                    live road monitoring.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <h3>
+                    🔄 Live Updates
+                </h3>
+
+                <p>
+                    Automatically refresh detected pothole
+                    locations from the backend.
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer>
+
+    <p>
+        © 2026 RoadGuard AI |
+        AI-Powered Road Safety & Monitoring System
+    </p>
+
+</footer>
+
+
+
+<!-- =========================================================
+     LEAFLET JAVASCRIPT
+========================================================= -->
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+
+
+<!-- =========================================================
+     CONFIGURATION
+========================================================= -->
+
+<script src="js/config.js"></script>
+
+
+
+<!-- =========================================================
+     MAP LOGIC
+========================================================= -->
+
+<script src="js/map.js"></script>
+
+
+</body>
+
+</html>

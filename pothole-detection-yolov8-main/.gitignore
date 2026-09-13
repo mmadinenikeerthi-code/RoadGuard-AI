@@ -1,0 +1,80 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# =========================
+# Virtual Environments
+# =========================
+.venv/
+venv/
+env/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# Python Tools / Cache
+# =========================
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# =========================
+# Database
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+
+# =========================
+# YOLO / AI Model Files
+# =========================
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+
+# =========================
+# Uploaded / Generated Files
+# =========================
+uploads/
+results/
+outputs/
+runs/
+
+# =========================
+# Generated Videos
+# =========================
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp
+*.log
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db

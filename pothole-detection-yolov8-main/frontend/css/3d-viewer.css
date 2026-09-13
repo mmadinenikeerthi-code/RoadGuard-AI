@@ -1,0 +1,767 @@
+/* =========================================================
+   ROADGUARD AI
+   3D ROAD VISUALIZATION
+   frontend/css/3d-viewer.css
+   ========================================================= */
+
+
+/* =========================================================
+   MAIN 3D SECTION
+   ========================================================= */
+
+.three-d-section {
+    margin-top: 50px;
+    margin-bottom: 50px;
+    padding: 30px;
+    border-radius: 20px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.08);
+
+    border: 1px solid #e5e7eb;
+}
+
+
+/* =========================================================
+   3D HEADER
+   ========================================================= */
+
+.three-d-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 25px;
+
+    margin-bottom: 25px;
+}
+
+
+.three-d-header h2 {
+    margin: 10px 0;
+    font-size: 28px;
+    color: #111827;
+}
+
+
+.three-d-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   SECTION BADGE
+   ========================================================= */
+
+.section-badge {
+    display: inline-block;
+
+    padding: 6px 12px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+
+    color: #2563eb;
+
+    background: #eff6ff;
+
+    border: 1px solid #bfdbfe;
+}
+
+
+/* =========================================================
+   3D SYSTEM STATUS
+   ========================================================= */
+
+.three-d-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    white-space: nowrap;
+
+    padding: 10px 15px;
+
+    border-radius: 20px;
+
+    background: #ecfdf5;
+
+    color: #059669;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #10b981;
+
+    box-shadow:
+        0 0 0 4px rgba(16, 185, 129, 0.15);
+
+    animation: statusPulse 2s infinite;
+}
+
+
+@keyframes statusPulse {
+
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+}
+
+
+/* =========================================================
+   CONTROLS BAR
+   ========================================================= */
+
+.three-d-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 15px 20px;
+
+    margin-bottom: 20px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+}
+
+
+.control-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+
+.control-info span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+
+/* =========================================================
+   CONTROL BUTTONS
+   ========================================================= */
+
+.three-d-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+
+.viewer-btn {
+    border: none;
+
+    padding: 10px 16px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    color: #ffffff;
+
+    background: #2563eb;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.viewer-btn:hover {
+    background: #1d4ed8;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 18px rgba(37, 99, 235, 0.25);
+}
+
+
+.viewer-btn:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   MAIN 3D VIEWER LAYOUT
+   ========================================================= */
+
+.three-d-viewer-wrapper {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        280px;
+
+    gap: 20px;
+
+    align-items: stretch;
+}
+
+
+/* =========================================================
+   THREE.JS CONTAINER
+   ========================================================= */
+
+.three-container {
+    position: relative;
+
+    width: 100%;
+    height: 560px;
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: #0b1220;
+
+    border: 1px solid #1e293b;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+
+/* THREE.JS CANVAS */
+
+.three-container canvas {
+    display: block;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    cursor: grab;
+}
+
+
+.three-container canvas:active {
+    cursor: grabbing;
+}
+
+
+/* =========================================================
+   LOADING OVERLAY
+   ========================================================= */
+
+.loading-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 10;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b1220,
+            #172554
+        );
+
+    transition:
+        opacity 0.5s ease;
+}
+
+
+.loading-overlay h3 {
+    margin-top: 20px;
+    margin-bottom: 8px;
+
+    font-size: 20px;
+}
+
+
+.loading-overlay p {
+    margin: 0;
+
+    color: #cbd5e1;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   LOADER ANIMATION
+   ========================================================= */
+
+.loader {
+    width: 50px;
+    height: 50px;
+
+    border-radius: 50%;
+
+    border: 4px solid
+        rgba(255, 255, 255, 0.2);
+
+    border-top-color: #60a5fa;
+
+    animation:
+        spinLoader 1s linear infinite;
+}
+
+
+@keyframes spinLoader {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+
+/* =========================================================
+   INFORMATION PANEL
+   ========================================================= */
+
+.three-d-info-panel {
+    padding: 22px;
+
+    border-radius: 18px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.three-d-info-panel h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+
+    color: #111827;
+
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   VIEWER STATISTICS
+   ========================================================= */
+
+.viewer-stat {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 14px 0;
+
+    border-bottom:
+        1px solid #e5e7eb;
+}
+
+
+.viewer-stat span {
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+
+.viewer-stat strong {
+    color: #111827;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   ONLINE STATUS
+   ========================================================= */
+
+.online-status {
+    color: #10b981 !important;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   VIEWER HELP
+   ========================================================= */
+
+.viewer-help {
+    margin-top: auto;
+
+    padding-top: 20px;
+}
+
+
+.viewer-help h4 {
+    margin-bottom: 10px;
+
+    font-size: 14px;
+
+    color: #111827;
+}
+
+
+.viewer-help p {
+    margin: 8px 0;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+    color: #64748b;
+}
+
+
+/* =========================================================
+   SEVERITY LEGEND
+   ========================================================= */
+
+.three-d-legend {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    gap: 25px;
+
+    margin-top: 25px;
+
+    padding: 18px;
+
+    background: #f8fafc;
+
+    border-radius: 14px;
+
+    border: 1px solid #e5e7eb;
+}
+
+
+.legend-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: #475569;
+}
+
+
+/* =========================================================
+   LEGEND DOTS
+   ========================================================= */
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    display: inline-block;
+}
+
+
+.legend-dot.low {
+    background: #22c55e;
+}
+
+
+.legend-dot.medium {
+    background: #f59e0b;
+}
+
+
+.legend-dot.high {
+    background: #f97316;
+}
+
+
+.legend-dot.critical {
+    background: #ef4444;
+
+    box-shadow:
+        0 0 10px
+        rgba(239, 68, 68, 0.5);
+}
+
+
+/* =========================================================
+   FULLSCREEN MODE
+   ========================================================= */
+
+.three-container:fullscreen {
+    width: 100vw;
+
+    height: 100vh;
+
+    border-radius: 0;
+
+    border: none;
+}
+
+
+.three-container:fullscreen canvas {
+    width: 100vw !important;
+
+    height: 100vh !important;
+}
+
+
+/* =========================================================
+   TABLET RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .three-d-viewer-wrapper {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .three-d-info-panel {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        gap: 15px;
+
+    }
+
+
+    .three-d-info-panel h3 {
+
+        grid-column:
+            1 / -1;
+
+    }
+
+
+    .viewer-help {
+
+        grid-column:
+            1 / -1;
+
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .three-d-section {
+
+        padding: 20px;
+
+        margin-top: 30px;
+
+    }
+
+
+    .three-d-header {
+
+        flex-direction: column;
+
+    }
+
+
+    .three-d-header h2 {
+
+        font-size: 23px;
+
+    }
+
+
+    .three-d-status {
+
+        width: fit-content;
+
+    }
+
+
+    .three-d-controls {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+
+    .three-d-buttons {
+
+        width: 100%;
+
+    }
+
+
+    .viewer-btn {
+
+        flex: 1;
+
+    }
+
+
+    .three-container {
+
+        height: 420px;
+
+    }
+
+
+    .three-d-info-panel {
+
+        display: block;
+
+    }
+
+
+    .viewer-help {
+
+        margin-top: 20px;
+
+    }
+
+
+    .three-d-legend {
+
+        justify-content: flex-start;
+
+        gap: 15px;
+
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .three-d-section {
+
+        padding: 15px;
+
+    }
+
+
+    .three-container {
+
+        height: 350px;
+
+        border-radius: 12px;
+
+    }
+
+
+    .control-info {
+
+        flex-direction: column;
+
+        gap: 8px;
+
+    }
+
+
+    .three-d-buttons {
+
+        flex-direction: column;
+
+    }
+
+
+    .viewer-btn {
+
+        width: 100%;
+
+    }
+
+
+    .three-d-header h2 {
+
+        font-size: 20px;
+
+    }
+
+
+    .three-d-legend {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+}
