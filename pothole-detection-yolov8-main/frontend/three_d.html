@@ -1,212 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Visualization | RoadGuard AI</title>
 
-
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
-
-
-    <link
-        rel="stylesheet"
-        href="css/3d-viewer.css"
-    >
-
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/3d-viewer.css">
 </head>
-
 
 <body>
 
-
 <header class="main-header">
-
     <div class="brand">
-
-        <h1>
-            🛣️ RoadGuard AI
-        </h1>
-
-        <p>
-            Intelligent Road Infrastructure Analysis
-        </p>
-
+        <h1>🛣️ RoadGuard AI</h1>
+        <p>Intelligent Road Infrastructure Analysis</p>
     </div>
-
 </header>
 
-
-
 <nav class="navbar">
-
-    <a href="index.html">
-        🏠 Home
-    </a>
-
-    <a href="detect.html">
-        🔍 Detection
-    </a>
-
-    <a href="map.html">
-        🗺 live Map
-    </a>
-
-    <a href="reports.html">
-        📊 Reports
-    </a>
-
-    <a
-        href="three_d.html"
-        class="active"
-    >
-        🌐 3D Visualization
-    </a>
-
+    <a href="index.html">🏠 Home</a>
+    <a href="detect.html">🔍 Detection</a>
+    <a href="map.html">🗺 live Map</a>
+    <a href="reports.html">📊 Reports</a>
+    <a href="three_d.html" class="active">🌐 3D Visualization</a>
 </nav>
-
-
 
 <main class="container">
 
-
     <section class="page-heading">
-
-        <h2>
-            3D Road Damage Visualization
-        </h2>
-
+        <h2>Immersive Road View</h2>
         <p>
-
-            Explore pothole detection
-            data in an interactive
-            three-dimensional environment.
-
+            Open a report below to look around the road scene. RoadGuard AI
+            is honest about what it's showing you — see the mode badge.
         </p>
-
     </section>
 
+    <!-- REPORT SELECTOR + MODE BADGE -->
+    <section class="three-d-controls">
+        <div class="control-info">
+            <span>📄 Report:
+                <select id="reportSelector"></select>
+            </span>
+            <span id="viewModeBadge" class="view-mode-badge">Loading…</span>
+        </div>
 
+        <div class="three-d-buttons">
+            <button id="reloadSceneBtn" class="viewer-btn">🔄 Reload</button>
+            <button id="resetCameraBtn" class="viewer-btn">🎯 Reset View</button>
+        </div>
+    </section>
 
     <!-- SUMMARY -->
-
     <section class="three-summary">
-
-
         <div class="summary-card">
-
-            <span>
-                Total Objects
-            </span>
-
-            <strong id="totalObjects">
-                --
-            </strong>
-
+            <span>Potholes in this view</span>
+            <strong id="totalObjects">--</strong>
         </div>
-
-
         <div class="summary-card">
-
-            <span>
-                Potholes
-            </span>
-
-            <strong id="total3DPotholes">
-                --
-            </strong>
-
+            <span>Media format</span>
+            <strong id="mediaFormat">--</strong>
         </div>
-
-
-        <div class="summary-card">
-
-            <span>
-                Critical Areas
-            </span>
-
-            <strong id="critical3D">
-                --
-            </strong>
-
-        </div>
-
-
     </section>
-
-
-
-    <!-- CONTROLS -->
-
-    <section class="viewer-controls">
-
-
-        <button
-            id="reloadSceneBtn"
-            class="primary-btn"
-        >
-
-            🔄 Reload Scene
-
-        </button>
-
-
-        <button
-            id="resetCameraBtn"
-            class="secondary-btn"
-        >
-
-            🎯 Reset View
-
-        </button>
-
-
-    </section>
-
-
 
     <!-- 3D VIEWER -->
+    <div class="three-d-viewer-wrapper">
 
-    <section class="viewer-card">
+        <section class="three-container" id="threeContainer">
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loader"></div>
+                <h3>Loading road view…</h3>
+                <p id="threeStatus">Loading 3D scene...</p>
+            </div>
+        </section>
 
-        <div
-            id="threeContainer"
-        ></div>
+        <aside class="three-d-info-panel">
+            <h3>Pothole Details</h3>
+            <div id="potholeInfoPanel">
+                <p style="color:#94a3b8;font-size:13px;">
+                    Click a marker in the scene to see its details here.
+                </p>
+            </div>
 
+            <div class="viewer-help">
+                <h4>Controls</h4>
+                <p>🖱️ Drag to look around</p>
+                <p>🖱️ Scroll to zoom (reconstruction mode only)</p>
+                <p>🎯 Reset View to re-center the camera</p>
+            </div>
+        </aside>
 
-        <div
-            id="threeStatus"
-            class="three-status"
-        >
+    </div>
 
-            Loading 3D scene...
-
-        </div>
-
-
+    <!-- LEGEND -->
+    <section class="three-d-legend">
+        <div class="legend-item"><span class="legend-dot low"></span> Low</div>
+        <div class="legend-item"><span class="legend-dot medium"></span> Moderate</div>
+        <div class="legend-item"><span class="legend-dot high"></span> High</div>
+        <div class="legend-item"><span class="legend-dot critical"></span> Critical</div>
     </section>
-
 
 </main>
 
-
-
 <script src="js/config.js"></script>
-
-
 <script type="module" src="js/three_d.js"></script>
 
-
 </body>
-
 </html>

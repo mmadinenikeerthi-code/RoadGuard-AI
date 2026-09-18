@@ -1,1379 +1,339 @@
 // ==========================================================
-// ROADGUARD AI
-// 3D VISUALIZATION
+// ROADGUARD AI — IMMERSIVE 3D / 360° ROAD VIEW
 // FILE: frontend/js/three_d.js
 // ==========================================================
 
+import * as THREE from "https://esm.sh/three@0.160.0";
+import { OrbitControls } from "https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-// ==========================================================
-// THREE.JS IMPORTS
-// ==========================================================
+let scene, camera, renderer, controls, potholeGroup, animationId;
+let raycaster, mouse;
+let currentReportId = null;
 
-// Using ESM CDN versions to avoid browser module errors
-
-import * as THREE from
-    "https://esm.sh/three@0.160.0";
-
-
-import {
-    OrbitControls
-} from
-    "https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js";
-
-
-// ==========================================================
-// GLOBALS
-// ==========================================================
-
-let scene;
-
-let camera;
-
-let renderer;
-
-let controls;
-
-let potholeGroup;
-
-let animationId;
-
-
-// ==========================================================
-// INITIALIZE
-// ==========================================================
-
-document.addEventListener(
-    "DOMContentLoaded",
-    initializeThreeViewer
-);
-
+document.addEventListener("DOMContentLoaded", initializeThreeViewer);
 
 async function initializeThreeViewer() {
-
-    console.log(
-        "🚀 Initializing RoadGuard AI 3D Visualization..."
-    );
-
-
     try {
-
         createThreeScene();
-
         initializeControls();
-
         animate();
-
-        await loadThreeData();
-
+        await loadReportList();
+    } catch (error) {
+        console.error("❌ 3D initialization error:", error);
+        updateThreeStatus(`❌ Failed to initialize: ${error.message}`);
     }
-
-    catch (error) {
-
-        console.error(
-            "❌ 3D initialization error:",
-            error
-        );
-
-
-        updateThreeStatus(
-            `❌ Failed to initialize: ${error.message}`
-        );
-
-    }
-
 }
-
-
-// ==========================================================
-// CREATE THREE.JS SCENE
-// ==========================================================
 
 function createThreeScene() {
+    const container = document.getElementById("threeContainer");
+    if (!container) throw new Error("threeContainer not found in three_d.html");
 
-    const container =
-        document.getElementById(
-            "threeContainer"
-        );
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0f172a);
 
+    const width = container.clientWidth || 800;
+    const height = container.clientHeight || 500;
 
-    if (!container) {
+    camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 1000);
+    camera.position.set(0, 0, 0.1);
 
-        throw new Error(
-            "threeContainer not found in three_d.html"
-        );
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
 
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = -0.5; // inverted feels natural "looking around from inside"
+    controls.enablePan = false;
+    controls.minDistance = 0.01;
+    controls.maxDistance = 0.01; // default: locked at center (panorama mode)
+    controls.target.set(0, 0, -1);
+
+    potholeGroup = new THREE.Group();
+    scene.add(potholeGroup);
+
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+    renderer.domElement.addEventListener("click", onSceneClick);
+
+    window.addEventListener("resize", resizeThreeViewer);
+}
+
+// ==========================================================
+// LOAD REPORT LIST -> POPULATE SELECTOR
+// ==========================================================
+
+async function loadReportList() {
+    try {
+        const response = await fetch(`${API_ENDPOINTS.base}/3d/reports-list`);
+        const data = await response.json();
+
+        const selector = document.getElementById("reportSelector");
+        selector.innerHTML = "";
+
+        (data.reports || []).forEach((report) => {
+            const option = document.createElement("option");
+            option.value = report.id;
+            option.textContent = `#${report.id} — ${report.media_type} — ${report.pothole_count} potholes (${report.severity})`;
+            selector.appendChild(option);
+        });
+
+        selector.addEventListener("change", () => loadRoadView(selector.value));
+
+        if (data.reports && data.reports.length > 0) {
+            loadRoadView(data.reports[0].id);
+        } else {
+            updateThreeStatus("⚠️ No reports available yet. Upload media first.");
+        }
+    } catch (error) {
+        console.error("❌ Could not load report list:", error);
+        updateThreeStatus(`❌ ${error.message}`);
     }
-
-
-    // Clear previous canvas
-
-    container.innerHTML = "";
-
-
-    // ======================================================
-    // SCENE
-    // ======================================================
-
-    scene =
-        new THREE.Scene();
-
-
-    scene.background =
-        new THREE.Color(
-            0x0f172a
-        );
-
-
-    // ======================================================
-    // CAMERA
-    // ======================================================
-
-    const width =
-        container.clientWidth || 800;
-
-
-    const height =
-        container.clientHeight || 500;
-
-
-    camera =
-        new THREE.PerspectiveCamera(
-
-            60,
-
-            width / height,
-
-            0.1,
-
-            1000
-
-        );
-
-
-    camera.position.set(
-
-        10,
-
-        10,
-
-        15
-
-    );
-
-
-    // ======================================================
-    // RENDERER
-    // ======================================================
-
-    renderer =
-        new THREE.WebGLRenderer({
-
-            antialias: true
-
-        });
-
-
-    renderer.setSize(
-
-        width,
-
-        height
-
-    );
-
-
-    renderer.setPixelRatio(
-
-        Math.min(
-            window.devicePixelRatio,
-            2
-        )
-
-    );
-
-
-    renderer.shadowMap.enabled =
-        true;
-
-
-    container.appendChild(
-        renderer.domElement
-    );
-
-
-    // ======================================================
-    // ORBIT CONTROLS
-    // ======================================================
-
-    controls =
-        new OrbitControls(
-
-            camera,
-
-            renderer.domElement
-
-        );
-
-
-    controls.enableDamping =
-        true;
-
-
-    controls.dampingFactor =
-        0.05;
-
-
-    controls.target.set(
-
-        0,
-
-        0,
-
-        0
-
-    );
-
-
-    // ======================================================
-    // CREATE SCENE ELEMENTS
-    // ======================================================
-
-    createLighting();
-
-    createRoadSurface();
-
-    createGrid();
-
-    createAxes();
-
-    createPotholeGroup();
-
-
-    // ======================================================
-    // RESIZE
-    // ======================================================
-
-    window.addEventListener(
-
-        "resize",
-
-        resizeThreeViewer
-
-    );
-
-
-    console.log(
-        "✅ Three.js scene created successfully"
-    );
-
 }
 
-
 // ==========================================================
-// CREATE LIGHTING
-// ==========================================================
-
-function createLighting() {
-
-
-    // Ambient Light
-
-    const ambient =
-        new THREE.AmbientLight(
-
-            0xffffff,
-
-            1.8
-
-        );
-
-
-    scene.add(
-        ambient
-    );
-
-
-    // Directional Light
-
-    const directional =
-        new THREE.DirectionalLight(
-
-            0xffffff,
-
-            2.5
-
-        );
-
-
-    directional.position.set(
-
-        10,
-
-        20,
-
-        10
-
-    );
-
-
-    directional.castShadow =
-        true;
-
-
-    scene.add(
-        directional
-    );
-
-
-    // Additional light
-
-    const directionalTwo =
-        new THREE.DirectionalLight(
-
-            0xffffff,
-
-            1.2
-
-        );
-
-
-    directionalTwo.position.set(
-
-        -10,
-
-        10,
-
-        -10
-
-    );
-
-
-    scene.add(
-        directionalTwo
-    );
-
-}
-
-
-// ==========================================================
-// CREATE ROAD SURFACE
+// LOAD ROAD VIEW FOR A SPECIFIC REPORT
 // ==========================================================
 
-function createRoadSurface() {
-
-
-    const geometry =
-        new THREE.PlaneGeometry(
-
-            40,
-
-            40
-
-        );
-
-
-    const material =
-        new THREE.MeshStandardMaterial({
-
-            color: 0x374151,
-
-            roughness: 0.9,
-
-            metalness: 0.05
-
-        });
-
-
-    const road =
-        new THREE.Mesh(
-
-            geometry,
-
-            material
-
-        );
-
-
-    road.rotation.x =
-        -Math.PI / 2;
-
-
-    road.receiveShadow =
-        true;
-
-
-    scene.add(
-        road
-    );
-
-}
-
-
-// ==========================================================
-// CREATE GRID
-// ==========================================================
-
-function createGrid() {
-
-
-    const grid =
-        new THREE.GridHelper(
-
-            40,
-
-            40,
-
-            0x64748b,
-
-            0x475569
-
-        );
-
-
-    grid.position.y =
-        0.02;
-
-
-    scene.add(
-        grid
-    );
-
-}
-
-
-// ==========================================================
-// CREATE AXES
-// ==========================================================
-
-function createAxes() {
-
-
-    const axes =
-        new THREE.AxesHelper(
-            5
-        );
-
-
-    scene.add(
-        axes
-    );
-
-}
-
-
-// ==========================================================
-// CREATE POTHOLE GROUP
-// ==========================================================
-
-function createPotholeGroup() {
-
-
-    potholeGroup =
-        new THREE.Group();
-
-
-    scene.add(
-        potholeGroup
-    );
-
-}
-
-
-// ==========================================================
-// LOAD BACKEND DATA
-// ==========================================================
-
-async function loadThreeData() {
-
-
-    updateThreeStatus(
-        "⏳ Loading 3D scene..."
-    );
-
+async function loadRoadView(reportId) {
+    currentReportId = reportId;
+    updateThreeStatus("⏳ Loading road view...");
+    showLoadingOverlay(true);
 
     try {
+        const response = await fetch(`${API_ENDPOINTS.base}/3d/road-view/${reportId}`);
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        const data = await response.json();
 
+        updateModeBadge(data.is_true_360, data.view_label);
+        document.getElementById("mediaFormat").textContent = data.media_format;
+        document.getElementById("totalObjects").textContent = data.pothole_count;
 
-        console.log(
-            "📡 Loading:",
-            API_ENDPOINTS.threeScene
-        );
-
-
-        const response =
-            await fetch(
-                API_ENDPOINTS.threeScene
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Server error: ${response.status}`
-            );
-
+        if (data.is_true_360 && data.panorama_image) {
+            await buildPanoramaMode(data.panorama_image);
+        } else {
+            buildReconstructionMode();
         }
 
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "📦 3D Scene Data:",
-            data
-        );
-
-
-        const objects =
-            extractSceneObjects(
-                data
-            );
-
-
-        renderThreeObjects(
-            objects
-        );
-
-
-        await loadThreeSummary();
-
-
-        if (objects.length === 0) {
-
-            updateThreeStatus(
-                "⚠️ No pothole data available"
-            );
-
-        }
-
-        else {
-
-            updateThreeStatus(
-                `✅ 3D visualization loaded — ${objects.length} locations`
-            );
-
-        }
-
-
-        console.log(
-            "✅ 3D objects rendered:",
-            objects.length
-        );
-
-    }
-
-
-    catch (error) {
-
-
-        console.error(
-            "❌ Error loading 3D data:",
-            error
-        );
-
+        renderPotholeMarkers(data.markers || []);
 
         updateThreeStatus(
-            `❌ ${error.message}`
+            data.pothole_count > 0
+                ? `✅ Loaded ${data.pothole_count} pothole marker(s)`
+                : "⚠️ No pothole markers for this report"
         );
-
+    } catch (error) {
+        console.error("❌ Error loading road view:", error);
+        updateThreeStatus(`❌ ${error.message}`);
+    } finally {
+        showLoadingOverlay(false);
     }
-
 }
 
-
 // ==========================================================
-// EXTRACT OBJECTS
-// ==========================================================
-
-function extractSceneObjects(data) {
-
-
-    if (Array.isArray(data)) {
-
-        return data;
-
-    }
-
-
-    if (
-        data &&
-        Array.isArray(data.objects)
-    ) {
-
-        return data.objects;
-
-    }
-
-
-    if (
-        data &&
-        Array.isArray(data.scene)
-    ) {
-
-        return data.scene;
-
-    }
-
-
-    if (
-        data &&
-        Array.isArray(data.data)
-    ) {
-
-        return data.data;
-
-    }
-
-
-    return [];
-
-}
-
-
-// ==========================================================
-// CLEAR POTHOLES
+// PANORAMA MODE (real 360° — user is INSIDE a textured sphere)
 // ==========================================================
 
-function clearPotholes() {
+async function buildPanoramaMode(panoramaImagePath) {
+    clearWorld();
 
+    const geometry = new THREE.SphereGeometry(50, 60, 40);
+    geometry.scale(-1, 1, 1); // invert so texture faces inward
 
-    while (
-        potholeGroup.children.length > 0
-    ) {
-
-
-        const object =
-            potholeGroup.children[0];
-
-
-        potholeGroup.remove(
-            object
-        );
-
-
-        if (object.geometry) {
-
-            object.geometry.dispose();
-
-        }
-
-
-        if (object.material) {
-
-            object.material.dispose();
-
-        }
-
-    }
-
-}
-
-
-// ==========================================================
-// RENDER 3D OBJECTS
-// ==========================================================
-
-function renderThreeObjects(objects) {
-
-
-    clearPotholes();
-
-
-    objects.forEach(
-
-        (
-            object,
-            index
-        ) => {
-
-
-            // ==================================================
-            // GET POSITION
-            // ==================================================
-
-            let x =
-                Number(
-                    object.x
-                );
-
-
-            let z =
-                Number(
-                    object.z
-                );
-
-
-            // Fallback if x/z don't exist
-
-            if (Number.isNaN(x)) {
-
-                x =
-                    (index - objects.length / 2) * 3;
-
-            }
-
-
-            if (Number.isNaN(z)) {
-
-                z =
-                    0;
-
-            }
-
-
-            // ==================================================
-            // GET DATA
-            // ==================================================
-
-            const severity =
-                String(
-                    object.severity || "LOW"
-                ).toUpperCase();
-
-
-            const potholeCount =
-                Number(
-                    object.pothole_count || 0
-                );
-
-
-            const size =
-                getPotholeSize(
-                    severity
-                );
-
-
-            // ==================================================
-            // CREATE POTHOLE
-            // ==================================================
-
-            const geometry =
-                new THREE.SphereGeometry(
-
-                    size,
-
-                    32,
-
-                    20
-
-                );
-
-
-            const material =
-                new THREE.MeshStandardMaterial({
-
-                    color:
-                        getThreeColor(
-                            severity
-                        ),
-
-                    roughness: 0.7,
-
-                    metalness: 0.15
-
-                });
-
-
-            const pothole =
-                new THREE.Mesh(
-
-                    geometry,
-
-                    material
-
-                );
-
-
-            pothole.position.set(
-
-                x,
-
-                0.15,
-
-                z
-
-            );
-
-
-            // Flatten sphere to look like a pothole
-
-            pothole.scale.y =
-                0.25;
-
-
-            pothole.castShadow =
-                true;
-
-
-            pothole.receiveShadow =
-                true;
-
-
-            // ==================================================
-            // STORE DATA
-            // ==================================================
-
-            pothole.userData =
-                object;
-
-
-            // ==================================================
-            // ADD TO SCENE
-            // ==================================================
-
-            potholeGroup.add(
-                pothole
-            );
-
-
-            // ==================================================
-            // ADD MARKER RING
-            // ==================================================
-
-            addPotholeRing(
-
-                x,
-
-                z,
-
-                severity,
-
-                size
-
-            );
-
-
-            console.log(
-
-                `🕳️ Pothole ${index + 1}:`,
-
-                {
-
-                    x,
-
-                    z,
-
-                    severity,
-
-                    potholeCount
-
-                }
-
-            );
-
-        }
-
+    const texture = await new THREE.TextureLoader().loadAsync(
+        `${API_ENDPOINTS.base}/results/${panoramaImagePath}`
     );
+    texture.colorSpace = THREE.SRGBColorSpace;
 
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.name = "panoramaSphere";
+    scene.add(sphere);
 
-    // ======================================================
-    // UPDATE TOTAL OBJECTS
-    // ======================================================
-
-    const totalObjects =
-        document.getElementById(
-            "totalObjects"
-        );
-
-
-    if (totalObjects) {
-
-        totalObjects.textContent =
-            objects.length;
-
-    }
-
-
-    // ======================================================
-    // CENTER CAMERA
-    // ======================================================
-
-    if (objects.length > 0) {
-
-        controls.target.set(
-
-            0,
-
-            0,
-
-            0
-
-        );
-
-
-        controls.update();
-
-    }
-
+    camera.position.set(0, 0, 0.1);
+    controls.minDistance = 0.01;
+    controls.maxDistance = 0.01; // locked at center: pure look-around
+    controls.target.set(0, 0, -1);
+    controls.update();
 }
 
+// ==========================================================
+// RECONSTRUCTION MODE (forward-facing video/image — synthetic scene)
+// ==========================================================
+
+function buildReconstructionMode() {
+    clearWorld();
+
+    scene.background = new THREE.Color(0x0f172a);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 1.4);
+    scene.add(ambient);
+
+    const directional = new THREE.DirectionalLight(0xffffff, 1.8);
+    directional.position.set(10, 20, 10);
+    scene.add(directional);
+
+    const roadGeometry = new THREE.PlaneGeometry(20, 60);
+    const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.9 });
+    const road = new THREE.Mesh(roadGeometry, roadMaterial);
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(0, -0.5, -25);
+    road.name = "roadPlane";
+    scene.add(road);
+
+    const grid = new THREE.GridHelper(60, 30, 0x64748b, 0x334155);
+    grid.position.set(0, -0.49, -25);
+    grid.name = "roadGrid";
+    scene.add(grid);
+
+    camera.position.set(0, 1.5, 5);
+    controls.minDistance = 1;
+    controls.maxDistance = 30;
+    controls.target.set(0, 0, -10);
+    controls.rotateSpeed = 0.5; // normal orbit feel, not "inside a sphere"
+    controls.update();
+}
+
+function clearWorld() {
+    const toRemove = scene.children.filter(
+        (child) => child.name === "panoramaSphere" || child.name === "roadPlane" || child.name === "roadGrid"
+    );
+    toRemove.forEach((child) => {
+        scene.remove(child);
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+    });
+    while (potholeGroup.children.length > 0) {
+        const obj = potholeGroup.children[0];
+        potholeGroup.remove(obj);
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) obj.material.dispose();
+    }
+}
 
 // ==========================================================
-// ADD POTHOLE RING
+// POTHOLE MARKERS
 // ==========================================================
 
-function addPotholeRing(
+function renderPotholeMarkers(markers) {
+    while (potholeGroup.children.length > 0) {
+        const obj = potholeGroup.children[0];
+        potholeGroup.remove(obj);
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) obj.material.dispose();
+    }
 
-    x,
-
-    z,
-
-    severity,
-
-    size
-
-) {
-
-
-    const geometry =
-        new THREE.RingGeometry(
-
-            size * 1.2,
-
-            size * 1.5,
-
-            32
-
-        );
-
-
-    const material =
-        new THREE.MeshBasicMaterial({
-
-            color:
-                getThreeColor(
-                    severity
-                ),
-
-            side:
-                THREE.DoubleSide
-
+    markers.forEach((marker) => {
+        const geometry = new THREE.SphereGeometry(0.3, 20, 16);
+        const material = new THREE.MeshStandardMaterial({
+            color: getThreeColor(marker.severity),
+            emissive: getThreeColor(marker.severity),
+            emissiveIntensity: 0.4,
         });
-
-
-    const ring =
-        new THREE.Mesh(
-
-            geometry,
-
-            material
-
-        );
-
-
-    ring.rotation.x =
-        -Math.PI / 2;
-
-
-    ring.position.set(
-
-        x,
-
-        0.03,
-
-        z
-
-    );
-
-
-    potholeGroup.add(
-        ring
-    );
-
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(marker.position.x, marker.position.y, marker.position.z);
+        mesh.userData = marker;
+        potholeGroup.add(mesh);
+    });
 }
 
+function onSceneClick(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-// ==========================================================
-// GET THREE COLOR
-// ==========================================================
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(potholeGroup.children);
+
+    if (intersects.length > 0) {
+        showPotholeInfo(intersects[0].object.userData);
+    }
+}
+
+function showPotholeInfo(marker) {
+    const panel = document.getElementById("potholeInfoPanel");
+    const locationText =
+        marker.location === "unknown"
+            ? "Location unknown"
+            : `${marker.location.latitude.toFixed(6)}, ${marker.location.longitude.toFixed(6)}`;
+
+    panel.innerHTML = `
+        <div class="pothole-info-card">
+            <h4>Pothole #${marker.pothole_id}</h4>
+            <p><strong>Severity:</strong> ${marker.severity}</p>
+            <p><strong>Confidence:</strong> ${(marker.confidence * 100).toFixed(0)}%</p>
+            <p><strong>Location:</strong> ${locationText}</p>
+        </div>
+    `;
+}
+
+function updateModeBadge(isTrue360, label) {
+    const badge = document.getElementById("viewModeBadge");
+    if (!badge) return;
+    badge.textContent = label;
+    badge.className = "view-mode-badge " + (isTrue360 ? "true-360" : "reconstruction");
+}
 
 function getThreeColor(severity) {
-
-
-    const colors = {
-
-        LOW:
-            0x22c55e,
-
-        MODERATE:
-            0xf59e0b,
-
-        HIGH:
-            0xf97316,
-
-        CRITICAL:
-            0xef4444
-
-    };
-
-
-    return (
-
-        colors[severity] ||
-
-        0x64748b
-
-    );
-
+    const colors = { LOW: 0x22c55e, MODERATE: 0xf59e0b, HIGH: 0xf97316, CRITICAL: 0xef4444 };
+    return colors[severity] || 0x64748b;
 }
 
-
 // ==========================================================
-// GET POTHOLE SIZE
-// ==========================================================
-
-function getPotholeSize(severity) {
-
-
-    const sizes = {
-
-        LOW:
-            0.5,
-
-        MODERATE:
-            0.7,
-
-        HIGH:
-            0.9,
-
-        CRITICAL:
-            1.2
-
-    };
-
-
-    return (
-
-        sizes[severity] ||
-
-        0.5
-
-    );
-
-}
-
-
-// ==========================================================
-// LOAD SUMMARY
-// ==========================================================
-
-async function loadThreeSummary() {
-
-
-    try {
-
-
-        const response =
-            await fetch(
-                API_ENDPOINTS.threeSummary
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Unable to load summary"
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "📊 3D Summary:",
-            data
-        );
-
-
-        const totalPotholes =
-            document.getElementById(
-                "total3DPotholes"
-            );
-
-
-        if (totalPotholes) {
-
-            totalPotholes.textContent =
-
-                data.total_potholes ??
-
-                "--";
-
-        }
-
-
-        const criticalAreas =
-            document.getElementById(
-                "critical3D"
-            );
-
-
-        if (criticalAreas) {
-
-            criticalAreas.textContent =
-
-                data.critical_hotspots ??
-
-                data.critical ??
-
-                "--";
-
-        }
-
-    }
-
-
-    catch (error) {
-
-        console.warn(
-
-            "⚠️ Summary unavailable:",
-
-            error
-
-        );
-
-    }
-
-}
-
-
-// ==========================================================
-// ANIMATION
+// ANIMATION / CONTROLS / RESIZE
 // ==========================================================
 
 function animate() {
-
-
-    animationId =
-        requestAnimationFrame(
-            animate
-        );
-
-
-    if (controls) {
-
-        controls.update();
-
-    }
-
-
-    if (
-        renderer &&
-        scene &&
-        camera
-    ) {
-
-        renderer.render(
-
-            scene,
-
-            camera
-
-        );
-
-    }
-
+    animationId = requestAnimationFrame(animate);
+    if (controls) controls.update();
+    if (renderer && scene && camera) renderer.render(scene, camera);
 }
-
-
-// ==========================================================
-// RESET CAMERA
-// ==========================================================
 
 function resetCamera() {
-
-
-    camera.position.set(
-
-        10,
-
-        10,
-
-        15
-
-    );
-
-
-    controls.target.set(
-
-        0,
-
-        0,
-
-        0
-
-    );
-
-
+    if (controls.maxDistance <= 0.02) {
+        camera.position.set(0, 0, 0.1);
+        controls.target.set(0, 0, -1);
+    } else {
+        camera.position.set(0, 1.5, 5);
+        controls.target.set(0, 0, -10);
+    }
     controls.update();
-
-
-    updateThreeStatus(
-        "🎯 Camera reset"
-    );
-
+    updateThreeStatus("🎯 Camera reset");
 }
-
-
-// ==========================================================
-// INITIALIZE BUTTON CONTROLS
-// ==========================================================
 
 function initializeControls() {
+    const reloadButton = document.getElementById("reloadSceneBtn");
+    if (reloadButton) reloadButton.addEventListener("click", () => currentReportId && loadRoadView(currentReportId));
 
-
-    const reloadButton =
-        document.getElementById(
-            "reloadSceneBtn"
-        );
-
-
-    if (reloadButton) {
-
-        reloadButton.addEventListener(
-
-            "click",
-
-            loadThreeData
-
-        );
-
-    }
-
-
-    const resetButton =
-        document.getElementById(
-            "resetCameraBtn"
-        );
-
-
-    if (resetButton) {
-
-        resetButton.addEventListener(
-
-            "click",
-
-            resetCamera
-
-        );
-
-    }
-
+    const resetButton = document.getElementById("resetCameraBtn");
+    if (resetButton) resetButton.addEventListener("click", resetCamera);
 }
-
-
-// ==========================================================
-// RESIZE
-// ==========================================================
 
 function resizeThreeViewer() {
-
-
-    const container =
-        document.getElementById(
-            "threeContainer"
-        );
-
-
-    if (
-        !container ||
-        !camera ||
-        !renderer
-    ) {
-
-        return;
-
-    }
-
-
-    const width =
-        container.clientWidth;
-
-
-    const height =
-        container.clientHeight;
-
-
-    if (
-        width === 0 ||
-        height === 0
-    ) {
-
-        return;
-
-    }
-
-
-    camera.aspect =
-        width / height;
-
-
+    const container = document.getElementById("threeContainer");
+    if (!container || !camera || !renderer) return;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    if (width === 0 || height === 0) return;
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
-
-
-    renderer.setSize(
-
-        width,
-
-        height
-
-    );
-
+    renderer.setSize(width, height);
 }
 
-
-// ==========================================================
-// UPDATE STATUS
-// ==========================================================
+function showLoadingOverlay(visible) {
+    const overlay = document.getElementById("loadingOverlay");
+    if (overlay) overlay.style.opacity = visible ? "1" : "0";
+    if (overlay) overlay.style.pointerEvents = visible ? "auto" : "none";
+}
 
 function updateThreeStatus(message) {
-
-
-    const status =
-        document.getElementById(
-            "threeStatus"
-        );
-
-
-    if (status) {
-
-        status.textContent =
-            message;
-
-    }
-
-
-    console.log(
-        "3D Status:",
-        message
-    );
-
+    const status = document.getElementById("threeStatus");
+    if (status) status.textContent = message;
+    console.log("3D Status:", message);
 }
 
-
-// ==========================================================
-// CLEANUP
-// ==========================================================
-
-window.addEventListener(
-
-    "beforeunload",
-
-    () => {
-
-        if (animationId) {
-
-            cancelAnimationFrame(
-                animationId
-            );
-
-        }
-
-    }
-
-);
+window.addEventListener("beforeunload", () => {
+    if (animationId) cancelAnimationFrame(animationId);
+});
