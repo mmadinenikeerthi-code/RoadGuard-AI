@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>RoadGuard Navigation</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #08101f;
+            color: white;
+            overflow: hidden;
+        }
+
+        .navigation {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 370px;
+            background: #101827;
+            border-right: 1px solid #25314a;
+            padding: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .back-button {
+            border: none;
+            background: #1b263a;
+            color: white;
+            padding: 11px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            margin-bottom: 22px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #93a4c5;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .location-status {
+            background: #14213a;
+            border: 1px solid #2d4167;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 18px;
+        }
+
+        .status {
+            color: #55e69a;
+            font-size: 13px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 13px;
+            border-radius: 9px;
+            border: 1px solid #34425f;
+            background: #0b1424;
+            color: white;
+            outline: none;
+        }
+
+        .search-box button {
+            background: #4e9cff;
+            color: white;
+            border: none;
+            border-radius: 9px;
+            padding: 0 16px;
+            cursor: pointer;
+        }
+
+        .location-button {
+            width: 100%;
+            padding: 12px;
+            background: #17243a;
+            border: 1px solid #314463;
+            color: white;
+            border-radius: 9px;
+            cursor: pointer;
+            margin-bottom: 18px;
+        }
+
+        .route-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 20px 0 10px;
+        }
+
+        .route-card {
+            background: #131f33;
+            border: 1px solid #283954;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .route-card:hover {
+            border-color: #4e9cff;
+        }
+
+        .route-card.selected {
+            border: 2px solid #4e9cff;
+            background: #172a48;
+        }
+
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .route-name {
+            font-weight: 700;
+        }
+
+        .route-eta {
+            color: #55e69a;
+            font-weight: 700;
+        }
+
+        .route-info {
+            color: #9aabc8;
+            font-size: 13px;
+        }
+
+        .destination {
+            margin-top: 15px;
+            padding: 12px;
+            background: #0d1728;
+            border-radius: 9px;
+            font-size: 13px;
+            color: #b8c5da;
+        }
+
+        #map {
+            flex: 1;
+            height: 100vh;
+        }
+
+        .leaflet-container {
+            background: #101827;
+        }
+
+        .legend {
+            position: absolute;
+            right: 25px;
+            bottom: 25px;
+            z-index: 1000;
+            background: rgba(12, 21, 36, .95);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #2c3d59;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            margin: 5px 0;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="navigation">
+
+    <aside class="sidebar">
+
+        <button
+            class="back-button"
+            onclick="goBack()"
+        >
+            ← Back to Dashboard
+        </button>
+
+        <div class="title">
+            RoadGuard Navigation
+        </div>
+
+        <div class="subtitle">
+            AI-powered road navigation & pothole-aware routing
+        </div>
+
+        <div class="location-status">
+
+            <div>
+                Current Location
+            </div>
+
+            <div
+                id="locationStatus"
+                class="status"
+            >
+                Detecting location...
+            </div>
+
+        </div>
+
+
+        <button
+            class="location-button"
+            onclick="locateUser()"
+        >
+            ◎ Use My Current Location
+        </button>
+
+
+        <div class="search-box">
+
+            <input
+                id="destinationInput"
+                type="text"
+                placeholder="Search destination..."
+            >
+
+            <button
+                onclick="searchDestination()"
+            >
+                Search
+            </button>
+
+        </div>
+
+
+        <div id="destinationInfo"></div>
+
+
+        <div class="route-title">
+            Available Routes
+        </div>
+
+        <div id="routes">
+
+            <div style="color:#8192ad;font-size:13px;">
+                Select a destination to calculate routes.
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <main id="map"></main>
+
+</div>
+
+
+<div class="legend">
+
+    <div class="legend-item">
+        🔵 Current location
+    </div>
+
+    <div class="legend-item">
+        📍 Destination
+    </div>
+
+    <div class="legend-item">
+        🕳️ RoadGuard pothole
+    </div>
+
+</div>
+
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+<script>
+
+let map;
+
+let currentLocation = null;
+
+let currentMarker = null;
+
+let destinationMarker = null;
+
+let routeLayers = [];
+
+let selectedRoute = null;
+
+
+// ----------------------------------------------------------
+// INITIALIZE MAP
+// ----------------------------------------------------------
+
+map = L.map("map").setView(
+    [12.9716, 77.5946],
+    13
+);
+
+
+// ----------------------------------------------------------
+// OPENSTREETMAP TILE LAYER
+// ----------------------------------------------------------
+
+L.tileLayer(
+    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 19,
+        attribution:
+            '&copy; OpenStreetMap contributors'
+    }
+).addTo(map);
+
+
+// ----------------------------------------------------------
+// LIVE LOCATION
+// ----------------------------------------------------------
+
+function locateUser() {
+
+    if (!navigator.geolocation) {
+
+        document.getElementById(
+            "locationStatus"
+        ).innerText =
+            "Geolocation is not supported.";
+
+        return;
+    }
+
+    document.getElementById(
+        "locationStatus"
+    ).innerText =
+        "Requesting GPS permission...";
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            currentLocation = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+            };
+
+            showCurrentLocation();
+
+        },
+
+        function(error) {
+
+            document.getElementById(
+                "locationStatus"
+            ).innerText =
+                "Location permission unavailable.";
+
+            console.error(error);
+
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 5000
+        }
+
+    );
+}
+
+
+// ----------------------------------------------------------
+// SHOW CURRENT LOCATION
+// ----------------------------------------------------------
+
+function showCurrentLocation() {
+
+    if (!currentLocation) {
+        return;
+    }
+
+    if (currentMarker) {
+
+        currentMarker.setLatLng([
+            currentLocation.lat,
+            currentLocation.lon
+        ]);
+
+    } else {
+
+        currentMarker = L.marker([
+            currentLocation.lat,
+            currentLocation.lon
+        ])
+        .addTo(map)
+        .bindPopup(
+            "Your current location"
+        );
+
+    }
+
+    map.setView(
+        [
+            currentLocation.lat,
+            currentLocation.lon
+        ],
+        15
+    );
+
+    document.getElementById(
+        "locationStatus"
+    ).innerText =
+        "Live location active";
+
+
+    // Watch movement
+
+    navigator.geolocation.watchPosition(
+
+        function(position) {
+
+            currentLocation = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+            };
+
+            if (currentMarker) {
+
+                currentMarker.setLatLng([
+                    currentLocation.lat,
+                    currentLocation.lon
+                ]);
+
+            }
+
+        },
+
+        function(error) {
+            console.error(error);
+        },
+
+        {
+            enableHighAccuracy: true,
+            maximumAge: 3000,
+            timeout: 10000
+        }
+
+    );
+}
+
+
+// ----------------------------------------------------------
+// DESTINATION SEARCH
+// ----------------------------------------------------------
+
+async function searchDestination() {
+
+    const query =
+        document.getElementById(
+            "destinationInput"
+        ).value.trim();
+
+
+    if (!query) {
+
+        alert(
+            "Enter a destination."
+        );
+
+        return;
+    }
+
+
+    if (!currentLocation) {
+
+        alert(
+            "First enable your current location."
+        );
+
+        locateUser();
+
+        return;
+    }
+
+
+    try {
+
+        document.getElementById(
+            "destinationInfo"
+        ).innerText =
+            "Finding destination...";
+
+
+        const url =
+            "https://nominatim.openstreetmap.org/search" +
+            "?format=jsonv2" +
+            "&limit=1" +
+            "&q=" +
+            encodeURIComponent(query);
+
+
+        const response =
+            await fetch(url);
+
+
+        const results =
+            await response.json();
+
+
+        if (!results.length) {
+
+            document.getElementById(
+                "destinationInfo"
+            ).innerText =
+                "Destination not found.";
+
+            return;
+        }
+
+
+        const destination = {
+
+            lat:
+                parseFloat(
+                    results[0].lat
+                ),
+
+            lon:
+                parseFloat(
+                    results[0].lon
+                ),
+
+            name:
+                results[0].display_name
+
+        };
+
+
+        showDestination(
+            destination
+        );
+
+
+        await calculateRoutes(
+            destination
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        document.getElementById(
+            "destinationInfo"
+        ).innerText =
+            "Destination search failed.";
+
+    }
+}
+
+
+// ----------------------------------------------------------
+// SHOW DESTINATION
+// ----------------------------------------------------------
+
+function showDestination(
+    destination
+) {
+
+    if (destinationMarker) {
+
+        map.removeLayer(
+            destinationMarker
+        );
+
+    }
+
+
+    destinationMarker =
+        L.marker([
+            destination.lat,
+            destination.lon
+        ])
+        .addTo(map)
+        .bindPopup(
+            destination.name
+        )
+        .openPopup();
+
+
+    document.getElementById(
+        "destinationInfo"
+    ).innerText =
+        destination.name;
+
+}
+
+
+// ----------------------------------------------------------
+// CALCULATE ROUTES
+// ----------------------------------------------------------
+
+async function calculateRoutes(
+    destination
+) {
+
+    const routesContainer =
+        document.getElementById(
+            "routes"
+        );
+
+
+    routesContainer.innerHTML =
+        `<div style="color:#8192ad">
+            Calculating routes...
+        </div>`;
+
+
+    clearRoutes();
+
+
+    const url =
+        `/api/routing/route` +
+        `?start_lat=${currentLocation.lat}` +
+        `&start_lon=${currentLocation.lon}` +
+        `&end_lat=${destination.lat}` +
+        `&end_lon=${destination.lon}` +
+        `&alternatives=true`;
+
+
+    try {
+
+        const response =
+            await fetch(url);
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Routing failed"
+            );
+
+        }
+
+
+        renderRoutes(
+            data.routes
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        routesContainer.innerHTML =
+            `<div style="color:#ff7777">
+                ${error.message}
+            </div>`;
+
+    }
+
+}
+
+
+// ----------------------------------------------------------
+// RENDER ROUTES
+// ----------------------------------------------------------
+
+function renderRoutes(
+    routes
+) {
+
+    const container =
+        document.getElementById(
+            "routes"
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (!routes.length) {
+
+        container.innerHTML =
+            `<div style="color:#ff7777">
+                No route available.
+            </div>`;
+
+        return;
+    }
+
+
+    routes.forEach(
+        (route, index) => {
+
+            const minutes =
+                Math.round(
+                    route.duration_seconds /
+                    60
+                );
+
+
+            const km =
+                (
+                    route.distance_meters /
+                    1000
+                ).toFixed(1);
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "route-card";
+
+
+            card.innerHTML = `
+
+                <div class="route-header">
+
+                    <div class="route-name">
+                        ${
+                            index === 0
+                            ? "Recommended route"
+                            : "Alternative route " +
+                              index
+                        }
+                    </div>
+
+                    <div class="route-eta">
+                        ${minutes} min
+                    </div>
+
+                </div>
+
+                <div class="route-info">
+                    ${km} km
+                    &nbsp; • &nbsp;
+                    ${minutes} min
+                </div>
+
+            `;
+
+
+            card.onclick =
+                function() {
+
+                    selectRoute(
+                        route,
+                        card
+                    );
+
+                };
+
+
+            container.appendChild(
+                card
+            );
+
+
+            drawRoute(
+                route,
+                index
+            );
+
+        }
+    );
+
+
+    // Select first route
+
+    const first =
+        container.querySelector(
+            ".route-card"
+        );
+
+
+    if (first) {
+
+        selectRoute(
+            routes[0],
+            first
+        );
+
+    }
+
+}
+
+
+// ----------------------------------------------------------
+// DRAW ROUTE
+// ----------------------------------------------------------
+
+function drawRoute(
+    route,
+    index
+) {
+
+    const coordinates =
+        route.geometry.coordinates;
+
+
+    const latLngs =
+        coordinates.map(
+            coordinate => [
+                coordinate[1],
+                coordinate[0]
+            ]
+        );
+
+
+    const line =
+        L.polyline(
+            latLngs,
+            {
+                weight:
+                    index === 0
+                    ? 7
+                    : 4,
+
+                opacity:
+                    index === 0
+                    ? 0.95
+                    : 0.55
+            }
+        )
+        .addTo(map);
+
+
+    routeLayers.push(
+        line
+    );
+
+}
+
+
+// ----------------------------------------------------------
+// SELECT ROUTE
+// ----------------------------------------------------------
+
+function selectRoute(
+    route,
+    card
+) {
+
+    document
+        .querySelectorAll(
+            ".route-card"
+        )
+        .forEach(
+            element =>
+                element.classList.remove(
+                    "selected"
+                )
+        );
+
+
+    card.classList.add(
+        "selected"
+    );
+
+
+    selectedRoute =
+        route;
+
+
+    routeLayers.forEach(
+        (layer, index) => {
+
+            layer.setStyle({
+
+                weight:
+                    index === 0
+                    ? 8
+                    : 4,
+
+                opacity:
+                    index === 0
+                    ? 1
+                    : 0.45
+
+            });
+
+        }
+    );
+
+
+    const bounds =
+        L.geoJSON(
+            route.geometry
+        ).getBounds();
+
+
+    map.fitBounds(
+        bounds,
+        {
+            padding: [
+                50,
+                50
+            ]
+        }
+    );
+
+}
+
+
+// ----------------------------------------------------------
+// CLEAR ROUTES
+// ----------------------------------------------------------
+
+function clearRoutes() {
+
+    routeLayers.forEach(
+        layer => {
+
+            map.removeLayer(
+                layer
+            );
+
+        }
+    );
+
+
+    routeLayers = [];
+
+}
+
+
+// ----------------------------------------------------------
+// BACK TO DASHBOARD
+// ----------------------------------------------------------
+
+function goBack() {
+
+    window.location.href =
+        "/";
+
+}
+
+
+// ----------------------------------------------------------
+// START GPS
+// ----------------------------------------------------------
+
+locateUser();
+
+</script>
+
+</body>
+
+</html>

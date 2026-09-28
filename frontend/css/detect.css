@@ -1,0 +1,838 @@
+/* ==========================================================
+   ROADGUARD AI - DETECTION PAGE STYLESHEET
+   ----------------------------------------------------------
+   frontend/detect.html links css/detect.css, but the file was
+   missing from the repository, so the detection page rendered
+   unstyled. This stylesheet only covers the classes that are
+   specific to the detection page - the shared look and feel
+   still comes from css/style.css (loaded first).
+   ========================================================== */
+
+
+/* ==========================================================
+   PAGE HEADING
+   ========================================================== */
+
+.page-heading {
+
+    text-align: center;
+
+    margin-bottom: 2rem;
+
+}
+
+.page-heading h2 {
+
+    font-size: 2rem;
+
+    font-weight: 700;
+
+    color: var(--secondary);
+
+    margin-bottom: 0.5rem;
+
+}
+
+.page-heading p {
+
+    color: var(--text-light);
+
+    max-width: 640px;
+
+    margin: 0 auto;
+
+    line-height: 1.6;
+
+}
+
+
+/* ==========================================================
+   DETECTION MODE SELECTOR
+   ========================================================== */
+
+.mode-section {
+
+    margin-bottom: 1.75rem;
+
+}
+
+.mode-tabs {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 0.75rem;
+
+    justify-content: center;
+
+}
+
+.mode-btn {
+
+    display: inline-flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 0.35rem;
+
+    min-width: 160px;
+
+    padding: 1rem 1.5rem;
+
+    font-family: inherit;
+
+    font-size: 0.95rem;
+
+    font-weight: 600;
+
+    color: var(--text);
+
+    background: var(--card);
+
+    border: 2px solid var(--border);
+
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-sm);
+
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+
+}
+
+.mode-btn:hover {
+
+    border-color: var(--primary);
+
+    transform: translateY(-2px);
+
+    box-shadow: var(--shadow-md);
+
+}
+
+.mode-btn.active {
+
+    color: #ffffff;
+
+    background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-dark)
+    );
+
+    border-color: var(--primary-dark);
+
+    box-shadow: var(--shadow-md);
+
+}
+
+.mode-btn span {
+
+    font-size: 0.9rem;
+
+}
+
+
+/* ==========================================================
+   PANEL / CARD
+   ========================================================== */
+
+.detection-panel {
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-sm);
+
+    padding: 1.75rem;
+
+    margin-bottom: 1.75rem;
+
+}
+
+.panel-header {
+
+    margin-bottom: 1.25rem;
+
+    text-align: center;
+
+}
+
+.panel-header h3 {
+
+    font-size: 1.25rem;
+
+    font-weight: 700;
+
+    color: var(--secondary);
+
+    margin-bottom: 0.35rem;
+
+}
+
+.panel-header p {
+
+    color: var(--text-light);
+
+    font-size: 0.925rem;
+
+    line-height: 1.55;
+
+}
+
+
+/* ==========================================================
+   UPLOAD ZONE
+   ========================================================== */
+
+.upload-zone {
+
+    border: 2px dashed var(--border);
+
+    border-radius: var(--radius-md);
+
+    background: var(--background);
+
+    padding: 2.25rem 1.5rem;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+
+    border-color: var(--primary);
+
+    background: var(--primary-light);
+
+}
+
+.upload-content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 0.6rem;
+
+}
+
+.upload-icon {
+
+    font-size: 2.75rem;
+
+    line-height: 1;
+
+}
+
+.upload-content h3 {
+
+    font-size: 1.1rem;
+
+    font-weight: 600;
+
+    color: var(--secondary);
+
+}
+
+.upload-content p {
+
+    color: var(--text-light);
+
+    font-size: 0.85rem;
+
+    letter-spacing: 0.02em;
+
+}
+
+
+/* ==========================================================
+   PREVIEW (image / video)
+   ========================================================== */
+
+.preview-container {
+
+    margin-top: 1.25rem;
+
+    text-align: center;
+
+}
+
+.preview-container img,
+.preview-container video {
+
+    max-width: 100%;
+
+    max-height: 420px;
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-sm);
+
+}
+
+
+/* ==========================================================
+   BUTTONS USED BY THIS PAGE
+   ========================================================== */
+
+.detect-btn {
+
+    display: block;
+
+    width: 100%;
+
+    max-width: 420px;
+
+    margin: 1.5rem auto 0;
+
+    padding: 0.875rem 1.5rem;
+
+    font-size: 1rem;
+
+}
+
+.camera-controls {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 0.75rem;
+
+    justify-content: center;
+
+    margin-top: 1.25rem;
+
+}
+
+.small-btn {
+
+    padding: 0.4rem 0.9rem;
+
+    font-size: 0.8rem;
+
+}
+
+
+/* ==========================================================
+   LIVE CAMERA
+   ========================================================== */
+
+.camera-wrapper {
+
+    position: relative;
+
+    width: 100%;
+
+    max-width: 780px;
+
+    margin: 0 auto;
+
+    aspect-ratio: 16 / 9;
+
+    overflow: hidden;
+
+    background: #0f172a;
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-md);
+
+}
+
+.camera-wrapper video {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+}
+
+.camera-placeholder {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 0.5rem;
+
+    font-size: 2rem;
+
+    color: #94a3b8;
+
+    background: #0f172a;
+
+}
+
+.camera-placeholder p {
+
+    font-size: 0.9rem;
+
+}
+
+.recording-status {
+
+    margin-top: 1rem;
+
+    text-align: center;
+
+    font-size: 0.9rem;
+
+    font-weight: 600;
+
+    color: var(--text-light);
+
+}
+
+.recording-status.recording {
+
+    color: var(--danger);
+
+}
+
+.recording-status.recording::before {
+
+    content: "● ";
+
+    animation: roadguard-pulse 1s ease-in-out infinite;
+
+}
+
+@keyframes roadguard-pulse {
+
+    0%, 100% { opacity: 1; }
+
+    50%      { opacity: 0.3; }
+
+}
+
+
+/* ==========================================================
+   CAPTURED MEDIA
+   ========================================================== */
+
+.captured-section {
+
+    margin-top: 1.75rem;
+
+}
+
+.captured-section h3 {
+
+    font-size: 1.05rem;
+
+    font-weight: 600;
+
+    color: var(--secondary);
+
+    margin-bottom: 0.75rem;
+
+}
+
+.captured-gallery {
+
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(140px, 1fr)
+    );
+
+    gap: 0.75rem;
+
+}
+
+.captured-gallery img {
+
+    width: 100%;
+
+    height: 110px;
+
+    object-fit: cover;
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-sm);
+
+    box-shadow: var(--shadow-sm);
+
+}
+
+.captured-section video {
+
+    width: 100%;
+
+    max-height: 360px;
+
+    border-radius: var(--radius-md);
+
+    margin-bottom: 1rem;
+
+}
+
+
+/* ==========================================================
+   PROCESSING INDICATOR
+   ========================================================== */
+
+.processing-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 1.25rem;
+
+    padding: 1.5rem;
+
+    margin-bottom: 1.75rem;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-sm);
+
+}
+
+.processing-card h3 {
+
+    font-size: 1.05rem;
+
+    font-weight: 700;
+
+    color: var(--secondary);
+
+    margin-bottom: 0.25rem;
+
+}
+
+.processing-card p {
+
+    color: var(--text-light);
+
+    font-size: 0.9rem;
+
+}
+
+.loader {
+
+    flex: 0 0 auto;
+
+    width: 38px;
+
+    height: 38px;
+
+    border: 4px solid var(--border);
+
+    border-top-color: var(--primary);
+
+    border-radius: 50%;
+
+    animation: roadguard-spin 0.8s linear infinite;
+
+}
+
+@keyframes roadguard-spin {
+
+    to { transform: rotate(360deg); }
+
+}
+
+
+/* ==========================================================
+   CAPTURED IMAGE CARD (built by js/detect.js)
+   ========================================================== */
+
+.captured-image-card {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.5rem;
+
+    padding: 0.5rem;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-sm);
+
+    box-shadow: var(--shadow-sm);
+
+}
+
+.captured-image-card img {
+
+    height: 110px;
+
+    object-fit: cover;
+
+    border-radius: var(--radius-sm);
+
+}
+
+
+/* ==========================================================
+   RESULTS
+   ========================================================== */
+
+.results-section {
+
+    margin-bottom: 2rem;
+
+}
+
+.results-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    margin-bottom: 1rem;
+
+}
+
+.results-header h2 {
+
+    font-size: 1.35rem;
+
+    font-weight: 700;
+
+    color: var(--secondary);
+
+}
+
+.result-card {
+
+    padding: 1.5rem;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-sm);
+
+}
+
+.empty-result {
+
+    text-align: center;
+
+    padding: 3rem 1.5rem;
+
+    border-style: dashed;
+
+}
+
+.empty-icon {
+
+    font-size: 3rem;
+
+    line-height: 1;
+
+    margin-bottom: 0.75rem;
+
+}
+
+.empty-result h3 {
+
+    font-size: 1.1rem;
+
+    font-weight: 700;
+
+    color: var(--secondary);
+
+    margin-bottom: 0.35rem;
+
+}
+
+.empty-result p {
+
+    color: var(--text-light);
+
+    font-size: 0.925rem;
+
+}
+
+.result-success {
+
+    padding: 1rem 1.25rem;
+
+    margin-bottom: 1rem;
+
+    background: var(--success-light);
+
+    border-left: 4px solid var(--success);
+
+    border-radius: var(--radius-sm);
+
+}
+
+.result-success h3 {
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    color: var(--success);
+
+    margin-bottom: 0.25rem;
+
+}
+
+.result-success p {
+
+    color: var(--text);
+
+    font-size: 0.9rem;
+
+}
+
+.result-error {
+
+    padding: 1rem 1.25rem;
+
+    background: var(--danger-light);
+
+    border-left: 4px solid var(--danger);
+
+    border-radius: var(--radius-sm);
+
+}
+
+.result-error h3 {
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    color: var(--danger);
+
+    margin-bottom: 0.25rem;
+
+}
+
+.result-error p {
+
+    color: var(--text);
+
+    font-size: 0.9rem;
+
+}
+
+.result-json {
+
+    max-height: 420px;
+
+    overflow: auto;
+
+    padding: 1rem;
+
+    font-family: "Consolas", "Monaco", monospace;
+
+    font-size: 0.8rem;
+
+    line-height: 1.55;
+
+    color: #e2e8f0;
+
+    background: var(--secondary);
+
+    border-radius: var(--radius-md);
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 640px) {
+
+    .page-heading h2 {
+
+        font-size: 1.5rem;
+
+    }
+
+    .mode-btn {
+
+        flex: 1 1 100%;
+
+        flex-direction: row;
+
+        gap: 0.5rem;
+
+    }
+
+    .detection-panel {
+
+        padding: 1.25rem;
+
+    }
+
+    .processing-card {
+
+        flex-direction: column;
+
+        text-align: center;
+
+    }
+
+    .results-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+}
+
+

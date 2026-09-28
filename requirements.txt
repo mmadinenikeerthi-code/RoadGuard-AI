@@ -1,0 +1,45 @@
+# ==========================================================
+# ROADGUARD AI - PYTHON DEPENDENCIES
+# ==========================================================
+# Use a STABLE Python release (3.10 / 3.11). Alpha builds such
+# as 3.10.0a3 cannot install several of these wheels.
+#
+#   python -m pip install -r requirements.txt
+# ==========================================================
+
+# ----------------------------------------
+# Backend API (FastAPI)
+# ----------------------------------------
+fastapi
+uvicorn[standard]
+
+# Required for UploadFile / File / Form (multipart/form-data)
+python-multipart
+
+# Database (SQLite via SQLAlchemy)
+sqlalchemy
+
+# Request / response validation
+pydantic
+
+# Renders frontend/templates/*.html
+jinja2
+
+# Async file serving (StaticFiles / FileResponse)
+aiofiles
+
+# OSRM routing proxy (backend/routers/routing.py)
+httpx
+
+# ----------------------------------------
+# AI / Computer Vision
+# ----------------------------------------
+ultralytics
+opencv-python-headless
+numpy
+Pillow
+
+# ----------------------------------------
+# Streamlit demo app (app.py)
+# ----------------------------------------
+streamlit

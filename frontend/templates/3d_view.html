@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>RoadGuard AI | 3D Road Inspection</title>
+
+    <!-- ==================================================
+         SHARED DARK SHELL (sidebar / topbar / content)
+    =================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="/static/css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/static/css/roadguard-3d.css"
+    >
+
+</head>
+
+
+<body>
+
+<!-- =====================================================
+     ROADGUARD AI - UNIFIED DARK APPLICATION SHELL
+====================================================== -->
+
+<div class="app">
+
+
+    <!-- =================================================
+         SIDEBAR
+    ================================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                RG
+            </div>
+
+            <div class="brand-text">
+
+                <div class="brand-name">
+                    RoadGuard AI
+                </div>
+
+                <div class="brand-subtitle">
+                    Smart Road Intelligence
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <nav class="navigation">
+
+            <a href="/" class="nav-item">
+                <span class="nav-icon">&#9673;</span>
+                <span class="nav-label">Dashboard</span>
+            </a>
+
+            <a href="/detect" class="nav-item">
+                <span class="nav-icon">&#9635;</span>
+                <span class="nav-label">AI Detection</span>
+            </a>
+
+            <a href="/3d?report_id=21" class="nav-item active">
+                <span class="nav-icon">&#9671;</span>
+                <span class="nav-label">3D Road View</span>
+            </a>
+
+            <a href="/analytics" class="nav-item">
+                <span class="nav-icon">&#8961;</span>
+                <span class="nav-label">Analytics</span>
+            </a>
+
+            <a href="/reports" class="nav-item">
+                <span class="nav-icon">&#9636;</span>
+                <span class="nav-label">Reports</span>
+            </a>
+
+            <a href="/map" class="nav-item">
+                <span class="nav-icon">&#8982;</span>
+                <span class="nav-label">Map &amp; Hotspots</span>
+            </a>
+
+        </nav>
+
+
+        <div class="system-status">
+
+            <span class="status-dot"></span>
+
+            <span class="status-text">AI System Online</span>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =================================================
+         MAIN
+    ================================================== -->
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <div class="topbar-title">
+
+                    <h1>3D Road View</h1>
+
+                    <p>
+
+                        <span class="topbar-brand">RoadGuard AI</span>
+
+                        &middot;
+
+                        AI-Powered Pothole Detection &amp; Road Monitoring
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="topbar-actions">
+
+                <div class="topbar-status">
+
+                    <span class="status-dot"></span>
+
+                    <span>AI System Online</span>
+
+                </div>
+
+                <button
+                    id="focusAllBtn"
+                    class="primary-button"
+                    type="button"
+                >
+                    &#9678; Focus Detections
+                </button>
+
+            </div>
+
+        </header>
+
+
+
+
+
+        <!-- ==================================================
+             CONTENT
+        =================================================== -->
+
+        <section class="content">
+
+
+            <!-- PAGE TITLE -->
+
+            <div class="page-title">
+
+                <div>
+
+                    <h2>
+                        Interactive Road Digital Twin
+                    </h2>
+
+                    <p>
+                        Inspect AI-detected road defects
+                        in a spatial 3D environment.
+                    </p>
+
+                </div>
+
+
+                <div class="scene-status">
+
+                    <span class="live-dot"></span>
+
+                    LIVE INSPECTION
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 VIEWER GRID
+            =================================================== -->
+
+            <div class="viewer-grid">
+
+
+                <!-- ==================================================
+                     3D VIEW
+                =================================================== -->
+
+                <section class="viewer-card">
+
+
+                    <div class="viewer-header">
+
+                        <div>
+
+                            <span class="viewer-title">
+                                3D Road Environment
+                            </span>
+
+                            <span class="viewer-description">
+                                Digital inspection scene
+                            </span>
+
+                        </div>
+
+
+                        <div class="camera-buttons">
+
+                            <button
+                                id="perspectiveBtn"
+                                type="button"
+                            >
+                                Perspective
+                            </button>
+
+
+                            <button
+                                id="topBtn"
+                                type="button"
+                            >
+                                Top
+                            </button>
+
+
+                            <button
+                                id="resetBtn"
+                                type="button"
+                            >
+                                Reset
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- THREE.JS CONTAINER -->
+
+                    <div
+                        id="three-container"
+                        class="three-container"
+                    >
+
+                        <div
+                            id="loading"
+                            class="loading"
+                        >
+
+                            <div class="loading-spinner"></div>
+
+                            Initializing 3D inspection...
+
+                        </div>
+
+
+                        <div class="scene-label">
+                            ROADGUARD AI · DIGITAL TWIN
+                        </div>
+
+
+                        <div class="interaction-hint">
+                            Drag to rotate · Scroll to zoom ·
+                            Click a pothole
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     RIGHT ANALYSIS PANEL
+                =================================================== -->
+
+                <aside class="analysis-column">
+
+
+                    <!-- ==================================================
+                         SUMMARY
+                    =================================================== -->
+
+                    <section class="panel">
+
+                        <div class="panel-title">
+                            Detection Analysis
+                        </div>
+
+
+                        <div class="metric">
+
+                            <span>
+                                Total Potholes
+                            </span>
+
+                            <strong id="totalPotholes">
+                                0
+                            </strong>
+
+                        </div>
+
+
+                        <div class="metric">
+
+                            <span>
+                                Selected Object
+                            </span>
+
+                            <strong id="selectedObject">
+                                None
+                            </strong>
+
+                        </div>
+
+
+                        <div class="metric">
+
+                            <span>
+                                Average Confidence
+                            </span>
+
+                            <strong id="confidence">
+                                --
+                            </strong>
+
+                        </div>
+
+
+                        <div class="metric">
+
+                            <span>
+                                Road Condition
+                            </span>
+
+                            <strong
+                                id="roadCondition"
+                                class="condition"
+                            >
+                                --
+                            </strong>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- ==================================================
+                         SELECTED POTHOLE
+                    =================================================== -->
+
+                    <section class="panel selected-panel">
+
+                        <div class="panel-title">
+                            Selected Pothole
+                        </div>
+
+
+                        <!-- EMPTY STATE -->
+
+                        <div
+                            id="noSelection"
+                            class="no-selection"
+                        >
+
+                            <div class="selection-icon">
+                                ◇
+                            </div>
+
+
+                            <strong>
+                                Select a pothole
+                            </strong>
+
+
+                            <p>
+                                Click a detected road defect
+                                in the 3D environment to
+                                inspect its details.
+                            </p>
+
+                        </div>
+
+
+                        <!-- DETAILS -->
+
+                        <div
+                            id="potholeDetails"
+                            class="pothole-details hidden"
+                        >
+
+                            <div class="pothole-heading">
+
+                                <div>
+
+                                    <span class="small-label">
+                                        DETECTION
+                                    </span>
+
+                                    <h3 id="detailId">
+                                        P-001
+                                    </h3>
+
+                                </div>
+
+
+                                <span
+                                    id="detailSeverity"
+                                    class="severity-badge"
+                                >
+                                    HIGH
+                                </span>
+
+                            </div>
+
+
+                            <div class="detail-row">
+
+                                <span>
+                                    AI Confidence
+                                </span>
+
+                                <strong id="detailConfidence">
+                                    --
+                                </strong>
+
+                            </div>
+
+
+                            <div class="detail-row">
+
+                                <span>
+                                    Estimated Width
+                                </span>
+
+                                <strong id="detailWidth">
+                                    --
+                                </strong>
+
+                            </div>
+
+
+                            <div class="detail-row">
+
+                                <span>
+                                    Estimated Depth
+                                </span>
+
+                                <strong id="detailDepth">
+                                    --
+                                </strong>
+
+                            </div>
+
+
+                            <div class="detail-row">
+
+                                <span>
+                                    Position
+                                </span>
+
+                                <strong id="detailPosition">
+                                    --
+                                </strong>
+
+                            </div>
+
+
+                            <div class="detail-row">
+
+                                <span>
+                                    Detection Status
+                                </span>
+
+                                <strong class="verified">
+                                    VERIFIED BY AI
+                                </strong>
+
+                            </div>
+
+
+                            <button
+                                id="focusSelectedBtn"
+                                class="focus-button"
+                                type="button"
+                            >
+                                ◎ Focus Selected Pothole
+                            </button>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- ==================================================
+                         INSPECTION CONTROLS
+                    =================================================== -->
+
+                    <section class="panel">
+
+                        <div class="panel-title">
+                            Inspection Controls
+                        </div>
+
+
+                        <div class="control-row">
+
+                            <span class="control-icon">
+                                ↻
+                            </span>
+
+                            <span>
+                                Drag
+                            </span>
+
+                            <small>
+                                Rotate
+                            </small>
+
+                        </div>
+
+
+                        <div class="control-row">
+
+                            <span class="control-icon">
+                                ⌕
+                            </span>
+
+                            <span>
+                                Scroll
+                            </span>
+
+                            <small>
+                                Zoom
+                            </small>
+
+                        </div>
+
+
+                        <div class="control-row">
+
+                            <span class="control-icon">
+                                ◈
+                            </span>
+
+                            <span>
+                                Click
+                            </span>
+
+                            <small>
+                                Inspect defect
+                            </small>
+
+                        </div>
+
+
+                        <div class="control-row">
+
+                            <span class="control-icon">
+                                ⊞
+                            </span>
+
+                            <span>
+                                Right Drag
+                            </span>
+
+                            <small>
+                                Pan scene
+                            </small>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- ==================================================
+                         LEGEND
+                    =================================================== -->
+
+                    <section class="panel">
+
+                        <div class="panel-title">
+                            Detection Legend
+                        </div>
+
+
+                        <div class="legend-item">
+
+                            <span class="legend-dot high"></span>
+
+                            High Severity
+
+                        </div>
+
+
+                        <div class="legend-item">
+
+                            <span class="legend-dot medium"></span>
+
+                            Moderate Severity
+
+                        </div>
+
+
+                        <div class="legend-item">
+
+                            <span class="legend-dot low"></span>
+
+                            Low Severity
+
+                        </div>
+
+                    </section>
+
+
+                </aside>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- ==========================================================
+     THREE.JS IMPORT MAP
+=========================================================== -->
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+}
+</script>
+
+
+<!-- ==========================================================
+     ROADGUARD 3D JAVASCRIPT
+=========================================================== -->
+
+<script type="module" src="/static/js/roadguard-3d.js?v=2"></script>
+
+</body>
+
+</html>
