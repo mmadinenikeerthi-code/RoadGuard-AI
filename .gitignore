@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+
+# Large ML model files
+*.pt
+*.pth
+*.onnx
+*.weights
+
+# Videos and large media
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Uploaded/generated files
+uploads/
+results/
+
+# Large datasets
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+
+# Python/build/cache
+.pytest_cache/
+.mypy_cache/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Inspection/tool-generated files
+.inspect/
+
+# Large ML/data files
+*.pt
+*.pth
+*.onnx
+*.weights
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.zip
+*.rar
+*.7z
+# Roboflow dataset
+Pothole detection.v2i.yolov8/
+
+Pothole detection.v2i.yolov8/
+
+# Backup files
+*.bak
