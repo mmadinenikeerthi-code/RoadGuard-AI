@@ -1,175 +1,511 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoadGuard AI - Historical Reports Log</title>
-    <link rel="stylesheet" href="css/style.css">
+
+    <title>
+        RoadGuard AI - Historical Reports Log
+    </title>
+
+
+    <!-- =====================================================
+         ROADGUARD SHARED STYLES
+    ====================================================== -->
+
+    <link rel="stylesheet" href="/frontend/css/style.css">
+
+
+    <!-- =====================================================
+         FONT AWESOME
+    ====================================================== -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
+
+
 <body>
 
-<!-- =====================================================
+
+    <!-- =========================================================
      ROADGUARD AI - UNIFIED DARK APPLICATION SHELL
-====================================================== -->
+========================================================= -->
 
-<div class="app">
+    <div class="app">
 
 
-    <!-- =================================================
+        <!-- =====================================================
          SIDEBAR
-    ================================================== -->
+    ====================================================== -->
 
-    <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar">
 
-        <div class="brand">
+            <!-- BRAND -->
 
-            <div class="brand-logo">
-                RG
-            </div>
+            <div class="brand">
 
-            <div class="brand-text">
-
-                <div class="brand-name">
-                    RoadGuard AI
+                <div class="brand-logo">
+                    RG
                 </div>
 
-                <div class="brand-subtitle">
-                    Smart Road Intelligence
+                <div class="brand-text">
+
+                    <div class="brand-name">
+                        RoadGuard AI
+                    </div>
+
+                    <div class="brand-subtitle">
+                        Smart Road Intelligence
+                    </div>
+
                 </div>
 
             </div>
 
-        </div>
+
+            <!-- =================================================
+             NAVIGATION
+        ================================================== -->
+
+            <nav class="navigation">
 
 
-        <nav class="navigation">
+                <!-- DASHBOARD -->
 
-            <a href="/" class="nav-item">
-                <span class="nav-icon">&#9673;</span>
-                <span class="nav-label">Dashboard</span>
-            </a>
+                <a href="/" class="nav-item">
 
-            <a href="/detect" class="nav-item">
-                <span class="nav-icon">&#9635;</span>
-                <span class="nav-label">AI Detection</span>
-            </a>
+                    <span class="nav-icon">
+                        &#9673;
+                    </span>
 
-            <a href="/3d?report_id=21" class="nav-item">
-                <span class="nav-icon">&#9671;</span>
-                <span class="nav-label">3D Road View</span>
-            </a>
+                    <span class="nav-label">
+                        Dashboard
+                    </span>
 
-            <a href="/analytics" class="nav-item">
-                <span class="nav-icon">&#8961;</span>
-                <span class="nav-label">Analytics</span>
-            </a>
-
-            <a href="/reports" class="nav-item active">
-                <span class="nav-icon">&#9636;</span>
-                <span class="nav-label">Reports</span>
-            </a>
-
-            <a href="/map" class="nav-item">
-                <span class="nav-icon">&#8982;</span>
-                <span class="nav-label">Map &amp; Hotspots</span>
-            </a>
-
-        </nav>
+                </a>
 
 
-        <div class="system-status">
+                <!-- AI DETECTION -->
 
-            <span class="status-dot"></span>
+                <a href="/detect" class="nav-item">
 
-            <span class="status-text">AI System Online</span>
+                    <span class="nav-icon">
+                        &#9635;
+                    </span>
 
-        </div>
+                    <span class="nav-label">
+                        AI Detection
+                    </span>
 
-    </aside>
+                </a>
 
 
-    <!-- =================================================
-         MAIN
-    ================================================== -->
+                <!-- 3D ROAD VIEW -->
 
-    <main class="main">
+                <a href="/3d-view?report_id=21" class="nav-item">
 
-        <header class="topbar">
+                    <span class="nav-icon">
+                        &#9671;
+                    </span>
 
-            <div class="topbar-left">
+                    <span class="nav-label">
+                        3D Road View
+                    </span>
 
-                <div class="topbar-title">
+                </a>
 
-                    <h1>Reports</h1>
 
-                    <p>
+                <!-- ANALYTICS -->
 
-                        <span class="topbar-brand">RoadGuard AI</span>
+                <a href="/analytics" class="nav-item">
 
-                        &middot;
+                    <span class="nav-icon">
+                        &#8961;
+                    </span>
 
-                        AI-Powered Pothole Detection &amp; Road Monitoring
+                    <span class="nav-label">
+                        Analytics
+                    </span>
 
+                </a>
+
+
+                <!-- REPORTS -->
+
+                <a href="/reports" class="nav-item active">
+
+                    <span class="nav-icon">
+                        &#9636;
+                    </span>
+
+                    <span class="nav-label">
+                        Reports
+                    </span>
+
+                </a>
+
+
+                <!-- MAP & HOTSPOTS -->
+
+                <a href="/map" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#8982;
+                    </span>
+
+                    <span class="nav-label">
+                        Map &amp; Hotspots
+                    </span>
+
+                </a>
+
+            </nav>
+
+
+            <!-- =================================================
+             SYSTEM STATUS
+        ================================================== -->
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <span class="status-text">
+                    AI System Online
+                </span>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================================
+             TOP BAR
+        ================================================== -->
+
+            <header class="topbar">
+
+                <div class="topbar-left">
+
+                    <div class="topbar-title">
+
+                        <h1>
+                            Reports
+                        </h1>
+
+                        <p>
+
+                            <span class="topbar-brand">
+                                RoadGuard AI
+                            </span>
+
+                            &middot;
+
+                            AI-Powered Pothole Detection
+                            &amp;
+                            Road Monitoring
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="topbar-actions">
+
+                    <div class="topbar-status">
+
+                        <span class="status-dot"></span>
+
+                        <span>
+                            AI System Online
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+             PAGE CONTENT
+        ================================================== -->
+
+            <div class="content">
+
+
+                <!-- =================================================
+                 PAGE HEADER
+            ================================================== -->
+
+                <div class="page-header">
+
+                    <h1 class="page-title">
+                        Reports Audit Register
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Historical records log of computer vision
+                        detection telemetries.
                     </p>
 
                 </div>
 
-            </div>
 
 
-            <div class="topbar-actions">
+                <!-- =================================================
+                 REPORTS TABLE
+            ================================================== -->
 
-                <div class="topbar-status">
+                <div class="data-table-container">
 
-                    <span class="status-dot"></span>
+                    <table class="data-table">
 
-                    <span>AI System Online</span>
+
+                        <!-- TABLE HEADER -->
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    ID
+                                </th>
+
+                                <th>
+                                    Type
+                                </th>
+
+                                <th>
+                                    Location Name
+                                </th>
+
+                                <th>
+                                    Coordinates
+                                </th>
+
+                                <th>
+                                    Potholes
+                                </th>
+
+                                <th>
+                                    Severity
+                                </th>
+
+                                <th>
+                                    Confidence
+                                </th>
+
+                                <th>
+                                    Created At
+                                </th>
+
+                                <th>
+                                    Actions
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <!-- =================================================
+                         REPORT DATA
+                         
+                         reports.js populates this from the
+                         RoadGuard AI backend.
+                    ================================================== -->
+
+                        <tbody id="reports-table-body">
+
+                            <tr>
+
+                                <td colspan="9" style="
+                                    text-align: center;
+                                    color: var(--text-muted);
+                                ">
+
+                                    <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+
+                                    &nbsp;
+
+                                    Fetching reports...
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+
+                    </table>
 
                 </div>
 
+
+
+                <!-- =================================================
+                 REPORT INFORMATION
+            ================================================== -->
+
+                <section class="card" style="margin-top: 24px;">
+
+                    <div class="section-header">
+
+                        <h2>
+                            <i class="fas fa-circle-info" aria-hidden="true"></i>
+
+                            Report Information
+                        </h2>
+
+                        <p>
+                            Reports displayed above are loaded from
+                            the RoadGuard AI backend.
+                        </p>
+
+                    </div>
+
+
+                    <div class="features">
+
+
+                        <!-- =================================================
+                         REPORT RECORDS
+                    ================================================== -->
+
+                        <div class="feature-card">
+
+                            <h3>
+                                <i class="fas fa-database" aria-hidden="true"></i>
+
+                                Historical Records
+                            </h3>
+
+                            <p>
+                                Each row represents a stored
+                                RoadGuard AI detection report.
+                            </p>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                         LOCATION
+                    ================================================== -->
+
+                        <div class="feature-card">
+
+                            <h3>
+                                <i class="fas fa-location-dot" aria-hidden="true"></i>
+
+                                Location Data
+                            </h3>
+
+                            <p>
+                                Stored latitude and longitude can be
+                                used to locate detected road damage
+                                on the map.
+                            </p>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                         AI RESULTS
+                    ================================================== -->
+
+                        <div class="feature-card">
+
+                            <h3>
+                                <i class="fas fa-brain" aria-hidden="true"></i>
+
+                                AI Detection Results
+                            </h3>
+
+                            <p>
+                                Pothole count, severity and confidence
+                                are displayed from the stored report.
+                            </p>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                         3D
+                    ================================================== -->
+
+                        <div class="feature-card">
+
+                            <h3>
+                                <i class="fas fa-cube" aria-hidden="true"></i>
+
+                                3D Reconstruction
+                            </h3>
+
+                            <p>
+                                A report can be opened in the real
+                                COLMAP-based 3D viewer when
+                                reconstruction data is available.
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+
             </div>
+            <!-- /.content -->
 
-        </header>
+
+        </main>
+        <!-- /.main -->
 
 
-        <div class="content">
-        <div class="page-header">
-            <h1 class="page-title">Reports Audit Register</h1>
-            <p class="page-subtitle">Historical records log of computer vision detection telemetries</p>
-        </div>
+    </div>
+    <!-- /.app -->
 
-        <div class="data-table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>Location Name</th>
-                        <th>Coordinates</th>
-                        <th>Potholes</th>
-                        <th>Severity</th>
-                        <th>Confidence</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="reports-table-body">
-                    <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">Fetching reports...</td></tr>
-                </tbody>
-            </table>
-        </div>
 
-        </div>
-        <!-- /.content -->
 
-    </main>
-    <!-- /.main -->
+    <!-- =========================================================
+     ROADGUARD API CLIENT
+========================================================= -->
 
-</div>
-<!-- /.app -->
+    <script src="/frontend/js/api.js"></script>
 
-    <script src="js/api.js"></script>
-    <script src="js/reports.js"></script>
+
+
+    <!-- =========================================================
+     REPORTS LOGIC
+     
+     Loads real report records from the backend and
+     populates #reports-table-body.
+========================================================= -->
+
+    <script src="/frontend/js/reports.js"></script>
+
+
 </body>
+
 </html>
