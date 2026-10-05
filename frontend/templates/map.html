@@ -2,29 +2,520 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>
-        RoadGuard AI - Live Pothole Map
-    </title>
+    <title>RoadGuard AI | Live Road Intelligence</title>
 
-
-    <!-- =====================================================
-         MAIN ROADGUARD CSS
-    ====================================================== -->
-
+    <!-- RoadGuard CSS -->
     <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/map.css">
 
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-    <!-- =====================================================
-         LEAFLET CSS
-    ====================================================== -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIINfQ3Yf8B5w1kQw9vJ6eJ5J6p6J6J6J6=" crossorigin="">
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background:
+                radial-gradient(circle at 10% 10%,
+                    rgba(34, 197, 94, 0.10),
+                    transparent 30%),
+                radial-gradient(circle at 90% 20%,
+                    rgba(59, 130, 246, 0.10),
+                    transparent 30%),
+                #07110d;
+            color: #f8fafc;
+        }
+
+        /* =====================================================
+           MAIN PAGE
+           ===================================================== */
+
+        .roadguard-map-page {
+            min-height: 100vh;
+            padding-bottom: 30px;
+        }
+
+        /* =====================================================
+           HEADER
+           ===================================================== */
+
+        .rg-header {
+            padding: 22px 30px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            background: rgba(7, 17, 13, 0.92);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+            backdrop-filter: blur(16px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(135deg,
+                    #22c55e,
+                    #16a34a);
+
+            box-shadow:
+                0 0 25px rgba(34, 197, 94, 0.35);
+
+            font-size: 22px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 22px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand p {
+            margin: 3px 0 0;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+
+            padding: 8px 13px;
+
+            border-radius: 30px;
+
+            background: rgba(34, 197, 94, 0.10);
+            border: 1px solid rgba(34, 197, 94, 0.30);
+
+            color: #86efac;
+            font-size: 12px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+
+            box-shadow:
+                0 0 10px #22c55e;
+
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.45;
+                transform: scale(0.75);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* =====================================================
+           TOOLBAR
+           ===================================================== */
+
+        .toolbar {
+            padding: 18px 30px;
+
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+
+            background: rgba(5, 15, 11, 0.75);
+        }
+
+        .toolbar button {
+            border: 1px solid rgba(255, 255, 255, 0.10);
+
+            background: rgba(255, 255, 255, 0.055);
+
+            color: #e2e8f0;
+
+            padding: 10px 15px;
+
+            border-radius: 9px;
+
+            cursor: pointer;
+
+            font-size: 13px;
+
+            transition:
+                background 0.2s,
+                transform 0.2s,
+                border 0.2s;
+        }
+
+        .toolbar button:hover {
+            background: rgba(34, 197, 94, 0.15);
+
+            border-color:
+                rgba(34, 197, 94, 0.35);
+
+            transform: translateY(-1px);
+        }
+
+        /* =====================================================
+           STATUS
+           ===================================================== */
+
+        .status-bar {
+            margin: 0 30px 15px;
+
+            padding: 11px 15px;
+
+            border-radius: 9px;
+
+            background:
+                rgba(255, 255, 255, 0.045);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            color: #94a3b8;
+
+            font-size: 12px;
+        }
+
+        /* =====================================================
+           STAT CARDS
+           ===================================================== */
+
+        .stats {
+
+            padding: 0 30px 18px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 12px;
+        }
+
+        .stat-card {
+
+            padding: 15px;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(145deg,
+                    rgba(255, 255, 255, 0.075),
+                    rgba(255, 255, 255, 0.025));
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            backdrop-filter: blur(12px);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .stat-value {
+
+            margin-top: 7px;
+
+            font-size: 18px;
+
+            font-weight: 600;
+
+            color: #f8fafc;
+        }
+
+        /* =====================================================
+           MAP CONTAINER
+           ===================================================== */
+
+        .map-section {
+
+            position: relative;
+
+            margin: 0 30px;
+
+            border-radius: 16px;
+
+            overflow: hidden;
+
+            border:
+                1px solid rgba(255, 255, 255, 0.10);
+
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        #map {
+
+            width: 100% !important;
+
+            height: 620px !important;
+
+            min-height: 620px !important;
+
+            margin: 0 !important;
+
+            padding: 0 !important;
+
+            position: relative !important;
+
+            overflow: hidden !important;
+
+            background: #d9d9d9;
+        }
+
+        /* =====================================================
+           LEAFLET TILE FIX
+           ===================================================== */
+
+        #map img {
+
+            max-width: none !important;
+            max-height: none !important;
+        }
+
+        #map .leaflet-tile {
+
+            width: 256px !important;
+            height: 256px !important;
+
+            max-width: none !important;
+            max-height: none !important;
+
+            margin: 0 !important;
+            padding: 0 !important;
+
+            display: block !important;
+        }
+
+        #map .leaflet-tile-container {
+
+            position: absolute !important;
+
+            left: 0;
+            top: 0;
+        }
+
+        /* =====================================================
+           FLOATING LEGEND
+           ===================================================== */
+
+        .legend {
+
+            position: absolute;
+
+            z-index: 1000;
+
+            bottom: 22px;
+            right: 22px;
+
+            padding: 14px 16px;
+
+            min-width: 180px;
+
+            border-radius: 12px;
+
+            background:
+                rgba(5, 15, 11, 0.90);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.12);
+
+            backdrop-filter: blur(14px);
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .legend-title {
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            margin-bottom: 10px;
+
+            color: #e2e8f0;
+        }
+
+        .legend-row {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            margin: 7px 0;
+
+            color: #cbd5e1;
+
+            font-size: 11px;
+        }
+
+        .legend-dot {
+
+            width: 11px;
+            height: 11px;
+
+            border-radius: 50%;
+
+            box-shadow: 0 0 9px currentColor;
+        }
+
+        .green-dot {
+
+            background: #22c55e;
+            color: #22c55e;
+        }
+
+        .orange-dot {
+
+            background: #f97316;
+            color: #f97316;
+        }
+
+        .red-dot {
+
+            background: #ef4444;
+            color: #ef4444;
+        }
+
+        /* =====================================================
+           MAP MARKER POPUPS
+           ===================================================== */
+
+        .leaflet-popup-content-wrapper {
+
+            background: #0b1711;
+
+            color: #e2e8f0;
+
+            border-radius: 10px;
+        }
+
+        .leaflet-popup-tip {
+
+            background: #0b1711;
+        }
+
+        .leaflet-popup-content {
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        .leaflet-popup-content b {
+
+            color: #86efac;
+        }
+
+        /* =====================================================
+           MOBILE
+           ===================================================== */
+
+        @media (max-width: 900px) {
+
+            .stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .rg-header {
+
+                padding: 18px;
+
+            }
+
+            .toolbar {
+
+                padding: 15px 18px;
+
+            }
+
+            .status-bar {
+
+                margin-left: 18px;
+                margin-right: 18px;
+
+            }
+
+            .stats {
+
+                padding-left: 18px;
+                padding-right: 18px;
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+            .map-section {
+
+                margin: 0 10px;
+
+            }
+
+            #map {
+
+                height: 500px !important;
+
+                min-height: 500px !important;
+
+            }
+
+            .live-badge {
+
+                display: none;
+
+            }
+
+        }
+    </style>
 
 </head>
 
@@ -32,578 +523,331 @@
 <body>
 
 
-    <!-- =====================================================
-     ROADGUARD AI APPLICATION SHELL
-====================================================== -->
-
-    <div class="app">
+    <div class="roadguard-map-page">
 
 
-        <!-- =================================================
-         SIDEBAR
-    ================================================== -->
+        <!-- =====================================================
+         HEADER
+         ===================================================== -->
 
-        <aside class="sidebar" id="sidebar">
-
-            <!-- BRAND -->
+        <header class="rg-header">
 
             <div class="brand">
 
-                <div class="brand-logo">
-                    RG
+                <div class="brand-icon">
+                    🛣️
                 </div>
 
-                <div class="brand-text">
+                <div>
 
-                    <div class="brand-name">
-                        RoadGuard AI
-                    </div>
+                    <h1>RoadGuard AI</h1>
 
-                    <div class="brand-subtitle">
-                        Smart Road Intelligence
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- NAVIGATION -->
-
-            <nav class="navigation">
-
-
-                <!-- DASHBOARD -->
-
-                <a href="/" class="nav-item">
-
-                    <span class="nav-icon">
-                        &#9673;
-                    </span>
-
-                    <span class="nav-label">
-                        Dashboard
-                    </span>
-
-                </a>
-
-
-                <!-- AI DETECTION -->
-
-                <a href="/detect" class="nav-item">
-
-                    <span class="nav-icon">
-                        &#9635;
-                    </span>
-
-                    <span class="nav-label">
-                        AI Detection
-                    </span>
-
-                </a>
-
-
-                <!-- REAL 3D VIEW -->
-
-                <a href="/3d-view?report_id=21" class="nav-item">
-
-                    <span class="nav-icon">
-                        &#9671;
-                    </span>
-
-                    <span class="nav-label">
-                        3D Road View
-                    </span>
-
-                </a>
-
-
-                <!-- ANALYTICS -->
-
-                <a href="/analytics" class="nav-item">
-
-                    <span class="nav-icon">
-                        &#8961;
-                    </span>
-
-                    <span class="nav-label">
-                        Analytics
-                    </span>
-
-                </a>
-
-
-                <!-- REPORTS -->
-
-                <a href="/reports" class="nav-item">
-
-                    <span class="nav-icon">
-                        &#9636;
-                    </span>
-
-                    <span class="nav-label">
-                        Reports
-                    </span>
-
-                </a>
-
-
-                <!-- MAP -->
-
-                <a href="/map" class="nav-item active">
-
-                    <span class="nav-icon">
-                        &#8982;
-                    </span>
-
-                    <span class="nav-label">
-                        Map &amp; Hotspots
-                    </span>
-
-                </a>
-
-            </nav>
-
-
-            <!-- SYSTEM STATUS -->
-
-            <div class="system-status">
-
-                <span class="status-dot"></span>
-
-                <span class="status-text">
-                    AI System Online
-                </span>
-
-            </div>
-
-        </aside>
-
-
-
-        <!-- =================================================
-         MAIN CONTENT
-    ================================================== -->
-
-        <main class="main">
-
-
-            <!-- =================================================
-             TOP BAR
-        ================================================== -->
-
-            <header class="topbar">
-
-                <div class="topbar-left">
-
-                    <div class="topbar-title">
-
-                        <h1>
-                            Map &amp; Hotspots
-                        </h1>
-
-                        <p>
-
-                            <span class="topbar-brand">
-                                RoadGuard AI
-                            </span>
-
-                            &middot;
-
-                            AI-Powered Pothole Detection
-                            &amp; Road Monitoring
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="topbar-actions">
-
-                    <div class="topbar-status">
-
-                        <span class="status-dot"></span>
-
-                        <span>
-                            AI System Online
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </header>
-
-
-
-            <!-- =================================================
-             PAGE CONTENT
-        ================================================== -->
-
-            <div class="content">
-
-
-                <!-- =================================================
-                 LIVE MAP
-            ================================================== -->
-
-                <section class="card">
-
-
-                    <!-- SECTION HEADER -->
-
-                    <div class="section-header">
-
-                        <h2>
-                            📍 Live Pothole Monitoring Map
-                        </h2>
-
-                        <p>
-                            Monitor your real GPS location and
-                            view potholes detected by RoadGuard AI.
-                        </p>
-
-                    </div>
-
-
-
-                    <!-- =================================================
-                     MAP CONTROLS
-                ================================================== -->
-
-                    <div class="map-controls">
-
-
-                        <!-- START GPS -->
-
-                        <button id="startTrackingBtn" class="primary-btn" type="button">
-
-                            ▶ Start Live Tracking
-
-                        </button>
-
-
-                        <!-- STOP GPS -->
-
-                        <button id="stopTrackingBtn" class="danger-btn" type="button" disabled>
-
-                            ■ Stop Tracking
-
-                        </button>
-
-
-                        <!-- REFRESH BACKEND LOCATIONS -->
-
-                        <button id="loadLocationsBtn" class="secondary-btn" type="button">
-
-                            🔄 Refresh Potholes
-
-                        </button>
-
-
-                        <!-- CENTER MAP -->
-
-                        <button id="centerMapBtn" class="secondary-btn" type="button">
-
-                            🎯 My Location
-
-                        </button>
-
-                    </div>
-
-
-
-                    <!-- =================================================
-                     MAP STATUS
-                ================================================== -->
-
-                    <div id="mapStatus" class="status-message" role="status" aria-live="polite">
-
-                        🗺️ Initializing RoadGuard AI Map...
-
-                    </div>
-
-
-
-                    <!-- =================================================
-                     LEAFLET MAP
-                ================================================== -->
-
-                    <div id="map" class="map-container"></div>
-
-
-                </section>
-
-
-
-                <!-- =================================================
-                 LIVE TRACKING INFORMATION
-            ================================================== -->
-
-                <section class="card">
-
-
-                    <h2>
-                        📊 Live Tracking Information
-                    </h2>
-
-
-                    <p style="margin-bottom: 20px;">
-
-                        Real-time GPS information while monitoring
-                        the road.
-
+                    <p>
+                        Intelligent Road Damage Monitoring
                     </p>
 
-
-                    <div class="stats-grid">
-
-
-                        <!-- =================================================
-                         LATITUDE
-                    ================================================== -->
-
-                        <div class="stat-card">
-
-                            <span class="stat-label">
-                                📍 Current Latitude
-                            </span>
-
-                            <strong id="latitude">
-                                --
-                            </strong>
-
-                        </div>
-
-
-
-                        <!-- =================================================
-                         LONGITUDE
-                    ================================================== -->
-
-                        <div class="stat-card">
-
-                            <span class="stat-label">
-                                📍 Current Longitude
-                            </span>
-
-                            <strong id="longitude">
-                                --
-                            </strong>
-
-                        </div>
-
-
-
-                        <!-- =================================================
-                         GPS ACCURACY
-                    ================================================== -->
-
-                        <div class="stat-card">
-
-                            <span class="stat-label">
-                                🎯 GPS Accuracy
-                            </span>
-
-                            <strong id="accuracy">
-                                --
-                            </strong>
-
-                        </div>
-
-
-
-                        <!-- =================================================
-                         ROUTE POINTS
-                    ================================================== -->
-
-                        <div class="stat-card">
-
-                            <span class="stat-label">
-                                🛣️ Route Points
-                            </span>
-
-                            <strong id="routePoints">
-                                0
-                            </strong>
-
-                        </div>
-
-
-
-                        <!-- =================================================
-                         DETECTED POTHOLES
-                    ================================================== -->
-
-                        <div class="stat-card">
-
-                            <span class="stat-label">
-                                ⚠️ Detected Potholes
-                            </span>
-
-                            <strong id="potholeCount">
-                                0
-                            </strong>
-
-                        </div>
-
-
-                    </div>
-
-
-                </section>
-
-
-
-                <!-- =================================================
-                 MAP INFORMATION
-            ================================================== -->
-
-                <section class="card">
-
-
-                    <h2>
-                        ℹ️ RoadGuard AI Map Features
-                    </h2>
-
-
-                    <div class="features">
-
-
-                        <!-- =================================================
-                         GPS
-                    ================================================== -->
-
-                        <div class="feature-card">
-
-                            <h3>
-                                📡 Live GPS Tracking
-                            </h3>
-
-                            <p>
-                                Track the browser's real GPS position
-                                while travelling and monitoring roads.
-                            </p>
-
-                        </div>
-
-
-
-                        <!-- =================================================
-                         POTHOLES
-                    ================================================== -->
-
-                        <div class="feature-card">
-
-                            <h3>
-                                ⚠️ Pothole Locations
-                            </h3>
-
-                            <p>
-                                Display pothole locations returned
-                                by the RoadGuard AI backend.
-                            </p>
-
-                        </div>
-
-
-
-                        <!-- =================================================
-                         ROUTE
-                    ================================================== -->
-
-                        <div class="feature-card">
-
-                            <h3>
-                                🛣️ Route Monitoring
-                            </h3>
-
-                            <p>
-                                Visualize the actual GPS points collected
-                                during live monitoring.
-                            </p>
-
-                        </div>
-
-
-
-                        <!-- =================================================
-                         BACKEND UPDATES
-                    ================================================== -->
-
-                        <div class="feature-card">
-
-                            <h3>
-                                🔄 Backend Updates
-                            </h3>
-
-                            <p>
-                                Refresh stored pothole locations from
-                                the RoadGuard AI backend without using
-                                fabricated map data.
-                            </p>
-
-                        </div>
-
-
-                    </div>
-
-
-                </section>
-
+                </div>
 
             </div>
-            <!-- /.content -->
 
 
-        </main>
-        <!-- /.main -->
+            <div class="live-badge">
+
+                <span class="live-dot"></span>
+
+                LIVE ROAD MONITORING
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+         CONTROLS
+         ===================================================== -->
+
+        <div class="toolbar">
+
+            <button id="startTrackingBtn" type="button">
+                📍 Start GPS
+            </button>
+
+            <button id="stopTrackingBtn" type="button">
+                ⏹ Stop GPS
+            </button>
+
+            <button id="centerMapBtn" type="button">
+                🎯 Center Me
+            </button>
+
+            <button id="loadLocationsBtn" type="button">
+                🔄 Refresh Potholes
+            </button>
+
+            <button type="button" onclick="showCompleteRoute()">
+                🛣️ Show Route
+            </button>
+
+            <button type="button" onclick="resetRoute()">
+                ↺ Reset Route
+            </button>
+
+        </div>
+
+
+        <!-- =====================================================
+         STATUS
+         ===================================================== -->
+
+        <div id="mapStatus" class="status-bar">
+
+            🟢 Map ready — waiting for GPS tracking...
+
+        </div>
+
+
+        <!-- =====================================================
+         STATS
+         ===================================================== -->
+
+        <section class="stats">
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Latitude
+                </div>
+
+                <div id="latitude" class="stat-value">
+
+                    --
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Longitude
+                </div>
+
+                <div id="longitude" class="stat-value">
+
+                    --
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    GPS Accuracy
+                </div>
+
+                <div id="accuracy" class="stat-value">
+
+                    --
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Route Points
+                </div>
+
+                <div id="routePoints" class="stat-value">
+
+                    0
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Detected Potholes
+                </div>
+
+                <div id="potholeCount" class="stat-value">
+
+                    0
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =====================================================
+         MAP
+         ===================================================== -->
+
+        <section class="map-section">
+
+
+            <div id="map"></div>
+
+
+            <!-- =================================================
+             LEGEND
+             ================================================= -->
+
+            <div class="legend">
+
+                <div class="legend-title">
+                    Pothole Severity
+                </div>
+
+
+                <div class="legend-row">
+
+                    <span class="legend-dot green-dot">
+                    </span>
+
+                    <span>
+                        Low Severity
+                    </span>
+
+                </div>
+
+
+                <div class="legend-row">
+
+                    <span class="legend-dot orange-dot">
+                    </span>
+
+                    <span>
+                        Medium Severity
+                    </span>
+
+                </div>
+
+
+                <div class="legend-row">
+
+                    <span class="legend-dot red-dot">
+                    </span>
+
+                    <span>
+                        High / Heavy
+                    </span>
+
+                </div>
+
+            </div>
+
+
+        </section>
 
 
     </div>
-    <!-- /.app -->
-
-
-
-    <!-- =========================================================
-     FOOTER
-========================================================= -->
-
-    <footer>
-
-        <p>
-            © 2026 RoadGuard AI |
-            AI-Powered Road Safety &amp; Monitoring System
-        </p>
-
-    </footer>
-
 
 
     <!-- =========================================================
-     LEAFLET JAVASCRIPT
-========================================================= -->
+     LEAFLET
+     ========================================================= -->
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
 
 
     <!-- =========================================================
-     ROADGUARD CONFIGURATION
-========================================================= -->
+     ROADGUARD CONFIG
+     ========================================================= -->
 
     <script src="/frontend/js/config.js"></script>
 
 
-
     <!-- =========================================================
      ROADGUARD MAP LOGIC
-========================================================= -->
+     ========================================================= -->
 
     <script src="/frontend/js/map.js"></script>
+
+
+    <script>
+
+        function showCompleteRoute() {
+
+            if (
+                typeof routeCoordinates !== "undefined" &&
+                routeCoordinates.length > 1 &&
+                typeof routeLine !== "undefined" &&
+                routeLine
+            ) {
+
+                routeLine.setLatLngs(routeCoordinates);
+
+                map.fitBounds(
+                    routeLine.getBounds(),
+                    {
+                        padding: [30, 30]
+                    }
+                );
+
+            } else {
+
+                const status =
+                    document.getElementById("mapStatus");
+
+                if (status) {
+
+                    status.textContent =
+                        "⚠️ Not enough GPS points to display the route.";
+
+                }
+
+            }
+
+        }
+
+
+        function resetRoute() {
+
+            if (
+                typeof routeLine !== "undefined" &&
+                routeLine
+            ) {
+
+                routeLine.setLatLngs([]);
+
+            }
+
+
+            if (
+                typeof routeCoordinates !== "undefined"
+            ) {
+
+                routeCoordinates.length = 0;
+
+            }
+
+
+            const points =
+                document.getElementById("routePoints");
+
+            if (points) {
+
+                points.textContent = "0";
+
+            }
+
+        }
+
+    </script>
 
 
 </body>
