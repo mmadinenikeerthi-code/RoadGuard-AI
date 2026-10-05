@@ -1,32 +1,49 @@
 // ==========================================================
-// ROADGUARD AI — PROFESSIONAL 3D ROAD VIEW
+// ROADGUARD AI — 3D ROAD VISUALIZATION
 // frontend/js/three_d.js
+//
+// MAIN VIEW:
+//   Three.js road visualization + report pothole detections
+//
+// SEPARATE VIEW:
+//   Actual COLMAP / PLY reconstruction can be opened through
+//   the "Open 3D Reconstruction" button.
+//
+// IMPORTANT:
+//   The road in this main viewer is a visualization layer.
+//   It is NOT falsely presented as measured COLMAP geometry.
 // ==========================================================
 
-import * as THREE from "https://esm.sh/three@0.160.0";
+
+import * as THREE from "three";
 
 import {
     OrbitControls
-} from "https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+} from "three/addons/controls/OrbitControls.js";
 
 import {
     PLYLoader
-} from "https://esm.sh/three@0.160.0/examples/jsm/loaders/PLYLoader.js";
+} from "three/addons/loaders/PLYLoader.js";
 
 import {
     OBJLoader
-} from "https://esm.sh/three@0.160.0/examples/jsm/loaders/OBJLoader.js";
+} from "three/addons/loaders/OBJLoader.js";
 
 import {
     GLTFLoader
-} from "https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+} from "three/addons/loaders/GLTFLoader.js";
 
+
+// ==========================================================
+// GLOBAL STATE
+// ==========================================================
 
 let scene;
 let camera;
 let renderer;
 let controls;
 
+let roadGroup;
 let potholeGroup;
 let reconstructionGroup;
 
@@ -36,11 +53,14 @@ let mouse;
 let currentReportId = null;
 let currentSceneData = null;
 
-let animationId;
+let animationId = null;
+
+let roadWidth = 18;
+let roadLength = 60;
 
 
 // ==========================================================
-// INITIALIZE
+// INITIALIZATION
 // ==========================================================
 
 document.addEventListener(
@@ -68,33 +88,66 @@ async function initializeThreeViewer() {
             error
         );
 
-        updateThreeStatus(
-            `Failed to initialize: ${error.message}`
+        showError(
+            `Failed to initialize 3D viewer: ${error.message}`
         );
     }
 }
 
 
 // ==========================================================
-// THREE SCENE
+// API HELPERS
+// ==========================================================
+
+function getApiBase() {
+
+    if (
+        window.API_ENDPOINTS &&
+        typeof window.API_ENDPOINTS.base === "string"
+    ) {
+
+        return window.API_ENDPOINTS.base;
+    }
+
+    return "";
+}
+
+
+function getPhotogrammetryEndpoint() {
+
+    if (
+        window.API_ENDPOINTS &&
+        window.API_ENDPOINTS.photogrammetryReconstruct
+    ) {
+
+        return window.API_ENDPOINTS.photogrammetryReconstruct;
+    }
+
+    return "/api/photogrammetry/reconstruct";
+}
+
+
+// ==========================================================
+// THREE.JS SCENE
 // ==========================================================
 
 function createThreeScene() {
 
     const container =
         document.getElementById(
-            "threeContainer"
+            "three-container"
         );
 
     if (!container) {
 
         throw new Error(
-            "threeContainer not found"
+            "3D viewer container #three-container was not found."
         );
     }
 
 
-    scene = new THREE.Scene();
+    scene =
+        new THREE.Scene();
 
     scene.background =
         new THREE.Color(
@@ -103,10 +156,10 @@ function createThreeScene() {
 
 
     const width =
-        container.clientWidth || 900;
+        container.clientWidth || 1000;
 
     const height =
-        container.clientHeight || 600;
+        container.clientHeight || 620;
 
 
     camera =
@@ -120,15 +173,15 @@ function createThreeScene() {
 
     camera.position.set(
         0,
-        5,
-        16
+        8,
+        20
     );
 
 
     renderer =
         new THREE.WebGLRenderer({
             antialias: true,
-            alpha: false,
+            alpha: false
         });
 
 
@@ -137,12 +190,14 @@ function createThreeScene() {
         height
     );
 
+
     renderer.setPixelRatio(
         Math.min(
-            window.devicePixelRatio,
+            window.devicePixelRatio || 1,
             2
         )
     );
+
 
     renderer.shadowMap.enabled = true;
 
@@ -150,10 +205,18 @@ function createThreeScene() {
         THREE.PCFSoftShadowMap;
 
 
+    renderer.outputColorSpace =
+        THREE.SRGBColorSpace;
+
+
     container.appendChild(
         renderer.domElement
     );
 
+
+    // ------------------------------------------------------
+    // CAMERA CONTROLS
+    // ------------------------------------------------------
 
     controls =
         new OrbitControls(
@@ -161,20 +224,37 @@ function createThreeScene() {
             renderer.domElement
         );
 
+
     controls.enableDamping = true;
 
     controls.dampingFactor = 0.08;
 
     controls.enablePan = true;
 
-    controls.minDistance = 2;
+    controls.minDistance = 4;
 
     controls.maxDistance = 100;
+
 
     controls.target.set(
         0,
         0,
-        -10
+        -12
+    );
+
+
+    // ------------------------------------------------------
+    // GROUPS
+    // ------------------------------------------------------
+
+    roadGroup =
+        new THREE.Group();
+
+    roadGroup.name =
+        "roadVisualization";
+
+    scene.add(
+        roadGroup
     );
 
 
@@ -182,7 +262,7 @@ function createThreeScene() {
         new THREE.Group();
 
     potholeGroup.name =
-        "potholeGroup";
+        "potholeMarkers";
 
     scene.add(
         potholeGroup
@@ -193,12 +273,26 @@ function createThreeScene() {
         new THREE.Group();
 
     reconstructionGroup.name =
-        "reconstructionGroup";
+        "colmapReconstruction";
+
+    reconstructionGroup.visible =
+        false;
 
     scene.add(
         reconstructionGroup
     );
 
+
+    // ------------------------------------------------------
+    // LIGHTS
+    // ------------------------------------------------------
+
+    createLighting();
+
+
+    // ------------------------------------------------------
+    // RAYCASTING
+    // ------------------------------------------------------
 
     raycaster =
         new THREE.Raycaster();
@@ -213,9 +307,102 @@ function createThreeScene() {
     );
 
 
+    renderer.domElement.addEventListener(
+        "mousemove",
+        onSceneMouseMove
+    );
+
+
     window.addEventListener(
         "resize",
         resizeThreeViewer
+    );
+}
+
+
+// ==========================================================
+// LIGHTING
+// ==========================================================
+
+function createLighting() {
+
+    const hemisphere =
+        new THREE.HemisphereLight(
+            0xffffff,
+            0x182233,
+            2.0
+        );
+
+    hemisphere.name =
+        "roadHemisphereLight";
+
+    scene.add(
+        hemisphere
+    );
+
+
+    const directional =
+        new THREE.DirectionalLight(
+            0xffffff,
+            2.8
+        );
+
+    directional.name =
+        "roadDirectionalLight";
+
+
+    directional.position.set(
+        8,
+        18,
+        12
+    );
+
+
+    directional.castShadow =
+        true;
+
+
+    directional.shadow.mapSize.width =
+        2048;
+
+    directional.shadow.mapSize.height =
+        2048;
+
+
+    directional.shadow.camera.left =
+        -30;
+
+    directional.shadow.camera.right =
+        30;
+
+    directional.shadow.camera.top =
+        30;
+
+    directional.shadow.camera.bottom =
+        -30;
+
+
+    scene.add(
+        directional
+    );
+
+
+    const fill =
+        new THREE.DirectionalLight(
+            0x8fb8ff,
+            0.8
+        );
+
+
+    fill.position.set(
+        -12,
+        8,
+        -20
+    );
+
+
+    scene.add(
+        fill
     );
 }
 
@@ -226,17 +413,24 @@ function createThreeScene() {
 
 async function loadReportList() {
 
+    const selector =
+        document.getElementById(
+            "reportSelector"
+        );
+
+
     try {
 
         const response =
             await fetch(
-                `${API_ENDPOINTS.base}/3d/reports-list`
+                `${getApiBase()}/3d/reports-list`
             );
+
 
         if (!response.ok) {
 
             throw new Error(
-                `Server error: ${response.status}`
+                `Server returned HTTP ${response.status}`
             );
         }
 
@@ -245,18 +439,22 @@ async function loadReportList() {
             await response.json();
 
 
-        const selector =
-            document.getElementById(
-                "reportSelector"
+        if (!selector) {
+
+            throw new Error(
+                "Report selector not found."
             );
+        }
 
 
         selector.innerHTML = "";
 
 
-        (
-            data.reports || []
-        ).forEach(
+        const reports =
+            data.reports || [];
+
+
+        reports.forEach(
             report => {
 
                 const option =
@@ -264,13 +462,16 @@ async function loadReportList() {
                         "option"
                     );
 
+
                 option.value =
                     report.id;
 
+
                 option.textContent =
-                    `#${report.id} — ` +
-                    `${report.media_type} — ` +
-                    `${report.pothole_count} potholes`;
+                    `#${report.id} — `
+                    + `${report.media_type || "media"} — `
+                    + `${report.pothole_count || 0} potholes`;
+
 
                 selector.appendChild(
                     option
@@ -279,9 +480,20 @@ async function loadReportList() {
         );
 
 
+        if (!reports.length) {
+
+            updateThreeStatus(
+                "No road inspection reports available."
+            );
+
+            return;
+        }
+
+
         selector.addEventListener(
             "change",
             () => {
+
                 loadRoadView(
                     selector.value
                 );
@@ -289,70 +501,55 @@ async function loadReportList() {
         );
 
 
-        if (
-            data.reports &&
-            data.reports.length
-        ) {
-
-            /*
-             * Deep-linking support:
-             *
-             *     three_d.html?report_id=17
-             *
-             * Falls back to the newest report when no (or an
-             * unknown) report_id is supplied.
-             */
-            const requestedReportId =
-                new URLSearchParams(
-                    window.location.search
-                ).get("report_id");
-
-
-            const requestedReport =
-                requestedReportId
-                    ? data.reports.find(
-                        report =>
-                            String(report.id) ===
-                            String(requestedReportId)
-                    )
-                    : null;
-
-
-            const targetReport =
-                requestedReport ||
-                data.reports[0];
-
-
-            selector.value =
-                targetReport.id;
-
-
-            await loadRoadView(
-                targetReport.id
+        const requestedId =
+            new URLSearchParams(
+                window.location.search
+            ).get(
+                "report_id"
             );
 
-        } else {
 
-            updateThreeStatus(
-                "No reports available yet."
-            );
-        }
+        const requestedReport =
+            requestedId
+                ? reports.find(
+                    report =>
+                        String(report.id) ===
+                        String(requestedId)
+                )
+                : null;
+
+
+        const target =
+            requestedReport ||
+            reports[0];
+
+
+        selector.value =
+            target.id;
+
+
+        await loadRoadView(
+            target.id
+        );
+
 
     } catch (error) {
 
         console.error(
+            "Report list error:",
             error
         );
 
-        updateThreeStatus(
-            error.message
+
+        showError(
+            `Could not load reports: ${error.message}`
         );
     }
 }
 
 
 // ==========================================================
-// LOAD ROAD VIEW
+// LOAD SELECTED REPORT
 // ==========================================================
 
 async function loadRoadView(
@@ -376,13 +573,14 @@ async function loadRoadView(
     currentReportId =
         reportId;
 
+
     showLoadingOverlay(
         true
     );
 
-    setStatusBar(
-        `Loading 3D data for report #${reportId}…`,
-        false
+
+    updateThreeStatus(
+        `Loading report #${reportId}...`
     );
 
 
@@ -390,15 +588,10 @@ async function loadRoadView(
 
         const response =
             await fetch(
-                `${API_ENDPOINTS.base}/3d/road-view/${reportId}`
+                `${getApiBase()}/3d/road-view/${reportId}`
             );
 
 
-        /*
-         * Read the body as text first so an empty response or a
-         * non-JSON error page cannot throw an opaque
-         * "Unexpected end of JSON input".
-         */
         const rawBody =
             await response.text();
 
@@ -410,16 +603,15 @@ async function loadRoadView(
 
             try {
 
-                data = JSON.parse(
-                    rawBody
-                );
+                data =
+                    JSON.parse(
+                        rawBody
+                    );
 
-            } catch (parseError) {
+            } catch (error) {
 
                 throw new Error(
-                    `Invalid JSON from `
-                    + `/3d/road-view/${reportId} `
-                    + `(HTTP ${response.status}).`
+                    `Invalid JSON from /3d/road-view/${reportId}`
                 );
             }
         }
@@ -429,14 +621,16 @@ async function loadRoadView(
 
             const detail =
                 data &&
-                (data.detail || data.message);
+                (
+                    data.detail ||
+                    data.message
+                );
 
 
             throw new Error(
                 detail
                     ? `HTTP ${response.status}: ${detail}`
-                    : `HTTP ${response.status} from `
-                    + `/3d/road-view/${reportId}.`
+                    : `HTTP ${response.status}`
             );
         }
 
@@ -444,8 +638,7 @@ async function loadRoadView(
         if (!data) {
 
             throw new Error(
-                `Empty response from `
-                + `/3d/road-view/${reportId}.`
+                "The backend returned an empty response."
             );
         }
 
@@ -454,72 +647,54 @@ async function loadRoadView(
             data;
 
 
+        // --------------------------------------------------
+        // CLEAR PREVIOUS VISUALIZATION
+        // --------------------------------------------------
+
+        clearWorld();
+
+
+        // --------------------------------------------------
+        // BUILD MAIN ROAD
+        // --------------------------------------------------
+
+        buildRoadScene();
+
+
+        // --------------------------------------------------
+        // UPDATE REPORT INFORMATION
+        // --------------------------------------------------
+
         updateSummary(
             data
         );
 
 
-        clearWorld();
+        updateReportHeader(
+            data
+        );
 
 
-        /*
-         * TRUE 360 MEDIA
-         */
-        if (
-            data.viewer &&
-            data.viewer.is_360
-        ) {
+        // --------------------------------------------------
+        // PLACE ACTUAL REPORT DETECTIONS
+        // --------------------------------------------------
 
-            updateModeBadge(
-                "360 PANORAMA",
-                true
-            );
-
-            await buildPanoramaMode(
-                data.report.media_path
-            );
-
-        }
-
-        /*
-         * REAL RECONSTRUCTION
-         */
-        else if (
-            data.viewer &&
-            data.viewer.reconstruction_available
-        ) {
-
-            updateModeBadge(
-                "COLMAP 3D RECONSTRUCTION",
-                true
-            );
-
-            await buildReconstructionMode(
-                data.reconstruction
-            );
-
-        }
-
-        /*
-         * RECONSTRUCTION NOT AVAILABLE
-         */
-        else {
-
-            clearReconstruction();
-
-            updateModeBadge(
-                "3D RECONSTRUCTION NOT AVAILABLE",
-                false
-            );
-
-            updateThreeStatus(
-                "COLMAP reconstruction not available"
-            );
-        }
+        const potholes =
+            data.potholes || [];
 
 
         renderPotholeMarkers(
-            data.potholes || []
+            potholes
+        );
+
+
+        // --------------------------------------------------
+        // STATUS
+        // --------------------------------------------------
+
+        updateModeBadge(
+            "3D ROAD VISUALIZATION",
+            true
         );
 
 
@@ -528,12 +703,25 @@ async function loadRoadView(
         );
 
 
+        // --------------------------------------------------
+        // CAMERA
+        // --------------------------------------------------
+
+        frameRoadScene();
+
+
     } catch (error) {
 
-        showError(
-            `Could not load 3D data for report `
-            + `#${reportId}: ${error.message}`
+        console.error(
+            "3D road view error:",
+            error
         );
+
+
+        showError(
+            `Could not load report #${reportId}: ${error.message}`
+        );
+
 
     } finally {
 
@@ -544,68 +732,984 @@ async function loadRoadView(
 }
 
 
-/**
- * Describe what actually loaded, including what is missing.
- *
- * Nothing is invented here: the numbers come from the report
- * row and the "warnings" list produced by the backend.
- */
-function reportLoadOutcome(
-    data
+// ==========================================================
+// BUILD MAIN 3D ROAD
+// ==========================================================
+
+function buildRoadScene() {
+
+    clearRoad();
+
+
+    // ------------------------------------------------------
+    // ROAD SURFACE
+    // ------------------------------------------------------
+
+    const roadGeometry =
+        new THREE.PlaneGeometry(
+            roadWidth,
+            roadLength,
+            1,
+            1
+        );
+
+
+    const roadMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x343a46,
+            roughness: 0.96,
+            metalness: 0.0,
+            side: THREE.DoubleSide
+        });
+
+
+    const road =
+        new THREE.Mesh(
+            roadGeometry,
+            roadMaterial
+        );
+
+
+    road.rotation.x =
+        -Math.PI / 2;
+
+
+    road.position.set(
+        0,
+        0,
+        -10
+    );
+
+
+    road.receiveShadow =
+        true;
+
+
+    road.name =
+        "roadSurface";
+
+
+    roadGroup.add(
+        road
+    );
+
+
+    // ------------------------------------------------------
+    // LEFT SHOULDER
+    // ------------------------------------------------------
+
+    const shoulderMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x59616d,
+            roughness: 1.0
+        });
+
+
+    const leftShoulder =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                3.0,
+                0.12,
+                roadLength
+            ),
+            shoulderMaterial
+        );
+
+
+    leftShoulder.position.set(
+        -10.5,
+        -0.04,
+        -10
+    );
+
+
+    leftShoulder.receiveShadow =
+        true;
+
+
+    roadGroup.add(
+        leftShoulder
+    );
+
+
+    // ------------------------------------------------------
+    // RIGHT SHOULDER
+    // ------------------------------------------------------
+
+    const rightShoulder =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                3.0,
+                0.12,
+                roadLength
+            ),
+            shoulderMaterial
+        );
+
+
+    rightShoulder.position.set(
+        10.5,
+        -0.04,
+        -10
+    );
+
+
+    rightShoulder.receiveShadow =
+        true;
+
+
+    roadGroup.add(
+        rightShoulder
+    );
+
+
+    // ------------------------------------------------------
+    // ROAD EDGE LINES
+    // ------------------------------------------------------
+
+    const edgeMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xf1f5f9,
+            roughness: 0.8
+        });
+
+
+    createRoadStripe(
+        -8.35,
+        0.06,
+        0,
+        roadLength,
+        0.10,
+        edgeMaterial,
+        "leftEdge"
+    );
+
+
+    createRoadStripe(
+        8.35,
+        0.06,
+        0,
+        roadLength,
+        0.10,
+        edgeMaterial,
+        "rightEdge"
+    );
+
+
+    // ------------------------------------------------------
+    // CENTER LANE MARKING
+    // ------------------------------------------------------
+
+    const laneMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xf8fafc,
+            roughness: 0.75
+        });
+
+
+    const stripeLength =
+        3.0;
+
+    const stripeGap =
+        2.0;
+
+
+    for (
+        let z = 14;
+        z > -43;
+        z -= stripeLength + stripeGap
+    ) {
+
+        createRoadStripe(
+            0,
+            0.07,
+            z,
+            stripeLength,
+            0.12,
+            laneMaterial,
+            "centerLane"
+        );
+    }
+
+
+    // ------------------------------------------------------
+    // SIDE ROAD MARKINGS
+    // ------------------------------------------------------
+
+    createSideRoadMarkings();
+
+
+    // ------------------------------------------------------
+    // ROAD GRID / GUIDE LINES
+    // ------------------------------------------------------
+
+    createRoadGuideLines();
+}
+
+
+// ==========================================================
+// ROAD STRIPE
+// ==========================================================
+
+function createRoadStripe(
+    x,
+    y,
+    z,
+    length,
+    width,
+    material,
+    name
 ) {
 
-    const loadedMarkers =
-        (data.potholes || []).length;
+    const stripe =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                width,
+                0.025,
+                length
+            ),
+            material
+        );
 
 
-    const recordedPotholes =
-        (data.report && data.report.pothole_count) || 0;
+    stripe.position.set(
+        x,
+        y,
+        z
+    );
 
 
-    const markerSource =
-        (data.metadata && data.metadata.marker_source) || "none";
+    stripe.name =
+        name;
 
 
-    let message =
-        `${loadedMarkers} pothole marker(s) shown`;
+    roadGroup.add(
+        stripe
+    );
+}
+
+
+// ==========================================================
+// SIDE ROAD MARKINGS
+// ==========================================================
+
+function createSideRoadMarkings() {
+
+    const markingMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xcbd5e1,
+            roughness: 0.85
+        });
+
+
+    for (
+        let z = 14;
+        z > -43;
+        z -= 5
+    ) {
+
+        const left =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    0.65,
+                    0.025,
+                    0.12
+                ),
+                markingMaterial
+            );
+
+
+        left.position.set(
+            -6.2,
+            0.07,
+            z
+        );
+
+
+        roadGroup.add(
+            left
+        );
+
+
+        const right =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    0.65,
+                    0.025,
+                    0.12
+                ),
+                markingMaterial
+            );
+
+
+        right.position.set(
+            6.2,
+            0.07,
+            z
+        );
+
+
+        roadGroup.add(
+            right
+        );
+    }
+}
+
+
+// ==========================================================
+// ROAD GUIDE LINES
+// ==========================================================
+
+function createRoadGuideLines() {
+
+    const guideMaterial =
+        new THREE.LineBasicMaterial({
+            color: 0x46505f,
+            transparent: true,
+            opacity: 0.55
+        });
+
+
+    const positions = [];
+
+
+    for (
+        let z = 18;
+        z >= -48;
+        z -= 6
+    ) {
+
+        positions.push(
+            -8.0, 0.012, z,
+            8.0, 0.012, z
+        );
+    }
+
+
+    const geometry =
+        new THREE.BufferGeometry();
+
+
+    geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(
+            positions,
+            3
+        )
+    );
+
+
+    const lines =
+        new THREE.LineSegments(
+            geometry,
+            guideMaterial
+        );
+
+
+    lines.name =
+        "roadGuideLines";
+
+
+    roadGroup.add(
+        lines
+    );
+}
+
+
+// ==========================================================
+// POTHOLE MARKERS
+// ==========================================================
+
+function renderPotholeMarkers(
+    markers
+) {
+
+    clearPotholes();
+
+
+    if (!markers.length) {
+
+        return;
+    }
+
+
+    markers.forEach(
+        (
+            marker,
+            index
+        ) => {
+
+            const position =
+                mapPotholeToRoad(
+                    marker,
+                    index,
+                    markers
+                );
+
+
+            createPotholeMarker(
+                marker,
+                position,
+                index
+            );
+        }
+    );
+}
+
+
+// ==========================================================
+// MAP DETECTION TO ROAD
+// ==========================================================
+
+function mapPotholeToRoad(
+    marker,
+    index,
+    allMarkers
+) {
+
+    // ------------------------------------------------------
+    // CASE 1:
+    // Backend already supplies a 3D position.
+    // ------------------------------------------------------
+
+    const real3D =
+        marker.position_3d ||
+        marker.position3d;
 
 
     if (
-        recordedPotholes > 0 &&
-        loadedMarkers === 0
+        real3D &&
+        Number.isFinite(
+            Number(real3D.x)
+        ) &&
+        Number.isFinite(
+            Number(real3D.y)
+        ) &&
+        Number.isFinite(
+            Number(real3D.z)
+        )
     ) {
 
-        message +=
-            ` — report #${data.report.id} records `
-            + `${recordedPotholes} pothole(s), but no `
-            + `per-pothole 3D geometry is available for it.`;
+        return new THREE.Vector3(
+            Number(real3D.x),
+            Math.max(
+                0.15,
+                Number(real3D.y)
+            ),
+            Number(real3D.z)
+        );
+    }
 
-    } else if (
-        markerSource === "detections" &&
-        loadedMarkers !== recordedPotholes
+
+    // ------------------------------------------------------
+    // Get image coordinates.
+    // ------------------------------------------------------
+
+    let x =
+        Number(
+            marker.center_x ??
+            marker.x ??
+            0
+        );
+
+
+    let y =
+        Number(
+            marker.center_y ??
+            marker.y ??
+            0
+        );
+
+
+    if (
+        !Number.isFinite(x)
     ) {
 
-        /*
-         * Older reports store per-frame samples only, so the
-         * scene shows raw detections rather than one marker per
-         * deduplicated pothole. Say so instead of implying the
-         * recorded count is wrong.
-         */
-        message +=
-            ` — these are per-frame detections; report `
-            + `#${data.report.id} records `
-            + `${recordedPotholes} distinct pothole(s).`;
+        x = 0;
     }
 
 
     if (
-        data.warnings &&
-        data.warnings.length
+        !Number.isFinite(y)
+    ) {
+
+        y = 0;
+    }
+
+
+    // ------------------------------------------------------
+    // Try to find image dimensions supplied by backend.
+    // ------------------------------------------------------
+
+    const imageWidth =
+        Number(
+            marker.image_width ??
+            marker.width_image ??
+            marker.frame_width ??
+            currentSceneData?.metadata?.image_width ??
+            currentSceneData?.metadata?.frame_width ??
+            0
+        );
+
+
+    const imageHeight =
+        Number(
+            marker.image_height ??
+            marker.height_image ??
+            marker.frame_height ??
+            currentSceneData?.metadata?.image_height ??
+            currentSceneData?.metadata?.frame_height ??
+            0
+        );
+
+
+    // ------------------------------------------------------
+    // Convert coordinates to 0..1.
+    // ------------------------------------------------------
+
+    let normalizedX;
+    let normalizedY;
+
+
+    if (
+        imageWidth > 0 &&
+        imageHeight > 0
+    ) {
+
+        normalizedX =
+            x / imageWidth;
+
+        normalizedY =
+            y / imageHeight;
+
+    } else if (
+        x >= 0 &&
+        x <= 1 &&
+        y >= 0 &&
+        y <= 1
+    ) {
+
+        normalizedX =
+            x;
+
+        normalizedY =
+            y;
+
+    } else if (
+        x >= 0 &&
+        x <= 1000 &&
+        y >= 0 &&
+        y <= 1000
+    ) {
+
+        /*
+         * Some report formats store normalized detection
+         * coordinates on a 0..1000 scale.
+         */
+        normalizedX =
+            x / 1000;
+
+        normalizedY =
+            y / 1000;
+
+    } else {
+
+        /*
+         * Last-resort visualization mapping.
+         *
+         * This keeps the marker visible when the backend only
+         * supplies raw coordinates without image dimensions.
+         */
+        const xs =
+            allMarkers.map(
+                item =>
+                    Number(
+                        item.center_x ??
+                        item.x ??
+                        0
+                    )
+            );
+
+
+        const ys =
+            allMarkers.map(
+                item =>
+                    Number(
+                        item.center_y ??
+                        item.y ??
+                        0
+                    )
+            );
+
+
+        const minX =
+            Math.min(
+                ...xs
+            );
+
+        const maxX =
+            Math.max(
+                ...xs
+            );
+
+        const minY =
+            Math.min(
+                ...ys
+            );
+
+        const maxY =
+            Math.max(
+                ...ys
+            );
+
+
+        const rangeX =
+            Math.max(
+                maxX - minX,
+                1
+            );
+
+
+        const rangeY =
+            Math.max(
+                maxY - minY,
+                1
+            );
+
+
+        normalizedX =
+            (x - minX) /
+            rangeX;
+
+
+        normalizedY =
+            (y - minY) /
+            rangeY;
+    }
+
+
+    normalizedX =
+        THREE.MathUtils.clamp(
+            normalizedX,
+            0,
+            1
+        );
+
+
+    normalizedY =
+        THREE.MathUtils.clamp(
+            normalizedY,
+            0,
+            1
+        );
+
+
+    // ------------------------------------------------------
+    // Convert image position to road position.
+    //
+    // X:
+    // image left  -> road left
+    // image right -> road right
+    //
+    // Y:
+    // image top    -> farther road
+    // image bottom -> closer road
+    // ------------------------------------------------------
+
+    const roadX =
+        (
+            normalizedX - 0.5
+        ) * 15.0;
+
+
+    const roadZ =
+        10 -
+        normalizedY * 50;
+
+
+    return new THREE.Vector3(
+        roadX,
+        0.25,
+        roadZ
+    );
+}
+
+
+// ==========================================================
+// CREATE POTHOLE MARKER
+// ==========================================================
+
+function createPotholeMarker(
+    marker,
+    position,
+    index
+) {
+
+    const severityColor =
+        getThreeColor(
+            marker.severity
+        );
+
+
+    // ------------------------------------------------------
+    // POTHOLE CRATER
+    // ------------------------------------------------------
+
+    const crater =
+        createPotholeCrater(
+            severityColor
+        );
+
+
+    crater.position.copy(
+        position
+    );
+
+
+    crater.position.y =
+        0.08;
+
+
+    crater.userData =
+        marker;
+
+
+    crater.userData.markerIndex =
+        index;
+
+
+    crater.name =
+        `pothole-${marker.pothole_id ?? index + 1}`;
+
+
+    potholeGroup.add(
+        crater
+    );
+
+
+    // ------------------------------------------------------
+    // MARKER SPHERE
+    // ------------------------------------------------------
+
+    const markerGeometry =
+        new THREE.SphereGeometry(
+            0.24,
+            24,
+            18
+        );
+
+
+    const markerMaterial =
+        new THREE.MeshStandardMaterial({
+            color: severityColor,
+            roughness: 0.35,
+            metalness: 0.05,
+            emissive: severityColor,
+            emissiveIntensity: 0.35
+        });
+
+
+    const markerMesh =
+        new THREE.Mesh(
+            markerGeometry,
+            markerMaterial
+        );
+
+
+    markerMesh.position.copy(
+        position
+    );
+
+
+    markerMesh.position.y =
+        0.65;
+
+
+    markerMesh.castShadow =
+        true;
+
+
+    markerMesh.userData =
+        marker;
+
+
+    markerMesh.userData.markerIndex =
+        index;
+
+
+    markerMesh.name =
+        `potholeMarker-${marker.pothole_id ?? index + 1}`;
+
+
+    potholeGroup.add(
+        markerMesh
+    );
+
+
+    // ------------------------------------------------------
+    // VERTICAL PIN
+    // ------------------------------------------------------
+
+    const pinMaterial =
+        new THREE.MeshBasicMaterial({
+            color: severityColor
+        });
+
+
+    const pin =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.025,
+                0.025,
+                0.8,
+                8
+            ),
+            pinMaterial
+        );
+
+
+    pin.position.copy(
+        position
+    );
+
+
+    pin.position.y =
+        0.42;
+
+
+    pin.userData =
+        marker;
+
+
+    potholeGroup.add(
+        pin
+    );
+
+
+    // ------------------------------------------------------
+    // GLOW RING
+    // ------------------------------------------------------
+
+    const ringGeometry =
+        new THREE.RingGeometry(
+            0.34,
+            0.43,
+            32
+        );
+
+
+    const ringMaterial =
+        new THREE.MeshBasicMaterial({
+            color: severityColor,
+            transparent: true,
+            opacity: 0.55,
+            side: THREE.DoubleSide
+        });
+
+
+    const ring =
+        new THREE.Mesh(
+            ringGeometry,
+            ringMaterial
+        );
+
+
+    ring.rotation.x =
+        -Math.PI / 2;
+
+
+    ring.position.copy(
+        position
+    );
+
+
+    ring.position.y =
+        0.095;
+
+
+    ring.userData =
+        marker;
+
+
+    potholeGroup.add(
+        ring
+    );
+}
+
+
+// ==========================================================
+// POTHOLE CRATER
+// ==========================================================
+
+function createPotholeCrater(
+    color
+) {
+
+    const geometry =
+        new THREE.CircleGeometry(
+            0.48,
+            24
+        );
+
+
+    const material =
+        new THREE.MeshStandardMaterial({
+            color: 0x111827,
+            roughness: 1.0,
+            metalness: 0.0,
+            side: THREE.DoubleSide
+        });
+
+
+    const crater =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+    crater.rotation.x =
+        -Math.PI / 2;
+
+
+    crater.receiveShadow =
+        true;
+
+
+    return crater;
+}
+
+
+// ==========================================================
+// REPORT OUTCOME
+// ==========================================================
+
+function reportLoadOutcome(
+    data
+) {
+
+    const markers =
+        data.potholes || [];
+
+
+    const recorded =
+        Number(
+            data.report?.pothole_count ??
+            data.total_potholes ??
+            markers.length
+        );
+
+
+    let message =
+        `${markers.length} pothole marker(s) displayed`;
+
+
+    if (
+        recorded !== markers.length
     ) {
 
         message +=
-            " " +
-            data.warnings.join(" ");
+            ` — report count: ${recorded}`;
     }
 
 
@@ -616,169 +1720,1060 @@ function reportLoadOutcome(
 
 
     console.log(
-        "3D: road view loaded",
+        "RoadGuard 3D report:",
         data
     );
 }
 
 
 // ==========================================================
-// REAL RECONSTRUCTION LOADER (PLY, OBJ, GLTF, GLB)
+// SUMMARY
 // ==========================================================
 
-async function loadReconstructionGeometry(url) {
-    const lowerUrl = url.toLowerCase();
-
-    if (lowerUrl.endsWith(".obj")) {
-        const loader = new OBJLoader();
-        return await loader.loadAsync(url);
-    } else if (lowerUrl.endsWith(".gltf") || lowerUrl.endsWith(".glb")) {
-        const loader = new GLTFLoader();
-        const gltf = await loader.loadAsync(url);
-        return gltf.scene;
-    } else {
-        const loader = new PLYLoader();
-        const geometry = await loader.loadAsync(url);
-
-        if (!geometry || !geometry.attributes.position || geometry.attributes.position.count === 0) {
-            throw new Error("Loaded PLY contains no vertex positions.");
-        }
-
-        const hasFaces = geometry.index !== null && geometry.index.count >= 3;
-        let roadObject;
-
-        if (hasFaces) {
-            geometry.computeVertexNormals();
-            const material = new THREE.MeshStandardMaterial({
-                vertexColors: geometry.hasAttribute("color"),
-                color: geometry.hasAttribute("color") ? 0xffffff : 0x475569,
-                roughness: 0.88,
-                metalness: 0.02,
-                side: THREE.DoubleSide,
-            });
-            roadObject = new THREE.Mesh(geometry, material);
-            roadObject.castShadow = true;
-            roadObject.receiveShadow = true;
-        } else {
-            const material = new THREE.PointsMaterial({
-                size: 0.35,
-                sizeAttenuation: true,
-                vertexColors: geometry.hasAttribute("color"),
-                color: geometry.hasAttribute("color") ? 0xffffff : 0x93c5fd,
-            });
-            roadObject = new THREE.Points(geometry, material);
-        }
-
-        return roadObject;
-    }
-}
-
-async function buildReconstructionMode(reconstruction) {
-    clearReconstruction();
-
-    const meshURL = reconstruction && reconstruction.mesh_url;
-    const pointURL = reconstruction && reconstruction.pointcloud_url;
-    const candidateURLs = [meshURL, pointURL].filter(Boolean);
-
-    for (const url of candidateURLs) {
-        updateThreeStatus("Loading real COLMAP 3D model...");
-        try {
-            const roadObject = await loadReconstructionGeometry(url);
-            roadObject.name = "roadReconstruction";
-
-            normalizeObject(roadObject);
-            reconstructionGroup.add(roadObject);
-            fitCameraToObject(roadObject);
-
-            updateThreeStatus("Real COLMAP 3D model loaded successfully.");
-            return;
-        } catch (error) {
-            console.warn(`Reconstruction candidate ${url} failed:`, error);
-        }
-    }
-
-    clearReconstruction();
-    updateModeBadge("3D RECONSTRUCTION NOT AVAILABLE", false);
-    updateThreeStatus("COLMAP reconstruction not available");
-}
-
-
-// ==========================================================
-// PANORAMA
-// ==========================================================
-
-async function buildPanoramaMode(
-    imagePath
+function updateSummary(
+    data
 ) {
 
-    const geometry =
-        new THREE.SphereGeometry(
-            50,
-            60,
-            40
+    const total =
+        document.getElementById(
+            "totalObjects"
         );
 
 
-    geometry.scale(
-        -1,
-        1,
-        1
-    );
-
-
-    const texture =
-        await new THREE.TextureLoader()
-            .loadAsync(
-                `${API_ENDPOINTS.base}/results/${imagePath}`
-            );
-
-
-    texture.colorSpace =
-        THREE.SRGBColorSpace;
-
-
-    const material =
-        new THREE.MeshBasicMaterial({
-            map: texture
-        });
-
-
-    const sphere =
-        new THREE.Mesh(
-            geometry,
-            material
+    const format =
+        document.getElementById(
+            "mediaFormat"
         );
 
 
-    sphere.name =
-        "panoramaSphere";
+    if (total) {
+
+        total.textContent =
+            data.total_potholes ??
+            data.report?.pothole_count ??
+            0;
+    }
 
 
-    scene.add(
-        sphere
+    if (format) {
+
+        format.textContent =
+            data.report?.media_type ||
+            "--";
+    }
+}
+
+
+// ==========================================================
+// REPORT HEADER / STATS
+// ==========================================================
+
+function updateReportHeader(
+    data
+) {
+
+    const reportId =
+        document.getElementById(
+            "reportId"
+        );
+
+
+    const reconstructionState =
+        document.getElementById(
+            "reconstructionState"
+        );
+
+
+    const pointCount =
+        document.getElementById(
+            "pointCount"
+        );
+
+
+    const meshStatus =
+        document.getElementById(
+            "meshStatus"
+        );
+
+
+    if (reportId) {
+
+        reportId.textContent =
+            data.report?.id ??
+            currentReportId;
+    }
+
+
+    if (reconstructionState) {
+
+        reconstructionState.textContent =
+            "ROAD VISUALIZATION";
+    }
+
+
+    if (pointCount) {
+
+        pointCount.textContent =
+            (data.potholes || []).length;
+    }
+
+
+    if (meshStatus) {
+
+        meshStatus.textContent =
+            "VISUALIZATION";
+    }
+}
+
+
+// ==========================================================
+// MODE BADGE
+// ==========================================================
+
+function updateModeBadge(
+    label,
+    isActive
+) {
+
+    const badge =
+        document.getElementById(
+            "viewModeBadge"
+        );
+
+
+    if (!badge) {
+
+        return;
+    }
+
+
+    badge.textContent =
+        label;
+
+
+    badge.className =
+        "view-mode-badge " +
+        (
+            isActive
+                ? "true-360"
+                : "reconstruction"
+        );
+}
+
+
+// ==========================================================
+// SEVERITY COLORS
+// ==========================================================
+
+function getThreeColor(
+    severity
+) {
+
+    const colors = {
+
+        LOW:
+            0x22c55e,
+
+        MODERATE:
+            0xf59e0b,
+
+        HIGH:
+            0xf97316,
+
+        CRITICAL:
+            0xef4444
+    };
+
+
+    return (
+        colors[
+        String(
+            severity || "LOW"
+        ).toUpperCase()
+        ] ||
+        0x64748b
     );
+}
+
+
+// ==========================================================
+// CAMERA
+// ==========================================================
+
+function frameRoadScene() {
+
+    const target =
+        new THREE.Vector3(
+            0,
+            0,
+            -12
+        );
 
 
     camera.position.set(
         0,
-        0,
-        0.1
+        8,
+        19
+    );
+
+
+    controls.target.copy(
+        target
     );
 
 
     controls.minDistance =
-        0.01;
+        4;
+
 
     controls.maxDistance =
-        0.01;
+        100;
+
+
+    controls.update();
+}
+
+
+// ==========================================================
+// RESET CAMERA
+// ==========================================================
+
+function resetCamera() {
+
+    frameRoadScene();
+
+
+    updateThreeStatus(
+        "Camera reset."
+    );
+}
+
+
+// ==========================================================
+// TOP VIEW
+// ==========================================================
+
+function topRoadView() {
+
+    camera.position.set(
+        0,
+        34,
+        -10
+    );
+
 
     controls.target.set(
         0,
         0,
-        -1
+        -10
     );
 
+
     controls.update();
+
+
+    updateThreeStatus(
+        "Top road view."
+    );
+}
+
+
+// ==========================================================
+// FOCUS ALL POTHOLES
+// ==========================================================
+
+function focusAllPotholes() {
+
+    if (
+        !potholeGroup.children.length
+    ) {
+
+        frameRoadScene();
+
+        return;
+    }
+
+
+    const box =
+        new THREE.Box3()
+            .setFromObject(
+                potholeGroup
+            );
+
+
+    const center =
+        box.getCenter(
+            new THREE.Vector3()
+        );
+
+
+    const size =
+        box.getSize(
+            new THREE.Vector3()
+        );
+
+
+    const maxSize =
+        Math.max(
+            size.x,
+            size.y,
+            size.z,
+            5
+        );
+
+
+    camera.position.set(
+        center.x,
+        center.y + maxSize * 0.8,
+        center.z + maxSize * 1.2
+    );
+
+
+    controls.target.copy(
+        center
+    );
+
+
+    controls.update();
+
+
+    updateThreeStatus(
+        "Focused on detected potholes."
+    );
+}
+
+
+// ==========================================================
+// CLICK DETECTION
+// ==========================================================
+
+function onSceneClick(
+    event
+) {
+
+    const rect =
+        renderer.domElement
+            .getBoundingClientRect();
+
+
+    mouse.x =
+        (
+            (
+                event.clientX -
+                rect.left
+            ) /
+            rect.width
+        ) * 2 - 1;
+
+
+    mouse.y =
+        -(
+            (
+                event.clientY -
+                rect.top
+            ) /
+            rect.height
+        ) * 2 + 1;
+
+
+    raycaster.setFromCamera(
+        mouse,
+        camera
+    );
+
+
+    const clickable =
+        potholeGroup.children.filter(
+            object =>
+                object.userData &&
+                object.userData.pothole_id !== undefined
+        );
+
+
+    const intersections =
+        raycaster.intersectObjects(
+            clickable,
+            false
+        );
+
+
+    if (
+        intersections.length
+    ) {
+
+        const marker =
+            intersections[0]
+                .object
+                .userData;
+
+
+        showPotholeInfo(
+            marker
+        );
+    }
+}
+
+
+// ==========================================================
+// HOVER
+// ==========================================================
+
+function onSceneMouseMove(
+    event
+) {
+
+    const rect =
+        renderer.domElement
+            .getBoundingClientRect();
+
+
+    mouse.x =
+        (
+            (
+                event.clientX -
+                rect.left
+            ) /
+            rect.width
+        ) * 2 - 1;
+
+
+    mouse.y =
+        -(
+            (
+                event.clientY -
+                rect.top
+            ) /
+            rect.height
+        ) * 2 + 1;
+
+
+    raycaster.setFromCamera(
+        mouse,
+        camera
+    );
+
+
+    const clickable =
+        potholeGroup.children.filter(
+            object =>
+                object.userData &&
+                object.userData.pothole_id !== undefined
+        );
+
+
+    const intersections =
+        raycaster.intersectObjects(
+            clickable,
+            false
+        );
+
+
+    renderer.domElement.style.cursor =
+        intersections.length
+            ? "pointer"
+            : "default";
+}
+
+
+// ==========================================================
+// POTHOLE INFO PANEL
+// ==========================================================
+
+function showPotholeInfo(
+    marker
+) {
+
+    const panel =
+        document.getElementById(
+            "potholeInfoPanel"
+        );
+
+
+    if (!panel) {
+
+        return;
+    }
+
+
+    const location =
+        marker.location;
+
+
+    let locationText =
+        "Location unavailable";
+
+
+    if (
+        location &&
+        location.latitude !== undefined &&
+        location.longitude !== undefined
+    ) {
+
+        locationText =
+            `${Number(location.latitude).toFixed(6)}, `
+            + `${Number(location.longitude).toFixed(6)}`;
+    }
+
+
+    const confidence =
+        (
+            Number(
+                marker.confidence || 0
+            ) * 100
+        ).toFixed(0);
+
+
+    panel.innerHTML = `
+        <div class="pothole-info-card">
+
+            <h4>
+                Pothole #${marker.pothole_id ?? "--"}
+            </h4>
+
+            <p>
+                <strong>Severity:</strong>
+                ${marker.severity || "UNKNOWN"}
+            </p>
+
+            <p>
+                <strong>Confidence:</strong>
+                ${confidence}%
+            </p>
+
+            <p>
+                <strong>Location:</strong>
+                ${locationText}
+            </p>
+
+        </div>
+    `;
+}
+
+
+// ==========================================================
+// CLEAR ROAD
+// ==========================================================
+
+function clearRoad() {
+
+    if (!roadGroup) {
+
+        return;
+    }
+
+
+    while (
+        roadGroup.children.length
+    ) {
+
+        const object =
+            roadGroup.children[0];
+
+
+        roadGroup.remove(
+            object
+        );
+
+
+        disposeObject(
+            object
+        );
+    }
+}
+
+
+// ==========================================================
+// CLEAR POTHOLES
+// ==========================================================
+
+function clearPotholes() {
+
+    if (!potholeGroup) {
+
+        return;
+    }
+
+
+    while (
+        potholeGroup.children.length
+    ) {
+
+        const object =
+            potholeGroup.children[0];
+
+
+        potholeGroup.remove(
+            object
+        );
+
+
+        disposeObject(
+            object
+        );
+    }
+}
+
+
+// ==========================================================
+// CLEAR RECONSTRUCTION
+// ==========================================================
+
+function clearReconstruction() {
+
+    if (!reconstructionGroup) {
+
+        return;
+    }
+
+
+    while (
+        reconstructionGroup.children.length
+    ) {
+
+        const object =
+            reconstructionGroup.children[0];
+
+
+        reconstructionGroup.remove(
+            object
+        );
+
+
+        disposeObject(
+            object
+        );
+    }
+}
+
+
+// ==========================================================
+// CLEAR WORLD
+// ==========================================================
+
+function clearWorld() {
+
+    clearRoad();
+
+    clearPotholes();
+
+    clearReconstruction();
+
+
+    reconstructionGroup.visible =
+        false;
+}
+
+
+// ==========================================================
+// DISPOSE OBJECT RECURSIVELY
+// ==========================================================
+
+function disposeObject(
+    object
+) {
+
+    if (!object) {
+
+        return;
+    }
+
+
+    object.traverse(
+        child => {
+
+            if (
+                child.geometry
+            ) {
+
+                child.geometry.dispose();
+            }
+
+
+            if (
+                child.material
+            ) {
+
+                if (
+                    Array.isArray(
+                        child.material
+                    )
+                ) {
+
+                    child.material.forEach(
+                        material =>
+                            disposeMaterial(
+                                material
+                            )
+                    );
+
+                } else {
+
+                    disposeMaterial(
+                        child.material
+                    );
+                }
+            }
+        }
+    );
+}
+
+
+// ==========================================================
+// MATERIAL DISPOSAL
+// ==========================================================
+
+function disposeMaterial(
+    material
+) {
+
+    if (!material) {
+
+        return;
+    }
+
+
+    if (
+        material.map
+    ) {
+
+        material.map.dispose();
+    }
+
+
+    if (
+        material.normalMap
+    ) {
+
+        material.normalMap.dispose();
+    }
+
+
+    if (
+        material.roughnessMap
+    ) {
+
+        material.roughnessMap.dispose();
+    }
+
+
+    if (
+        material.metalnessMap
+    ) {
+
+        material.metalnessMap.dispose();
+    }
+
+
+    material.dispose();
+}
+
+
+// ==========================================================
+// OPTIONAL REAL COLMAP RECONSTRUCTION
+// ==========================================================
+
+async function loadReconstructionGeometry(
+    url
+) {
+
+    const lower =
+        url.toLowerCase();
+
+
+    if (
+        lower.endsWith(
+            ".obj"
+        )
+    ) {
+
+        const loader =
+            new OBJLoader();
+
+
+        return await loader.loadAsync(
+            url
+        );
+    }
+
+
+    if (
+        lower.endsWith(".gltf") ||
+        lower.endsWith(".glb")
+    ) {
+
+        const loader =
+            new GLTFLoader();
+
+
+        const gltf =
+            await loader.loadAsync(
+                url
+            );
+
+
+        return gltf.scene;
+    }
+
+
+    const loader =
+        new PLYLoader();
+
+
+    const geometry =
+        await loader.loadAsync(
+            url
+        );
+
+
+    if (
+        !geometry ||
+        !geometry.attributes.position ||
+        geometry.attributes.position.count === 0
+    ) {
+
+        throw new Error(
+            "PLY contains no vertex positions."
+        );
+    }
+
+
+    const hasFaces =
+        geometry.index &&
+        geometry.index.count >= 3;
+
+
+    if (hasFaces) {
+
+        geometry.computeVertexNormals();
+
+
+        const material =
+            new THREE.MeshStandardMaterial({
+                vertexColors:
+                    geometry.hasAttribute(
+                        "color"
+                    ),
+                color:
+                    geometry.hasAttribute(
+                        "color"
+                    )
+                        ? 0xffffff
+                        : 0x64748b,
+                roughness: 0.9,
+                metalness: 0.02,
+                side: THREE.DoubleSide
+            });
+
+
+        return new THREE.Mesh(
+            geometry,
+            material
+        );
+    }
+
+
+    const material =
+        new THREE.PointsMaterial({
+            size: 0.12,
+            sizeAttenuation: true,
+            vertexColors:
+                geometry.hasAttribute(
+                    "color"
+                ),
+            color:
+                geometry.hasAttribute(
+                    "color"
+                )
+                    ? 0xffffff
+                    : 0x93c5fd
+        });
+
+
+    return new THREE.Points(
+        geometry,
+        material
+    );
+}
+
+
+// ==========================================================
+// OPEN REAL RECONSTRUCTION
+// ==========================================================
+
+async function openRealReconstruction() {
+
+    if (!currentSceneData) {
+
+        showError(
+            "Load a report first."
+        );
+
+        return;
+    }
+
+
+    const reconstruction =
+        currentSceneData.reconstruction;
+
+
+    const meshURL =
+        reconstruction?.mesh_url;
+
+
+    const pointURL =
+        reconstruction?.pointcloud_url;
+
+
+    const candidates =
+        [
+            meshURL,
+            pointURL
+        ].filter(Boolean);
+
+
+    if (!candidates.length) {
+
+        showError(
+            "No COLMAP reconstruction file is available for this report."
+        );
+
+        return;
+    }
+
+
+    showLoadingOverlay(
+        true
+    );
+
+
+    try {
+
+        clearReconstruction();
+
+
+        for (
+            const url of candidates
+        ) {
+
+            try {
+
+                updateThreeStatus(
+                    "Loading real COLMAP reconstruction..."
+                );
+
+
+                const object =
+                    await loadReconstructionGeometry(
+                        url
+                    );
+
+
+                normalizeObject(
+                    object
+                );
+
+
+                object.name =
+                    "realCOLMAPReconstruction";
+
+
+                reconstructionGroup.add(
+                    object
+                );
+
+
+                reconstructionGroup.visible =
+                    true;
+
+
+                roadGroup.visible =
+                    false;
+
+
+                potholeGroup.visible =
+                    false;
+
+
+                fitCameraToObject(
+                    object
+                );
+
+
+                updateModeBadge(
+                    "COLMAP RECONSTRUCTION",
+                    true
+                );
+
+
+                updateThreeStatus(
+                    "Real COLMAP reconstruction loaded."
+                );
+
+
+                return;
+
+            } catch (error) {
+
+                console.warn(
+                    "Reconstruction failed:",
+                    url,
+                    error
+                );
+            }
+        }
+
+
+        throw new Error(
+            "Available reconstruction files could not be loaded."
+        );
+
+
+    } catch (error) {
+
+        showError(
+            error.message
+        );
+
+
+    } finally {
+
+        showLoadingOverlay(
+            false
+        );
+    }
+}
+
+
+// ==========================================================
+// RETURN TO ROAD VIEW
+// ==========================================================
+
+function returnToRoadView() {
+
+    reconstructionGroup.visible =
+        false;
+
+
+    roadGroup.visible =
+        true;
+
+
+    potholeGroup.visible =
+        true;
+
+
+    updateModeBadge(
+        "3D ROAD VISUALIZATION",
+        true
+    );
+
+
+    frameRoadScene();
+
+
+    updateThreeStatus(
+        "3D road visualization active."
+    );
 }
 
 
@@ -829,7 +2824,8 @@ function normalizeObject(
 
 
     const scale =
-        20 / maxDimension;
+        20 /
+        maxDimension;
 
 
     object.scale.setScalar(
@@ -846,7 +2842,7 @@ function normalizeObject(
 
 
 // ==========================================================
-// FIT CAMERA
+// FIT RECONSTRUCTION CAMERA
 // ==========================================================
 
 function fitCameraToObject(
@@ -889,8 +2885,10 @@ function fitCameraToObject(
 
     camera.position.set(
         center.x,
-        center.y + distance * 0.55,
-        center.z + distance
+        center.y +
+        distance * 0.55,
+        center.z +
+        distance
     );
 
 
@@ -918,425 +2916,116 @@ function fitCameraToObject(
 
 
 // ==========================================================
-// POTHOLE MARKERS
+// PHOTOGRAMMETRY BUTTON
 // ==========================================================
 
-function renderPotholeMarkers(
-    markers
-) {
+async function runPhotogrammetryReconstruction() {
 
-    clearPotholes();
+    if (!currentReportId) {
 
+        showError(
+            "Select a report first."
+        );
 
-    markers.forEach(
-        marker => {
-
-            const geometry =
-                new THREE.SphereGeometry(
-                    0.28,
-                    24,
-                    18
-                );
+        return;
+    }
 
 
-            const color =
-                getThreeColor(
-                    marker.severity
-                );
+    const confirmed =
+        window.confirm(
+            `Run photogrammetry reconstruction for report #${currentReportId}?\n\n`
+            +
+            "This can take several minutes."
+        );
 
 
-            const material =
-                new THREE.MeshStandardMaterial({
-                    color,
-                    roughness: 0.45,
-                    metalness: 0.05,
-                    emissive: color,
-                    emissiveIntensity: 0.18,
-                });
+    if (!confirmed) {
+
+        return;
+    }
 
 
-            const mesh =
-                new THREE.Mesh(
-                    geometry,
-                    material
-                );
-
-
-            /*
-             * Detection coordinates are image-space,
-             * so we deliberately map them into a visual
-             * road coordinate system. This is NOT claimed
-             * as measured physical depth.
-             *
-             * The 0..1000 input range is mapped onto the
-             * same 20-unit box that normalizeObject() gives
-             * the reconstructed geometry, so markers land on
-             * the road surface instead of floating outside it.
-             */
-
-            const normalizedX =
-                marker.center_x || 0;
-
-            const normalizedY =
-                marker.center_y || 0;
-
-
-            const x =
-                ((normalizedX % 1000) / 1000) * 20 - 10;
-
-
-            const z =
-                -(
-                    ((normalizedY % 1000) / 1000) * 20 - 10
-                );
-
-
-            mesh.position.set(
-                x,
-                0.15,
-                z
-            );
-
-
-            mesh.userData =
-                marker;
-
-
-            mesh.castShadow =
-                true;
-
-
-            potholeGroup.add(
-                mesh
-            );
-        }
+    showLoadingOverlay(
+        true
     );
-}
 
 
-// ==========================================================
-// CLEAR
-// ==========================================================
+    try {
 
-function clearPotholes() {
-
-    while (
-        potholeGroup.children.length
-    ) {
-
-        const object =
-            potholeGroup.children[0];
-
-        potholeGroup.remove(
-            object
-        );
-
-        disposeObject(
-            object
-        );
-    }
-}
+        const endpoint =
+            `${getPhotogrammetryEndpoint()}/${currentReportId}`;
 
 
-function clearReconstruction() {
-
-    while (
-        reconstructionGroup.children.length
-    ) {
-
-        const object =
-            reconstructionGroup.children[0];
-
-        reconstructionGroup.remove(
-            object
-        );
-
-        disposeObject(
-            object
-        );
-    }
-}
-
-
-function clearWorld() {
-
-    clearPotholes();
-
-    clearReconstruction();
-
-
-    const panorama =
-        scene.getObjectByName(
-            "panoramaSphere"
+        updateThreeStatus(
+            `Running photogrammetry for report #${currentReportId}...`
         );
 
 
-    if (panorama) {
-
-        scene.remove(
-            panorama
-        );
-
-        disposeObject(
-            panorama
-        );
-    }
+        const response =
+            await fetch(
+                endpoint,
+                {
+                    method: "POST"
+                }
+            );
 
 
-    scene.children
-        .filter(
-            child =>
-                child.isLight
-        )
-        .forEach(
-            light => {
-                scene.remove(
-                    light
-                );
+        const raw =
+            await response.text();
+
+
+        let data = null;
+
+
+        if (raw) {
+
+            try {
+
+                data =
+                    JSON.parse(
+                        raw
+                    );
+
+            } catch (error) {
+
+                data = null;
             }
-        );
-}
-
-
-function disposeObject(
-    object
-) {
-
-    if (
-        object.geometry
-    ) {
-
-        object.geometry.dispose();
-    }
-
-
-    if (
-        object.material
-    ) {
-
-        if (
-            Array.isArray(
-                object.material
-            )
-        ) {
-
-            object.material.forEach(
-                material =>
-                    material.dispose()
-            );
-
-        } else {
-
-            object.material.dispose();
         }
-    }
-}
 
 
-// ==========================================================
-// CLICK
-// ==========================================================
+        if (!response.ok) {
 
-function onSceneClick(
-    event
-) {
-
-    const rect =
-        renderer.domElement
-            .getBoundingClientRect();
+            throw new Error(
+                data?.detail ||
+                data?.message ||
+                `HTTP ${response.status}`
+            );
+        }
 
 
-    mouse.x =
-        (
-            (event.clientX - rect.left)
-            / rect.width
-        ) * 2 - 1;
-
-
-    mouse.y =
-        -(
-            (event.clientY - rect.top)
-            / rect.height
-        ) * 2 + 1;
-
-
-    raycaster.setFromCamera(
-        mouse,
-        camera
-    );
-
-
-    const intersections =
-        raycaster.intersectObjects(
-            potholeGroup.children
+        updateThreeStatus(
+            "Photogrammetry completed. Reloading report..."
         );
 
 
-    if (
-        intersections.length
-    ) {
+        await loadRoadView(
+            currentReportId
+        );
 
-        showPotholeInfo(
-            intersections[0]
-                .object
-                .userData
+
+    } catch (error) {
+
+        showError(
+            `Photogrammetry failed: ${error.message}`
+        );
+
+
+    } finally {
+
+        showLoadingOverlay(
+            false
         );
     }
-}
-
-
-// ==========================================================
-// INFO PANEL
-// ==========================================================
-
-function showPotholeInfo(
-    marker
-) {
-
-    const panel =
-        document.getElementById(
-            "potholeInfoPanel"
-        );
-
-
-    if (!panel) {
-        return;
-    }
-
-
-    const location =
-        marker.location;
-
-
-    const locationText =
-        location &&
-        location.latitude !== undefined
-            ? `${Number(location.latitude).toFixed(6)}, ${Number(location.longitude).toFixed(6)}`
-            : "Location unavailable";
-
-
-    panel.innerHTML = `
-        <div class="pothole-info-card">
-            <h4>Pothole #${marker.pothole_id}</h4>
-
-            <p>
-                <strong>Severity:</strong>
-                ${marker.severity}
-            </p>
-
-            <p>
-                <strong>Confidence:</strong>
-                ${(Number(marker.confidence || 0) * 100).toFixed(0)}%
-            </p>
-
-            <p>
-                <strong>Location:</strong>
-                ${locationText}
-            </p>
-        </div>
-    `;
-}
-
-
-// ==========================================================
-// SUMMARY
-// ==========================================================
-
-function updateSummary(
-    data
-) {
-
-    const total =
-        document.getElementById(
-            "totalObjects"
-        );
-
-    const format =
-        document.getElementById(
-            "mediaFormat"
-        );
-
-
-    if (total) {
-
-        total.textContent =
-            data.total_potholes || 0;
-    }
-
-
-    if (format) {
-
-        format.textContent =
-            data.report &&
-            data.report.media_type
-                ? data.report.media_type
-                : "--";
-    }
-}
-
-
-// ==========================================================
-// MODE BADGE
-// ==========================================================
-
-function updateModeBadge(
-    label,
-    isReal
-) {
-
-    const badge =
-        document.getElementById(
-            "viewModeBadge"
-        );
-
-
-    if (!badge) {
-        return;
-    }
-
-
-    badge.textContent =
-        label;
-
-
-    badge.className =
-        "view-mode-badge " +
-        (
-            isReal
-                ? "true-360"
-                : "reconstruction"
-        );
-}
-
-
-// ==========================================================
-// COLORS
-// ==========================================================
-
-function getThreeColor(
-    severity
-) {
-
-    const colors = {
-
-        LOW: 0x22c55e,
-
-        MODERATE: 0xf59e0b,
-
-        HIGH: 0xf97316,
-
-        CRITICAL: 0xef4444,
-    };
-
-
-    return (
-        colors[
-            String(
-                severity || "LOW"
-            ).toUpperCase()
-        ] ||
-        0x64748b
-    );
 }
 
 
@@ -1358,9 +3047,7 @@ function initializeControls() {
             "click",
             () => {
 
-                if (
-                    currentReportId
-                ) {
+                if (currentReportId) {
 
                     loadRoadView(
                         currentReportId
@@ -1386,207 +3073,102 @@ function initializeControls() {
     }
 
 
-    /*
-     * "Build 3D Model"
-     *
-     * Calls the registered endpoint:
-     *
-     *     POST /api/photogrammetry/reconstruct/<report_id>
-     */
-    const buildModel =
+    const topView =
+        document.getElementById(
+            "topViewBtn"
+        );
+
+
+    if (topView) {
+
+        topView.addEventListener(
+            "click",
+            topRoadView
+        );
+    }
+
+
+    const focus =
+        document.getElementById(
+            "focusPotholesBtn"
+        );
+
+
+    if (focus) {
+
+        focus.addEventListener(
+            "click",
+            focusAllPotholes
+        );
+    }
+
+
+    const build =
         document.getElementById(
             "runReconstructionBtn"
         );
 
 
-    if (buildModel) {
+    if (build) {
 
-        buildModel.addEventListener(
+        build.addEventListener(
             "click",
             runPhotogrammetryReconstruction
         );
     }
 
 
-    /*
-     * "Open 3D Reconstruction"
-     *
-     * Opens the dedicated reconstruction viewer for the
-     * currently selected report.
-     */
-    const openReconstruction =
+    const open =
         document.getElementById(
             "openPlyViewerBtn"
         );
 
 
-    if (openReconstruction) {
+    if (open) {
 
-        openReconstruction.addEventListener(
+        open.addEventListener(
+            "click",
+            openRealReconstruction
+        );
+    }
+
+
+    const roadView =
+        document.getElementById(
+            "roadViewBtn"
+        );
+
+
+    if (roadView) {
+
+        roadView.addEventListener(
+            "click",
+            returnToRoadView
+        );
+    }
+
+
+    const retry =
+        document.getElementById(
+            "retryBtn"
+        );
+
+
+    if (retry) {
+
+        retry.addEventListener(
             "click",
             () => {
 
-                if (!currentReportId) {
+                if (currentReportId) {
 
-                    showError(
-                        "Select a report before opening the "
-                        + "reconstruction viewer."
+                    loadRoadView(
+                        currentReportId
                     );
-
-                    return;
                 }
-
-
-                window.open(
-                    `${API_ENDPOINTS.base}/3d-view`
-                    + `?report_id=${currentReportId}`,
-                    "_blank"
-                );
             }
         );
     }
-}
-
-
-/**
- * Run photogrammetry for the selected report, then reload
- * the scene so the freshly built geometry is displayed.
- */
-async function runPhotogrammetryReconstruction() {
-
-    if (!currentReportId) {
-
-        showError(
-            "Select a report before building a 3D model."
-        );
-
-        return;
-    }
-
-
-    const confirmed =
-        window.confirm(
-            `Run photogrammetry reconstruction for report `
-            + `#${currentReportId}?\n\n`
-            + `This re-processes the stored video and can take `
-            + `several minutes.`
-        );
-
-
-    if (!confirmed) {
-        return;
-    }
-
-
-    showLoadingOverlay(
-        true
-    );
-
-    updateThreeStatus(
-        `Running photogrammetry for report #${currentReportId}…`
-    );
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_ENDPOINTS.photogrammetryReconstruct}/${currentReportId}`,
-                {
-                    method: "POST",
-                }
-            );
-
-
-        const rawBody =
-            await response.text();
-
-
-        let payload = null;
-
-
-        if (rawBody) {
-
-            try {
-
-                payload = JSON.parse(
-                    rawBody
-                );
-
-            } catch (parseError) {
-
-                payload = null;
-            }
-        }
-
-
-        if (!response.ok) {
-
-            const detail =
-                payload &&
-                (payload.detail || payload.message);
-
-
-            throw new Error(
-                detail
-                    ? `HTTP ${response.status}: ${detail}`
-                    : `HTTP ${response.status} from `
-                    + `/api/photogrammetry/reconstruct/`
-                    + `${currentReportId}.`
-            );
-        }
-
-
-        updateThreeStatus(
-            `Photogrammetry finished for report `
-            + `#${currentReportId}. Reloading scene…`
-        );
-
-
-        await loadRoadView(
-            currentReportId
-        );
-
-
-    } catch (error) {
-
-        showError(
-            `Build 3D Model failed for report `
-            + `#${currentReportId}: ${error.message}`
-        );
-
-
-    } finally {
-
-        showLoadingOverlay(
-            false
-        );
-    }
-}
-
-
-function resetCamera() {
-
-    camera.position.set(
-        0,
-        5,
-        16
-    );
-
-
-    controls.target.set(
-        0,
-        0,
-        -10
-    );
-
-
-    controls.update();
-
-
-    updateThreeStatus(
-        "Camera reset."
-    );
 }
 
 
@@ -1630,7 +3212,7 @@ function resizeThreeViewer() {
 
     const container =
         document.getElementById(
-            "threeContainer"
+            "three-container"
         );
 
 
@@ -1653,8 +3235,8 @@ function resizeThreeViewer() {
 
 
     if (
-        !width ||
-        !height
+        width <= 0 ||
+        height <= 0
     ) {
 
         return;
@@ -1662,7 +3244,8 @@ function resizeThreeViewer() {
 
 
     camera.aspect =
-        width / height;
+        width /
+        height;
 
 
     camera.updateProjectionMatrix();
@@ -1676,34 +3259,35 @@ function resizeThreeViewer() {
 
 
 // ==========================================================
-// UI
+// LOADING UI
 // ==========================================================
 
 function showLoadingOverlay(
     visible
 ) {
 
-    const overlay =
+    const loading =
         document.getElementById(
-            "loadingOverlay"
+            "loading"
         );
 
 
-    if (!overlay) {
+    if (!loading) {
+
         return;
     }
 
 
-    overlay.style.opacity =
-        visible ? "1" : "0";
-
-
-    overlay.style.pointerEvents =
+    loading.style.display =
         visible
-            ? "auto"
+            ? "flex"
             : "none";
 }
 
+
+// ==========================================================
+// STATUS
+// ==========================================================
 
 function updateThreeStatus(
     message
@@ -1722,11 +3306,19 @@ function updateThreeStatus(
     }
 
 
-    /*
-     * #threeStatus lives inside the loading overlay, so it is
-     * hidden the moment the overlay fades out. Mirror every
-     * message into the persistent status bar too.
-     */
+    const reconstructionStatus =
+        document.getElementById(
+            "reconstructionStatus"
+        );
+
+
+    if (reconstructionStatus) {
+
+        reconstructionStatus.textContent =
+            message;
+    }
+
+
     setStatusBar(
         message,
         false
@@ -1734,16 +3326,16 @@ function updateThreeStatus(
 
 
     console.log(
-        "3D:",
+        "RoadGuard 3D:",
         message
     );
 }
 
 
-/**
- * Write to the status bar that sits outside the loading
- * overlay, so messages stay readable after loading finishes.
- */
+// ==========================================================
+// STATUS BAR
+// ==========================================================
+
 function setStatusBar(
     message,
     isError
@@ -1756,6 +3348,7 @@ function setStatusBar(
 
 
     if (!bar) {
+
         return;
     }
 
@@ -1764,31 +3357,29 @@ function setStatusBar(
         message;
 
 
-    if (isError) {
-
-        bar.classList.add(
-            "error"
-        );
-
-    } else {
-
-        bar.classList.remove(
-            "error"
-        );
-    }
+    bar.classList.toggle(
+        "error",
+        Boolean(isError)
+    );
 }
 
 
-/**
- * Stop the spinner and surface a real, visible error.
- */
+// ==========================================================
+// ERROR
+// ==========================================================
+
 function showError(
     message
 ) {
 
     console.error(
-        "3D error:",
+        "RoadGuard 3D:",
         message
+    );
+
+
+    showLoadingOverlay(
+        false
     );
 
 
@@ -1798,19 +3389,36 @@ function showError(
     );
 
 
-    const status =
+    const errorMessage =
         document.getElementById(
-            "threeStatus"
+            "errorMessage"
         );
 
 
-    if (status) {
+    const errorDetail =
+        document.getElementById(
+            "errorDetail"
+        );
 
-        status.textContent =
+
+    if (errorDetail) {
+
+        errorDetail.textContent =
             message;
+    }
+
+
+    if (errorMessage) {
+
+        errorMessage.style.display =
+            "flex";
     }
 }
 
+
+// ==========================================================
+// CLEANUP
+// ==========================================================
 
 window.addEventListener(
     "beforeunload",
@@ -1821,6 +3429,12 @@ window.addEventListener(
             cancelAnimationFrame(
                 animationId
             );
+        }
+
+
+        if (renderer) {
+
+            renderer.dispose();
         }
     }
 );

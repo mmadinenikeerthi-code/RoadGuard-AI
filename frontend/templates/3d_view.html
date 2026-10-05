@@ -25,369 +25,612 @@
 
 
     <!-- =====================================================
-         ROADGUARD 3D PAGE — FORCE FULL AVAILABLE WIDTH
-
-         These rules ONLY control page/layout sizing.
-
-         They DO NOT create any 3D geometry.
-
-         The 3D model is loaded exclusively from the
-         real COLMAP reconstruction through roadguard-3d.js.
+         3D ROAD VIEW STYLES
     ====================================================== -->
 
     <style>
         /* =====================================================
-           HTML / BODY
-        ====================================================== */
+           PAGE
+        ===================================================== */
 
         html,
         body {
-            margin: 0 !important;
-            padding: 0 !important;
 
-            width: 100% !important;
+            margin: 0;
+            padding: 0;
 
-            min-width: 0 !important;
-            max-width: none !important;
+            width: 100%;
+            min-height: 100%;
 
-            overflow-x: hidden !important;
+            overflow-x: hidden;
+
         }
 
 
         body {
-            display: block !important;
+
+            background: #07111f;
+
         }
 
 
-        /* =====================================================
-           MAIN APPLICATION
-        ====================================================== */
-
         .app {
-            display: flex !important;
 
-            flex-direction: row !important;
+            display: flex;
 
-            align-items: stretch !important;
+            flex-direction: row;
 
-            width: 100vw !important;
+            width: 100vw;
 
-            min-width: 0 !important;
-            max-width: none !important;
+            min-height: 100vh;
 
-            min-height: 100vh !important;
-
-            margin: 0 !important;
-            padding: 0 !important;
         }
 
 
         /* =====================================================
            SIDEBAR
-        ====================================================== */
+        ===================================================== */
 
-        .app>.sidebar,
-        .sidebar {
+        .app>.sidebar {
 
-            flex: 0 0 260px !important;
+            flex: 0 0 260px;
 
-            width: 260px !important;
+            width: 260px;
+            min-width: 260px;
 
-            min-width: 260px !important;
-            max-width: 260px !important;
+            box-sizing: border-box;
 
-            box-sizing: border-box !important;
         }
 
 
         /* =====================================================
-           MAIN AREA
-        ====================================================== */
+           MAIN
+        ===================================================== */
 
-        .app>.main,
         .main {
 
-            flex: 1 1 0% !important;
+            flex: 1 1 auto;
 
-            width: auto !important;
+            min-width: 0;
 
-            min-width: 0 !important;
-            max-width: none !important;
+            width: auto;
 
-            margin: 0 !important;
-            padding: 0 !important;
+            overflow-x: hidden;
 
-            box-sizing: border-box !important;
-
-            display: block !important;
-
-            overflow-x: hidden !important;
         }
 
 
         /* =====================================================
-           TOP BAR
-        ====================================================== */
+           CONTENT
+        ===================================================== */
 
-        .main>.topbar,
-        .topbar {
-
-            width: 100% !important;
-
-            min-width: 0 !important;
-            max-width: none !important;
-
-            box-sizing: border-box !important;
-        }
-
-
-        /* =====================================================
-           PAGE CONTENT
-        ====================================================== */
-
-        .main>.content,
         .content {
 
-            display: block !important;
+            width: 100%;
 
-            width: 100% !important;
+            box-sizing: border-box;
 
-            min-width: 0 !important;
-            max-width: none !important;
+            padding: 24px;
 
-            margin: 0 !important;
-
-            padding: 24px !important;
-
-            box-sizing: border-box !important;
         }
 
 
         /* =====================================================
-           CARDS
-        ====================================================== */
+           CARD
+        ===================================================== */
 
-        .content>.card {
+        .card {
 
-            display: block !important;
+            width: 100%;
 
-            width: 100% !important;
+            box-sizing: border-box;
 
-            min-width: 0 !important;
-            max-width: none !important;
+            margin-bottom: 24px;
 
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-
-            box-sizing: border-box !important;
         }
 
 
         /* =====================================================
-           3D VIEWER CONTAINER
+           3D HEADER
+        ===================================================== */
 
-           IMPORTANT:
-           This is ONLY the viewport for the real
-           Three.js / COLMAP reconstruction.
+        .three-header {
 
-           NO procedural geometry is created here.
-        ====================================================== */
+            display: flex;
 
-        #three-container {
+            justify-content: space-between;
 
-            position: relative !important;
+            align-items: center;
 
-            display: block !important;
+            gap: 20px;
 
-            width: 100% !important;
+            margin-bottom: 18px;
 
-            min-width: 0 !important;
-            max-width: none !important;
+        }
 
-            height: 600px !important;
 
-            min-height: 600px !important;
+        .three-header-left h2 {
 
-            margin: 0 !important;
-            padding: 0 !important;
+            margin: 0 0 6px 0;
 
-            box-sizing: border-box !important;
+        }
 
-            overflow: hidden !important;
+
+        .three-header-left p {
+
+            margin: 0;
+
+            opacity: 0.75;
+
         }
 
 
         /* =====================================================
-           THREE.JS CANVAS
-        ====================================================== */
+           CONTROLS
+        ===================================================== */
 
-        #three-container canvas {
+        .three-controls {
 
-            display: block !important;
+            display: flex;
 
-            width: 100% !important;
+            align-items: center;
 
-            height: 100% !important;
+            flex-wrap: wrap;
 
-            min-width: 0 !important;
-            max-width: none !important;
+            gap: 10px;
 
-            margin: 0 !important;
-            padding: 0 !important;
+            margin-bottom: 16px;
 
-            box-sizing: border-box !important;
+        }
+
+
+        .three-controls select {
+
+            min-width: 250px;
+
+            padding: 10px 12px;
+
+            border-radius: 8px;
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            background: #101b2d;
+
+            color: #fff;
+
+        }
+
+
+        .three-controls button {
+
+            padding: 10px 14px;
+
+            border-radius: 8px;
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            background: #16243a;
+
+            color: #fff;
+
+            cursor: pointer;
+
+        }
+
+
+        .three-controls button:hover {
+
+            background: #203451;
+
         }
 
 
         /* =====================================================
-           LOADING / ERROR OVERLAYS
-        ====================================================== */
+           MODE BADGE
+        ===================================================== */
 
-        #loading,
-        #errorMessage {
+        .view-mode-badge {
 
-            position: absolute !important;
+            display: inline-flex;
 
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
+            align-items: center;
 
-            width: 100% !important;
-            height: 100% !important;
+            padding: 7px 12px;
 
-            box-sizing: border-box !important;
+            border-radius: 999px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.04em;
+
+            margin-bottom: 14px;
+
+        }
+
+
+        .view-mode-badge.true-360 {
+
+            background: rgba(34, 197, 94, 0.15);
+
+            color: #4ade80;
+
+            border: 1px solid rgba(34, 197, 94, 0.3);
+
+        }
+
+
+        .view-mode-badge.reconstruction {
+
+            background: rgba(245, 158, 11, 0.15);
+
+            color: #fbbf24;
+
+            border: 1px solid rgba(245, 158, 11, 0.3);
+
         }
 
 
         /* =====================================================
-           HIDDEN STATE
-        ====================================================== */
+           3D VIEWER
+        ===================================================== */
 
-        #loading.hidden,
-        #errorMessage.hidden {
+        #threeContainer {
 
-            display: none !important;
+            position: relative;
+
+            width: 100%;
+
+            height: 650px;
+
+            min-height: 500px;
+
+            overflow: hidden;
+
+            border-radius: 14px;
+
+            background: #050b15;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        #threeContainer canvas {
+
+            display: block;
+
+            width: 100%;
+
+            height: 100%;
+
         }
 
 
         /* =====================================================
-           RECONSTRUCTION STATUS
-        ====================================================== */
+           LOADING OVERLAY
+        ===================================================== */
 
-        #reconstructionStatus {
+        #loadingOverlay {
 
-            width: 100% !important;
+            position: absolute;
 
-            min-width: 0 !important;
+            inset: 0;
 
-            box-sizing: border-box !important;
+            z-index: 20;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            text-align: center;
+
+            background: rgba(5, 11, 21, 0.88);
+
+            backdrop-filter: blur(4px);
+
+            transition: opacity 0.25s ease;
+
+        }
+
+
+        .three-loader {
+
+            width: 42px;
+
+            height: 42px;
+
+            border-radius: 50%;
+
+            border: 4px solid rgba(255, 255, 255, 0.12);
+
+            border-top-color: #60a5fa;
+
+            animation: threeSpin 0.8s linear infinite;
+
+            margin-bottom: 18px;
+
+        }
+
+
+        @keyframes threeSpin {
+
+            to {
+
+                transform: rotate(360deg);
+
+            }
+
+        }
+
+
+        #loadingOverlay h3 {
+
+            margin: 0 0 8px;
+
+        }
+
+
+        #loadingOverlay p {
+
+            margin: 0;
+
+            opacity: 0.7;
+
         }
 
 
         /* =====================================================
-           STATS
-        ====================================================== */
+           STATUS BAR
+        ===================================================== */
 
-        .stats-grid {
+        #threeStatusBar {
 
-            width: 100% !important;
+            margin-top: 12px;
 
-            min-width: 0 !important;
+            padding: 11px 14px;
 
-            box-sizing: border-box !important;
+            border-radius: 8px;
+
+            background: #101b2d;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            font-size: 13px;
+
+            color: #cbd5e1;
+
+        }
+
+
+        #threeStatusBar.error {
+
+            color: #fca5a5;
+
+            border-color: rgba(239, 68, 68, 0.35);
+
         }
 
 
         /* =====================================================
-           RESPONSIVE — TABLET
+           SUMMARY
+        ===================================================== */
+
+        .three-summary {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 14px;
+
+            margin-bottom: 18px;
+
+        }
+
+
+        .three-stat {
+
+            padding: 16px;
+
+            border-radius: 10px;
+
+            background: #101b2d;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        .three-stat-label {
+
+            display: block;
+
+            font-size: 12px;
+
+            opacity: 0.65;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .three-stat-value {
+
+            display: block;
+
+            font-size: 22px;
+
+            font-weight: 700;
+
+        }
+
+
+        /* =====================================================
+           POTHOLE INFO
+        ===================================================== */
+
+        #potholeInfoPanel {
+
+            margin-top: 16px;
+
+        }
+
+
+        .pothole-info-card {
+
+            padding: 18px;
+
+            border-radius: 10px;
+
+            background: #101b2d;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        .pothole-info-card h4 {
+
+            margin-top: 0;
+
+        }
+
+
+        .pothole-info-card p {
+
+            margin: 8px 0;
+
+        }
+
+
+        /* =====================================================
+           PIPELINE
+        ===================================================== */
+
+        .pipeline-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 14px;
+
+        }
+
+
+        .pipeline-item {
+
+            padding: 18px;
+
+            border-radius: 10px;
+
+            background: #101b2d;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        .pipeline-item h3 {
+
+            margin-top: 0;
+
+        }
+
+
+        .pipeline-item p {
+
+            opacity: 0.75;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* =====================================================
+           MOBILE
         ====================================================== */
 
-        @media (max-width: 900px) {
+        @media (max-width: 1000px) {
 
-            .app {
+            .three-summary {
 
-                width: 100% !important;
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
 
             }
 
 
-            .sidebar {
+            .pipeline-grid {
 
-                flex: 0 0 220px !important;
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
 
-                width: 220px !important;
-
-                min-width: 220px !important;
-                max-width: 220px !important;
-            }
-
-
-            .main {
-
-                flex: 1 1 0% !important;
-
-                width: auto !important;
-
-                min-width: 0 !important;
-            }
-
-
-            #three-container {
-
-                height: 500px !important;
-
-                min-height: 500px !important;
             }
 
         }
 
-
-        /* =====================================================
-           RESPONSIVE — MOBILE
-        ====================================================== */
 
         @media (max-width: 700px) {
 
             .app {
 
-                display: block !important;
+                display: block;
+
             }
 
 
-            .sidebar {
+            .app>.sidebar {
 
-                width: 100% !important;
+                width: 100%;
 
-                min-width: 0 !important;
+                min-width: 0;
 
-                max-width: none !important;
-            }
-
-
-            .main {
-
-                width: 100% !important;
-
-                min-width: 0 !important;
             }
 
 
             .content {
 
-                width: 100% !important;
+                padding: 16px;
 
-                padding: 16px !important;
             }
 
 
-            #three-container {
+            #threeContainer {
 
-                width: 100% !important;
+                height: 500px;
 
-                height: 500px !important;
+            }
 
-                min-height: 500px !important;
+
+            .three-summary {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .pipeline-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .three-header {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+
             }
 
         }
@@ -398,28 +641,21 @@
 
 <body>
 
-    <!-- =====================================================
-         APPLICATION
-    ====================================================== -->
 
     <div class="app">
 
 
         <!-- =====================================================
-             SIDEBAR
-        ====================================================== -->
+         SIDEBAR
+    ====================================================== -->
 
         <aside class="sidebar" id="sidebar">
-
-
-            <!-- BRAND -->
 
             <div class="brand">
 
                 <div class="brand-logo">
                     RG
                 </div>
-
 
                 <div class="brand-text">
 
@@ -436,14 +672,7 @@
             </div>
 
 
-            <!-- =================================================
-                 NAVIGATION
-            ================================================== -->
-
             <nav class="navigation">
-
-
-                <!-- DASHBOARD -->
 
                 <a href="/" class="nav-item">
 
@@ -458,8 +687,6 @@
                 </a>
 
 
-                <!-- AI DETECTION -->
-
                 <a href="/detect" class="nav-item">
 
                     <span class="nav-icon">
@@ -473,9 +700,7 @@
                 </a>
 
 
-                <!-- 3D ROAD VIEW -->
-
-                <a href="/3d-view?report_id=24" class="nav-item active">
+                <a href="/3d-view" class="nav-item active">
 
                     <span class="nav-icon">
                         &#9671;
@@ -487,8 +712,6 @@
 
                 </a>
 
-
-                <!-- ANALYTICS -->
 
                 <a href="/analytics" class="nav-item">
 
@@ -503,8 +726,6 @@
                 </a>
 
 
-                <!-- REPORTS -->
-
                 <a href="/reports" class="nav-item">
 
                     <span class="nav-icon">
@@ -517,8 +738,6 @@
 
                 </a>
 
-
-                <!-- MAP -->
 
                 <a href="/map" class="nav-item">
 
@@ -535,10 +754,6 @@
             </nav>
 
 
-            <!-- =================================================
-                 SYSTEM STATUS
-            ================================================== -->
-
             <div class="system-status">
 
                 <span class="status-dot"></span>
@@ -553,18 +768,15 @@
 
 
         <!-- =====================================================
-             MAIN
-        ====================================================== -->
+         MAIN
+    ====================================================== -->
 
         <main class="main">
 
 
-            <!-- =================================================
-                 TOP BAR
-            ================================================== -->
+            <!-- TOPBAR -->
 
             <header class="topbar">
-
 
                 <div class="topbar-left">
 
@@ -582,7 +794,7 @@
 
                             &middot;
 
-                            COLMAP-Based Road Reconstruction
+                            AI-Powered Road Damage Visualization
 
                         </p>
 
@@ -608,118 +820,170 @@
             </header>
 
 
-            <!-- =================================================
-                 PAGE CONTENT
-            ================================================== -->
+            <!-- CONTENT -->
 
             <div class="content">
 
 
                 <!-- =================================================
-                     3D VIEWER CARD
-                ================================================== -->
+                 MAIN 3D CARD
+            ================================================== -->
 
                 <section class="card">
 
 
-                    <!-- SECTION HEADER -->
+                    <div class="three-header">
 
-                    <div class="section-header">
+                        <div class="three-header-left">
 
-                        <h2>
+                            <h2>
 
-                            <i class="fas fa-cube" aria-hidden="true"></i>
+                                <i class="fas fa-road" aria-hidden="true"></i>
 
-                            Real 3D Road Reconstruction
+                                3D Road Visualization
 
-                        </h2>
+                            </h2>
+
+                            <p>
+
+                                Interactive road view with
+                                report-specific pothole detections.
+
+                            </p>
+
+                        </div>
 
 
-                        <p>
+                        <div>
 
-                            View the actual photogrammetric
-                            reconstruction generated from road imagery.
+                            <span id="viewModeBadge" class="view-mode-badge reconstruction">
 
-                        </p>
+                                3D ROAD VIEW
+
+                            </span>
+
+                        </div>
 
                     </div>
 
 
-                    <!-- =================================================
-                         RECONSTRUCTION STATUS
-                    ================================================== -->
+                    <!-- REPORT CONTROLS -->
 
-                    <div id="reconstructionStatus" class="status-message">
+                    <div class="three-controls">
 
-                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
 
-                        Loading reconstruction...
+                        <label for="reportSelector">
+                            Report:
+                        </label>
+
+
+                        <select id="reportSelector">
+
+                            <option value="">
+                                Loading reports...
+                            </option>
+
+                        </select>
+
+
+                        <button id="reloadSceneBtn" type="button">
+
+                            <i class="fas fa-rotate"></i>
+
+                            Reload
+
+                        </button>
+
+
+                        <button id="resetCameraBtn" type="button">
+
+                            <i class="fas fa-camera"></i>
+
+                            Reset Camera
+
+                        </button>
+
+
+                        <button id="runReconstructionBtn" type="button">
+
+                            <i class="fas fa-cubes"></i>
+
+                            Build 3D Model
+
+                        </button>
+
+
+                        <button id="openPlyViewerBtn" type="button">
+
+                            <i class="fas fa-expand"></i>
+
+                            Open 3D Reconstruction
+
+                        </button>
 
                     </div>
 
 
-                    <!-- =================================================
-                         REPORT INFORMATION
-                    ================================================== -->
+                    <!-- SUMMARY -->
 
-                    <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="three-summary">
 
 
-                        <!-- REPORT ID -->
+                        <div class="three-stat">
 
-                        <div class="stat-card">
-
-                            <span class="stat-label">
+                            <span class="three-stat-label">
                                 Report ID
                             </span>
 
-                            <strong id="reportId">
+                            <strong class="three-stat-value" id="reportId">
+
                                 --
+
                             </strong>
 
                         </div>
 
 
-                        <!-- RECONSTRUCTION -->
+                        <div class="three-stat">
 
-                        <div class="stat-card">
-
-                            <span class="stat-label">
-                                Reconstruction
+                            <span class="three-stat-label">
+                                Detected Potholes
                             </span>
 
-                            <strong id="reconstructionState">
+                            <strong class="three-stat-value" id="totalObjects">
+
                                 --
+
                             </strong>
 
                         </div>
 
 
-                        <!-- 3D POINTS -->
+                        <div class="three-stat">
 
-                        <div class="stat-card">
-
-                            <span class="stat-label">
-                                3D Points
+                            <span class="three-stat-label">
+                                Media Type
                             </span>
 
-                            <strong id="pointCount">
+                            <strong class="three-stat-value" id="mediaFormat">
+
                                 --
+
                             </strong>
 
                         </div>
 
 
-                        <!-- MESH -->
+                        <div class="three-stat">
 
-                        <div class="stat-card">
-
-                            <span class="stat-label">
-                                Mesh
+                            <span class="three-stat-label">
+                                3D Mode
                             </span>
 
-                            <strong id="meshStatus">
-                                --
+                            <strong class="three-stat-value">
+
+                                ROAD VIEW
+
                             </strong>
 
                         </div>
@@ -728,196 +992,161 @@
 
 
                     <!-- =================================================
-                         REAL THREE.JS VIEWER
+                     THREE.JS CONTAINER
+                ================================================== -->
 
-                         IMPORTANT:
-
-                         This container only hosts the REAL
-                         COLMAP reconstruction.
-
-                         No procedural road.
-                         No PlaneGeometry.
-                         No BoxGeometry.
-                         No GridHelper.
-                         No synthetic mesh.
-                    ================================================== -->
-
-                    <div id="three-container" class="three-viewer-container">
+                    <div id="threeContainer">
 
 
-                        <!-- =================================================
-                             LOADING OVERLAY
-                        ================================================== -->
+                        <!-- LOADING -->
 
-                        <div id="loading" class="viewer-message">
+                        <div id="loadingOverlay">
 
-                            <div class="loader"></div>
-
+                            <div class="three-loader"></div>
 
                             <h3>
-                                Loading 3D Reconstruction
+                                Loading 3D Road View
                             </h3>
 
+                            <p id="threeStatus">
 
-                            <p id="loadingText">
-
-                                Loading real COLMAP reconstruction...
+                                Loading report...
 
                             </p>
 
                         </div>
 
-
-                        <!-- =================================================
-                             ERROR OVERLAY
-                        ================================================== -->
-
-                        <div id="errorMessage" class="viewer-message hidden" style="display:none;">
-
-
-                            <div class="empty-icon">
-
-                                <i class="fas fa-cube" aria-hidden="true"></i>
-
-                            </div>
-
-
-                            <h3 id="errorTitle">
-
-                                3D Reconstruction Unavailable
-
-                            </h3>
-
-
-                            <p id="errorDetail">
-
-                                No valid COLMAP reconstruction is
-                                currently available.
-
-                            </p>
-
-
-                            <button id="retryBtn" type="button">
-
-                                Retry
-
-                            </button>
-
-                        </div>
-
-
-                        <!-- =================================================
-                             THREE.JS INSERTS ITS CANVAS HERE
-                        ================================================== -->
 
                     </div>
+
+
+                    <!-- STATUS -->
+
+                    <div id="threeStatusBar">
+
+                        Loading 3D road view...
+
+                    </div>
+
+
+                    <!-- POTHOLE DETAILS -->
+
+                    <div id="potholeInfoPanel">
+
+                        <div class="pothole-info-card">
+
+                            <h4>
+                                Pothole Details
+                            </h4>
+
+                            <p>
+                                Click a pothole marker in the
+                                3D road view to inspect it.
+                            </p>
+
+                        </div>
+
+                    </div>
+
 
                 </section>
 
 
                 <!-- =================================================
-                     RECONSTRUCTION PIPELINE
-                ================================================== -->
+                 WHAT THIS VIEW REPRESENTS
+            ================================================== -->
 
                 <section class="card">
 
-
                     <h2>
 
-                        <i class="fas fa-diagram-project" aria-hidden="true"></i>
+                        <i class="fas fa-layer-group"></i>
 
-                        Reconstruction Pipeline
+                        RoadGuard AI 3D Visualization
 
                     </h2>
 
+                    <p>
 
-                    <p style="margin-bottom:20px;">
-
-                        RoadGuard AI uses a real photogrammetry
-                        pipeline. The viewer displays reconstruction
-                        output generated by COLMAP and does not
-                        generate a synthetic road when reconstruction
-                        data is unavailable.
+                        This view provides an interactive
+                        Three.js representation of the road
+                        inspection scene. Pothole markers are
+                        loaded from the selected RoadGuard AI
+                        report and displayed on the road surface.
 
                     </p>
 
 
-                    <div class="features">
+                    <div class="pipeline-grid">
 
 
-                        <!-- IMAGE INPUT -->
-
-                        <div class="feature-card">
+                        <div class="pipeline-item">
 
                             <h3>
-                                1. Image Input
+                                1. Road Imagery
                             </h3>
 
                             <p>
 
-                                Road imagery is supplied to the
-                                photogrammetry pipeline.
+                                Road images or videos are supplied
+                                to the RoadGuard AI detection pipeline.
 
                             </p>
 
                         </div>
 
 
-                        <!-- COLMAP -->
-
-                        <div class="feature-card">
+                        <div class="pipeline-item">
 
                             <h3>
-                                2. COLMAP SfM
+                                2. AI Detection
                             </h3>
 
                             <p>
 
-                                COLMAP performs feature extraction,
-                                image matching, camera estimation,
-                                and sparse reconstruction.
+                                YOLO-based detection identifies
+                                potholes and stores their report
+                                metadata.
 
                             </p>
 
                         </div>
 
 
-                        <!-- DENSE -->
-
-                        <div class="feature-card">
+                        <div class="pipeline-item">
 
                             <h3>
-                                3. Dense Reconstruction
+                                3. 3D Visualization
                             </h3>
 
                             <p>
 
-                                Dense reconstruction is generated
-                                when the required COLMAP processing
-                                succeeds.
+                                Three.js presents the road inspection
+                                scene and places the report's detected
+                                potholes as interactive markers.
 
                             </p>
 
                         </div>
 
 
-                        <!-- VISUALIZATION -->
-
-                        <div class="feature-card">
+                        <div class="pipeline-item">
 
                             <h3>
-                                4. 3D Visualization
+                                4. Reconstruction
+
                             </h3>
 
                             <p>
 
-                                Three.js displays the actual
-                                reconstruction produced by the
-                                backend.
+                                When available, the actual COLMAP
+                                reconstruction can be opened separately
+                                using the 3D Reconstruction viewer.
 
                             </p>
 
                         </div>
+
 
                     </div>
 
@@ -925,117 +1154,41 @@
 
 
                 <!-- =================================================
-                     RECONSTRUCTION STATUS
-                ================================================== -->
+                 JUDGE-FRIENDLY EXPLANATION
+            ================================================== -->
 
                 <section class="card">
 
-
                     <h2>
 
-                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <i class="fas fa-circle-info"></i>
 
-                        Reconstruction Status
+                        3D Road Monitoring
 
                     </h2>
 
+                    <p>
 
-                    <div class="features">
+                        RoadGuard AI combines AI-based pothole
+                        detection with an interactive spatial
+                        visualization. Each selected report can be
+                        inspected independently, and detected
+                        potholes can be selected to view their
+                        severity, confidence and available location
+                        information.
 
+                    </p>
 
-                        <!-- NOT STARTED -->
+                    <p>
 
-                        <div class="feature-card">
+                        The separate reconstruction viewer is used
+                        when a real photogrammetric reconstruction
+                        generated by the backend is available.
 
-                            <h3>
-                                NOT_STARTED
-                            </h3>
-
-                            <p>
-
-                                COLMAP reconstruction has not started
-                                for this report.
-
-                            </p>
-
-                        </div>
-
-
-                        <!-- FAILED -->
-
-                        <div class="feature-card">
-
-                            <h3>
-                                FAILED
-                            </h3>
-
-                            <p>
-
-                                The reconstruction pipeline failed.
-                                No fake 3D model is displayed.
-
-                            </p>
-
-                        </div>
-
-
-                        <!-- SPARSE -->
-
-                        <div class="feature-card">
-
-                            <h3>
-                                SPARSE_ONLY
-                            </h3>
-
-                            <p>
-
-                                COLMAP produced a sparse SfM model,
-                                but a dense reconstruction or mesh
-                                is not available.
-
-                            </p>
-
-                        </div>
-
-
-                        <!-- DENSE -->
-
-                        <div class="feature-card">
-
-                            <h3>
-                                DENSE_POINT_CLOUD
-                            </h3>
-
-                            <p>
-
-                                A real dense point cloud is available
-                                for visualization.
-
-                            </p>
-
-                        </div>
-
-
-                        <!-- MESH -->
-
-                        <div class="feature-card">
-
-                            <h3>
-                                MESH_AVAILABLE
-                            </h3>
-
-                            <p>
-
-                                A real reconstructed mesh is available
-                                for the 3D viewer.
-
-                            </p>
-
-                        </div>
-
-                    </div>
+                    </p>
 
                 </section>
+
 
             </div>
 
@@ -1045,41 +1198,10 @@
 
 
     <!-- =========================================================
-         THREE.JS IMPORT MAP
+     THREE.JS
+========================================================== -->
 
-         This allows Three.js example modules such as
-         OrbitControls / PLYLoader to resolve:
-
-             import ... from "three"
-
-         IMPORTANT:
-         No geometry is generated here.
-    ========================================================== -->
-
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js"
-        }
-    }
-    </script>
-
-
-    <!-- =========================================================
-         ROADGUARD REAL 3D VIEWER
-
-         roadguard-3d.js is responsible for:
-
-         - Fetching /3d/reports-list
-         - Fetching /3d/road-view/{report_id}
-         - Loading the real COLMAP PLY
-         - Rendering it with Three.js
-         - Showing real reconstruction metadata
-
-         It must NOT generate a synthetic road.
-    ========================================================== -->
-
-    <script type="module" src="/frontend/js/roadguard-3d.js"></script>
+    <script type="module" src="/frontend/js/three_d.js"></script>
 
 
 </body>
