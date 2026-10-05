@@ -2,15 +2,25 @@
    ROADGUARD AI
    LIVE POTHOLE MAP SYSTEM
 
+   REAL DATA ONLY
+   ----------------------------------------------------------
    Features:
    - OpenStreetMap
+   - Browser GPS
    - Live GPS tracking
    - Complete road path drawing
    - Distance calculation
-   - Pothole markers
+   - Current GPS marker
+   - GPS accuracy circle
    - Backend pothole loading
-   - Automatic updates
+   - Live YOLO pothole markers
+   - Automatic backend refresh
+   - Shared GPS state for detect.js
+   - No fake coordinates
+   - No hard-coded port
 ========================================================== */
+
+"use strict";
 
 
 /* ==========================================================
@@ -22,6 +32,8 @@ let map = null;
 let userMarker = null;
 
 let accuracyCircle = null;
+
+let livePotholeMarker = null;
 
 let watchId = null;
 
@@ -35,30 +47,45 @@ let currentLatitude = null;
 
 let currentLongitude = null;
 
+let currentAccuracy = null;
+
 let totalDistance = 0;
 
 let lastPosition = null;
 
 let autoRefreshInterval = null;
 
+let mapInitialized = false;
+
 
 /* ==========================================================
    API CONFIGURATION
 ========================================================== */
 
-
 /*
-   Make sure config.js defines API_BASE_URL.
+   config.js is loaded before map.js.
+
+   API_BASE_URL should remain:
+
+       ""
+
+   because FastAPI serves the frontend itself.
 
    Example:
 
-   const API_BASE_URL = "http://127.0.0.1:8000";
+       http://127.0.0.1:8001
+
+   automatically becomes:
+
+       /api/map/locations
+
+   There must NOT be a fallback to port 8000.
 */
 
 const MAP_API_BASE =
     typeof API_BASE_URL !== "undefined"
         ? API_BASE_URL
-        : "http://127.0.0.1:8000";
+        : "";
 
 
 /* ==========================================================
@@ -73,7 +100,6 @@ document.addEventListener(
 
 function initializeMap() {
 
-
     /* ======================================================
        CHECK MAP ELEMENT
     ====================================================== */
@@ -82,14 +108,47 @@ function initializeMap() {
         document.getElementById("map");
 
 
+    /*
+       map.js is shared by multiple pages.
+
+       If the current page does not contain a map,
+       simply do nothing.
+
+       This prevents detect.html from producing an error
+       when map.js is loaded there.
+    */
+
     if (!mapElement) {
 
-        console.error(
-            "Map element with id='map' was not found"
+        console.log(
+            "RoadGuard Map: no #map element on this page."
         );
 
         return;
+    }
 
+
+    /* ======================================================
+       PREVENT DOUBLE INITIALIZATION
+    ====================================================== */
+
+    if (mapInitialized) {
+
+        return;
+    }
+
+
+    /* ======================================================
+       CHECK LEAFLET
+    ====================================================== */
+
+    if (typeof L === "undefined") {
+
+        console.error(
+            "RoadGuard Map: Leaflet is not loaded."
+        );
+
+        return;
     }
 
 
@@ -97,7 +156,12 @@ function initializeMap() {
        CREATE MAP
     ====================================================== */
 
-    map = L.map("map").setView(
+    map = L.map(
+        "map",
+        {
+            zoomControl: true
+        }
+    ).setView(
         [20.5937, 78.9629],
         5
     );
@@ -108,23 +172,18 @@ function initializeMap() {
     ====================================================== */
 
     L.tileLayer(
-
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-
         {
-
             maxZoom: 19,
 
             attribution:
                 "&copy; OpenStreetMap contributors"
-
         }
-
     ).addTo(map);
 
 
     /* ======================================================
-       CREATE POTHOLE LAYER
+       CREATE BACKEND POTHOLE LAYER
     ====================================================== */
 
     potholeLayer =
@@ -135,21 +194,15 @@ function initializeMap() {
        CREATE ROUTE LINE
     ====================================================== */
 
-    routeLine = L.polyline(
-
-        [],
-
-        {
-
-            weight: 6,
-
-            opacity: 0.9,
-
-            smoothFactor: 1
-
-        }
-
-    ).addTo(map);
+    routeLine =
+        L.polyline(
+            [],
+            {
+                weight: 6,
+                opacity: 0.9,
+                smoothFactor: 1
+            }
+        ).addTo(map);
 
 
     /* ======================================================
@@ -165,11 +218,8 @@ function initializeMap() {
     if (startButton) {
 
         startButton.addEventListener(
-
             "click",
-
             startLiveTracking
-
         );
 
     }
@@ -184,11 +234,8 @@ function initializeMap() {
     if (stopButton) {
 
         stopButton.addEventListener(
-
             "click",
-
             stopLiveTracking
-
         );
 
         stopButton.disabled = true;
@@ -205,11 +252,8 @@ function initializeMap() {
     if (loadButton) {
 
         loadButton.addEventListener(
-
             "click",
-
             loadPotholeLocations
-
         );
 
     }
@@ -224,25 +268,22 @@ function initializeMap() {
     if (centerButton) {
 
         centerButton.addEventListener(
-
             "click",
-
             centerOnUser
-
         );
 
     }
 
 
     /* ======================================================
-       LOAD POTHOLES
+       LOAD EXISTING POTHOLES
     ====================================================== */
 
     loadPotholeLocations();
 
 
     /* ======================================================
-       AUTO REFRESH POTHOLES
+       AUTOMATIC REFRESH
     ====================================================== */
 
     startAutomaticRefresh();
@@ -253,19 +294,24 @@ function initializeMap() {
     ====================================================== */
 
     updateStatus(
-        "🗺️ OpenStreetMap loaded successfully"
+        "OpenStreetMap loaded successfully"
     );
 
 
+    mapInitialized = true;
+
+
+    console.log(
+        "RoadGuard Map initialized."
+    );
 }
 
 
 /* ==========================================================
-   START AUTOMATIC REFRESH
+   START AUTOMATIC BACKEND REFRESH
 ========================================================== */
 
 function startAutomaticRefresh() {
-
 
     if (autoRefreshInterval) {
 
@@ -276,16 +322,18 @@ function startAutomaticRefresh() {
     }
 
 
+    /*
+       Refresh backend pothole locations every 10 seconds.
+
+       This means newly saved detections can appear on
+       the map without manually refreshing the page.
+    */
+
     autoRefreshInterval =
         setInterval(
-
             loadPotholeLocations,
-
             10000
-
         );
-
-
 }
 
 
@@ -295,11 +343,12 @@ function startAutomaticRefresh() {
 
 function startLiveTracking() {
 
-
     if (!navigator.geolocation) {
+
         updateStatus(
-            "Location unavailable"
+            "Browser GPS is not available"
         );
+
         return;
     }
 
@@ -311,11 +360,10 @@ function startLiveTracking() {
     if (watchId !== null) {
 
         updateStatus(
-            "🟢 GPS tracking is already active"
+            "GPS tracking is already active"
         );
 
         return;
-
     }
 
 
@@ -350,12 +398,12 @@ function startLiveTracking() {
 
 
     updateStatus(
-        "📡 Starting live GPS tracking..."
+        "Starting live GPS tracking..."
     );
 
 
     /* ======================================================
-       WATCH LOCATION
+       WATCH REAL BROWSER GPS
     ====================================================== */
 
     watchId =
@@ -366,18 +414,26 @@ function startLiveTracking() {
             handleLocationError,
 
             {
-
                 enableHighAccuracy: true,
 
                 maximumAge: 1000,
 
                 timeout: 15000
-
             }
-
         );
 
 
+    /*
+       Make the latest GPS available to detect.js.
+
+       detect.js can read:
+
+       window.latestGPS.latitude
+       window.latestGPS.longitude
+       window.latestGPS.accuracy
+    */
+
+    window.gpsTrackingActive = true;
 }
 
 
@@ -388,18 +444,36 @@ function startLiveTracking() {
 function updateLiveLocation(position) {
 
     if (!position || !position.coords) {
-        updateStatus("Location unavailable");
+
+        updateStatus(
+            "Location unavailable"
+        );
+
         return;
     }
 
+
     const latitude =
-        position.coords.latitude;
+        Number(
+            position.coords.latitude
+        );
+
 
     const longitude =
-        position.coords.longitude;
+        Number(
+            position.coords.longitude
+        );
+
 
     const accuracy =
-        position.coords.accuracy;
+        Number(
+            position.coords.accuracy
+        );
+
+
+    /* ======================================================
+       VALIDATE GPS
+    ====================================================== */
 
     if (
         !Number.isFinite(latitude) ||
@@ -410,15 +484,62 @@ function updateLiveLocation(position) {
         longitude < -180 ||
         longitude > 180
     ) {
-        updateStatus("Location unavailable");
+
+        updateStatus(
+            "Invalid GPS location received"
+        );
+
         return;
     }
+
+
+    /* ======================================================
+       SAVE CURRENT GPS
+    ====================================================== */
 
     currentLatitude =
         latitude;
 
+
     currentLongitude =
         longitude;
+
+
+    currentAccuracy =
+        Number.isFinite(accuracy)
+            ? accuracy
+            : null;
+
+
+    /* ======================================================
+       SHARED GPS STATE
+    ====================================================== */
+
+    window.latestGPS = {
+
+        latitude:
+            currentLatitude,
+
+        longitude:
+            currentLongitude,
+
+        accuracy:
+            currentAccuracy,
+
+        timestamp:
+            Date.now()
+    };
+
+
+    window.dispatchEvent(
+        new CustomEvent(
+            "roadguard:gps-update",
+            {
+                detail:
+                    window.latestGPS
+            }
+        )
+    );
 
 
     /* ======================================================
@@ -426,29 +547,22 @@ function updateLiveLocation(position) {
     ====================================================== */
 
     updateText(
-
         "latitude",
-
         latitude.toFixed(6)
-
     );
 
 
     updateText(
-
         "longitude",
-
         longitude.toFixed(6)
-
     );
 
 
     updateText(
-
         "accuracy",
-
-        Math.round(accuracy) + " m"
-
+        Number.isFinite(accuracy)
+            ? Math.round(accuracy) + " m"
+            : "N/A"
     );
 
 
@@ -458,73 +572,74 @@ function updateLiveLocation(position) {
 
     if (!userMarker) {
 
-
         userMarker =
             L.marker(
-
-                [latitude, longitude]
-
+                [
+                    latitude,
+                    longitude
+                ]
             )
-
                 .addTo(map)
-
                 .bindPopup(
-                    "<b>📍 Current RoadGuard Location</b>"
+                    "<b>Current RoadGuard Location</b>"
                 );
-
 
     }
 
     else {
 
-
         userMarker.setLatLng(
-            [latitude, longitude]
+            [
+                latitude,
+                longitude
+            ]
         );
-
 
     }
 
 
     /* ======================================================
-       ACCURACY CIRCLE
+       UPDATE GPS ACCURACY CIRCLE
     ====================================================== */
 
-    if (!accuracyCircle) {
+    if (Number.isFinite(accuracy)) {
 
+        if (!accuracyCircle) {
 
-        accuracyCircle =
-            L.circle(
+            accuracyCircle =
+                L.circle(
+                    [
+                        latitude,
+                        longitude
+                    ],
+                    {
+                        radius:
+                            accuracy,
 
-                [latitude, longitude],
+                        weight:
+                            1,
 
-                {
+                        fillOpacity:
+                            0.08
+                    }
+                ).addTo(map);
 
-                    radius: accuracy,
+        }
 
-                    weight: 1,
+        else {
 
-                    fillOpacity: 0.08
+            accuracyCircle.setLatLng(
+                [
+                    latitude,
+                    longitude
+                ]
+            );
 
-                }
+            accuracyCircle.setRadius(
+                accuracy
+            );
 
-            ).addTo(map);
-
-
-    }
-
-    else {
-
-
-        accuracyCircle.setLatLng(
-            [latitude, longitude]
-        );
-
-
-        accuracyCircle.setRadius(
-            accuracy
-        );
-
+        }
 
     }
 
@@ -540,23 +655,25 @@ function updateLiveLocation(position) {
 
 
     /* ======================================================
-       UPDATE MAP
+       CENTER MAP
     ====================================================== */
 
-    map.setView(
+    if (map) {
 
-        [latitude, longitude],
+        map.setView(
+            [
+                latitude,
+                longitude
+            ],
+            17
+        );
 
-        17
-
-    );
+    }
 
 
     updateStatus(
-        "🟢 Live GPS tracking active"
+        "Live GPS tracking active"
     );
-
-
 }
 
 
@@ -569,56 +686,54 @@ function addRoutePoint(
     longitude
 ) {
 
-
     const newPoint =
-        [latitude, longitude];
+        [
+            latitude,
+            longitude
+        ];
 
 
     /* ======================================================
-       PREVENT DUPLICATE POINTS
+       PREVENT DUPLICATE / GPS NOISE
     ====================================================== */
 
     if (routeCoordinates.length > 0) {
 
-
         const previousPoint =
             routeCoordinates[
-                routeCoordinates.length - 1
+            routeCoordinates.length - 1
             ];
 
 
         const distance =
             calculateDistance(
-
                 previousPoint[0],
-
                 previousPoint[1],
-
                 latitude,
-
                 longitude
-
             );
 
 
         /*
-           Ignore very small GPS movement/noise
+           Ignore GPS movement smaller than 3 metres.
+
+           This prevents tiny GPS fluctuations from
+           creating thousands of route points.
         */
 
         if (distance < 3) {
 
             return;
-
         }
 
 
-        totalDistance += distance;
-
+        totalDistance +=
+            distance;
     }
 
 
     /* ======================================================
-       ADD NEW POINT
+       ADD POINT
     ====================================================== */
 
     routeCoordinates.push(
@@ -634,9 +749,13 @@ function addRoutePoint(
        UPDATE ROUTE LINE
     ====================================================== */
 
-    routeLine.setLatLngs(
-        routeCoordinates
-    );
+    if (routeLine) {
+
+        routeLine.setLatLngs(
+            routeCoordinates
+        );
+
+    }
 
 
     /* ======================================================
@@ -644,11 +763,8 @@ function addRoutePoint(
     ====================================================== */
 
     updateText(
-
         "routePoints",
-
         routeCoordinates.length
-
     );
 
 
@@ -662,31 +778,29 @@ function addRoutePoint(
         );
 
 
-    if (distanceElement) {
+    if (!distanceElement) {
 
-
-        if (totalDistance >= 1000) {
-
-            distanceElement.textContent =
-                (
-                    totalDistance / 1000
-                ).toFixed(2)
-                + " km";
-
-        }
-
-        else {
-
-            distanceElement.textContent =
-                Math.round(totalDistance)
-                + " m";
-
-        }
-
-
+        return;
     }
 
 
+    if (totalDistance >= 1000) {
+
+        distanceElement.textContent =
+            (
+                totalDistance / 1000
+            ).toFixed(2)
+            + " km";
+
+    }
+
+    else {
+
+        distanceElement.textContent =
+            Math.round(totalDistance)
+            + " m";
+
+    }
 }
 
 
@@ -700,7 +814,6 @@ function calculateDistance(
     lat2,
     lon2
 ) {
-
 
     const earthRadius =
         6371000;
@@ -719,57 +832,56 @@ function calculateDistance(
 
 
     const calculation =
-
         Math.sin(
             latitudeDifference / 2
         ) *
-
         Math.sin(
             latitudeDifference / 2
         )
-
         +
-
         Math.cos(
             degreesToRadians(lat1)
-        )
-
-        *
-
+        ) *
         Math.cos(
             degreesToRadians(lat2)
-        )
-
-        *
-
+        ) *
         Math.sin(
             longitudeDifference / 2
-        )
-
-        *
-
+        ) *
         Math.sin(
             longitudeDifference / 2
+        );
+
+
+    const safeCalculation =
+        Math.min(
+            1,
+            Math.max(
+                0,
+                calculation
+            )
         );
 
 
     const angle =
         2 *
-
         Math.atan2(
-
-            Math.sqrt(calculation),
-
-            Math.sqrt(1 - calculation)
-
+            Math.sqrt(
+                safeCalculation
+            ),
+            Math.sqrt(
+                1 - safeCalculation
+            )
         );
 
 
     return earthRadius * angle;
-
-
 }
 
+
+/* ==========================================================
+   DEGREES TO RADIANS
+========================================================== */
 
 function degreesToRadians(
     degrees
@@ -779,7 +891,6 @@ function degreesToRadians(
         (
             Math.PI / 180
         );
-
 }
 
 
@@ -789,19 +900,18 @@ function degreesToRadians(
 
 function stopLiveTracking() {
 
-
     if (watchId !== null) {
-
 
         navigator.geolocation.clearWatch(
             watchId
         );
 
-
         watchId = null;
-
-
     }
+
+
+    window.gpsTrackingActive =
+        false;
 
 
     const startButton =
@@ -831,10 +941,8 @@ function stopLiveTracking() {
 
 
     updateStatus(
-        "🔴 Live GPS tracking stopped"
+        "Live GPS tracking stopped"
     );
-
-
 }
 
 
@@ -844,34 +952,32 @@ function stopLiveTracking() {
 
 function centerOnUser() {
 
-
     if (
         currentLatitude === null ||
-        currentLongitude === null ||
-        (currentLatitude === 0 && currentLongitude === 0)
+        currentLongitude === null
     ) {
+
         updateStatus(
             "Location unavailable"
         );
+
+        return;
+    }
+
+
+    if (!map) {
+
         return;
     }
 
 
     map.setView(
-
         [
-
             currentLatitude,
-
             currentLongitude
-
         ],
-
         17
-
     );
-
-
 }
 
 
@@ -881,45 +987,52 @@ function centerOnUser() {
 
 function showCompleteRoute() {
 
-
-    if (routeCoordinates.length === 0) {
-
+    if (
+        !routeCoordinates.length ||
+        !routeLine
+    ) {
 
         updateStatus(
-            "⚠️ No route has been recorded yet"
+            "No route has been recorded yet"
         );
 
-
         return;
-
     }
 
 
-    map.fitBounds(
-
-        routeLine.getBounds(),
-
-        {
-
-            padding: [50, 50]
-
-        }
-
-    );
+    const bounds =
+        routeLine.getBounds();
 
 
+    if (bounds.isValid()) {
+
+        map.fitBounds(
+            bounds,
+            {
+                padding: [
+                    50,
+                    50
+                ]
+            }
+        );
+
+    }
 }
 
 
 /* ==========================================================
-   LOAD POTHOLE LOCATIONS
+   LOAD POTHOLE LOCATIONS FROM BACKEND
 ========================================================== */
 
 async function loadPotholeLocations() {
 
+    if (!map || !potholeLayer) {
+
+        return;
+    }
+
 
     try {
-
 
         console.log(
             "Loading pothole locations..."
@@ -928,22 +1041,25 @@ async function loadPotholeLocations() {
 
         const response =
             await fetch(
+                `${MAP_API_BASE}/api/map/locations`,
+                {
+                    method: "GET",
 
-                `${MAP_API_BASE}/api/map/locations`
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    },
 
+                    cache: "no-store"
+                }
             );
 
 
         if (!response.ok) {
 
-
             throw new Error(
-
                 `HTTP ${response.status}`
-
             );
-
-
         }
 
 
@@ -958,69 +1074,60 @@ async function loadPotholeLocations() {
 
 
         /* ==================================================
-           CLEAR OLD MARKERS
+           CLEAR OLD BACKEND MARKERS
         ================================================== */
 
         potholeLayer.clearLayers();
 
 
         /* ==================================================
-           NORMALIZE RESPONSE
+           NORMALIZE BACKEND RESPONSE
         ================================================== */
 
         const locations =
-
             Array.isArray(data)
-
                 ? data
-
-                :
-
-                (
-
+                : (
                     data.locations ||
-
                     data.data ||
-
                     []
-
                 );
 
 
-        let validLocations =
-            0;
+        let validLocations = 0;
 
 
         /* ==================================================
-           ADD POTHOLE MARKERS
+           ADD BACKEND POTHOLE MARKERS
         ================================================== */
 
         locations.forEach(
-
             location => {
+
+                if (!location) {
+
+                    return;
+                }
 
 
                 const latitude =
                     Number(
-
                         location.latitude ??
-
                         location.lat
-
                     );
 
 
                 const longitude =
                     Number(
-
                         location.longitude ??
-
                         location.lng ??
-
                         location.lon
-
                     );
 
+
+                /* ==========================================
+                   VALIDATE COORDINATES
+                ========================================== */
 
                 if (
                     !Number.isFinite(latitude) ||
@@ -1031,6 +1138,7 @@ async function loadPotholeLocations() {
                     longitude < -180 ||
                     longitude > 180
                 ) {
+
                     return;
                 }
 
@@ -1049,8 +1157,21 @@ async function loadPotholeLocations() {
                     "N/A";
 
 
+                const locationName =
+                    location.location_name ||
+                    location.locationName ||
+                    "Unknown Location";
+
+
+                const reportId =
+                    location.id ??
+                    location.report_id ??
+                    location.reportId ??
+                    null;
+
+
                 /* ==========================================
-                   GET MARKER STYLE
+                   MARKER STYLE
                 ========================================== */
 
                 const markerStyle =
@@ -1064,19 +1185,12 @@ async function loadPotholeLocations() {
                 ========================================== */
 
                 const marker =
-
                     L.circleMarker(
-
                         [
-
                             latitude,
-
                             longitude
-
                         ],
-
                         markerStyle
-
                     );
 
 
@@ -1085,22 +1199,26 @@ async function loadPotholeLocations() {
                 ========================================== */
 
                 marker.bindPopup(
-
                     `
                     <div class="map-popup">
 
                         <h3>
-                            ⚠️ Pothole Detected
+                            Pothole Detected
                         </h3>
 
                         <p>
                             <b>Severity:</b>
-                            ${severity}
+                            ${escapeHTML(severity)}
                         </p>
 
                         <p>
                             <b>Confidence:</b>
-                            ${confidence}
+                            ${escapeHTML(confidence)}
+                        </p>
+
+                        <p>
+                            <b>Location:</b>
+                            ${escapeHTML(locationName)}
                         </p>
 
                         <p>
@@ -1113,9 +1231,18 @@ async function loadPotholeLocations() {
                             ${longitude.toFixed(6)}
                         </p>
 
+                        ${reportId !== null
+                        ? `
+                                <p>
+                                    <b>Report ID:</b>
+                                    ${escapeHTML(reportId)}
+                                </p>
+                                `
+                        : ""
+                    }
+
                     </div>
                     `
-
                 );
 
 
@@ -1123,33 +1250,33 @@ async function loadPotholeLocations() {
                     potholeLayer
                 );
 
-
             }
-
         );
 
 
+        /* ==================================================
+           UPDATE COUNT
+        ================================================== */
+
         updateText(
-
             "potholeCount",
-
             validLocations
-
         );
 
 
         console.log(
-
             `${validLocations} pothole locations loaded`
-
         );
 
+
+        updateStatus(
+            `${validLocations} pothole location(s) loaded`
+        );
 
     }
 
 
     catch (error) {
-
 
         console.error(
             "Map loading error:",
@@ -1158,13 +1285,290 @@ async function loadPotholeLocations() {
 
 
         updateStatus(
-            "⚠️ Unable to load pothole locations"
+            "Unable to load pothole locations"
+        );
+    }
+}
+
+
+/* ==========================================================
+   LIVE POTHOLE MARKER
+   CALLED BY LIVE YOLO DETECTION
+
+   Expected result:
+
+   {
+       success: true,
+
+       pothole_count: 1,
+
+       detections: [...],
+
+       location: {
+           valid: true,
+           latitude: ...,
+           longitude: ...,
+           accuracy: ...
+       }
+   }
+========================================================== */
+
+function updateLiveMap(result) {
+
+    /* ======================================================
+       VALIDATE RESULT
+    ====================================================== */
+
+    if (
+        !result ||
+        result.success !== true
+    ) {
+
+        return;
+    }
+
+
+    /* ======================================================
+       READ GPS
+    ====================================================== */
+
+    const location =
+        result.location;
+
+
+    if (
+        !location ||
+        location.valid !== true ||
+        location.latitude == null ||
+        location.longitude == null
+    ) {
+
+        return;
+    }
+
+
+    /* ======================================================
+       VALIDATE COORDINATES
+    ====================================================== */
+
+    const latitude =
+        Number(
+            location.latitude
         );
 
+
+    const longitude =
+        Number(
+            location.longitude
+        );
+
+
+    if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        (latitude === 0 && longitude === 0) ||
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+    ) {
+
+        return;
+    }
+
+
+    /* ======================================================
+       CHECK POTHOLE COUNT
+    ====================================================== */
+
+    const potholeCount =
+        Number(
+            result.pothole_count
+        );
+
+
+    if (
+        !Number.isFinite(potholeCount) ||
+        potholeCount <= 0
+    ) {
+
+        /*
+           No pothole in this frame.
+           Do not create a map marker.
+        */
+
+        return;
+    }
+
+
+    /* ======================================================
+       CONFIDENCE
+    ====================================================== */
+
+    const confidence =
+        result.confidence ??
+        result.average_confidence ??
+        "N/A";
+
+
+    /* ======================================================
+       GPS ACCURACY
+    ====================================================== */
+
+    const accuracy =
+        location.accuracy;
+
+
+    /* ======================================================
+       CREATE OR UPDATE LIVE MARKER
+    ====================================================== */
+
+    if (!livePotholeMarker) {
+
+        livePotholeMarker =
+            L.circleMarker(
+                [
+                    latitude,
+                    longitude
+                ],
+                {
+                    radius: 8,
+
+                    weight: 2,
+
+                    opacity: 1,
+
+                    fillOpacity: 0.85,
+
+                    color: "#dc2626",
+
+                    fillColor: "#ef4444"
+                }
+            ).addTo(map);
+
+    }
+
+    else {
+
+        livePotholeMarker.setLatLng(
+            [
+                latitude,
+                longitude
+            ]
+        );
 
     }
 
 
+    /* ======================================================
+       LIVE POPUP
+    ====================================================== */
+
+    livePotholeMarker.bindPopup(
+        `
+        <div class="map-popup">
+
+            <h3>
+                Live Pothole Detection
+            </h3>
+
+            <p>
+                <b>Potholes:</b>
+                ${potholeCount}
+            </p>
+
+            <p>
+                <b>Confidence:</b>
+                ${escapeHTML(confidence)}
+            </p>
+
+            <p>
+                <b>GPS Accuracy:</b>
+                ${accuracy != null &&
+            Number.isFinite(
+                Number(accuracy)
+            )
+            ? Number(accuracy).toFixed(1) + " m"
+            : "N/A"
+        }
+            </p>
+
+            <p>
+                <b>Latitude:</b>
+                ${latitude.toFixed(6)}
+            </p>
+
+            <p>
+                <b>Longitude:</b>
+                ${longitude.toFixed(6)}
+            </p>
+
+        </div>
+        `
+    );
+
+
+    /* ======================================================
+       CENTER ON LIVE DETECTION
+    ====================================================== */
+
+    if (map) {
+
+        map.setView(
+            [
+                latitude,
+                longitude
+            ],
+            17
+        );
+
+    }
+
+
+    /* ======================================================
+       UPDATE STATUS
+    ====================================================== */
+
+    updateStatus(
+        `Live detection: ${potholeCount} pothole(s) detected`
+    );
+
+
+    /*
+       IMPORTANT:
+
+       Do NOT increment the backend pothole count here.
+
+       The same video frame can be processed repeatedly.
+       Incrementing the counter on every frame would create
+       an incorrect number.
+
+       The authoritative count comes from the backend after
+       the detection/report is saved.
+    */
+}
+
+
+/* ==========================================================
+   REMOVE LIVE POTHOLE MARKER
+========================================================== */
+
+function clearLivePotholeMarker() {
+
+    if (
+        livePotholeMarker &&
+        map
+    ) {
+
+        map.removeLayer(
+            livePotholeMarker
+        );
+
+    }
+
+
+    livePotholeMarker =
+        null;
 }
 
 
@@ -1176,14 +1580,12 @@ function getSeverityStyle(
     severity
 ) {
 
-
     const level =
         String(severity)
             .toLowerCase();
 
 
-    let style = {
-
+    const style = {
 
         radius: 10,
 
@@ -1193,7 +1595,6 @@ function getSeverityStyle(
 
         fillOpacity: 0.8
 
-
     };
 
 
@@ -1201,14 +1602,11 @@ function getSeverityStyle(
         level.includes("critical")
     ) {
 
-
         style.color =
             "#991b1b";
 
-
         style.fillColor =
             "#dc2626";
-
 
     }
 
@@ -1216,14 +1614,11 @@ function getSeverityStyle(
         level.includes("high")
     ) {
 
-
         style.color =
             "#c2410c";
 
-
         style.fillColor =
             "#f97316";
-
 
     }
 
@@ -1232,34 +1627,25 @@ function getSeverityStyle(
         level.includes("medium")
     ) {
 
-
         style.color =
             "#a16207";
 
-
         style.fillColor =
             "#f59e0b";
-
 
     }
 
     else {
 
-
         style.color =
             "#15803d";
 
-
         style.fillColor =
             "#22c55e";
-
-
     }
 
 
     return style;
-
-
 }
 
 
@@ -1271,20 +1657,52 @@ function handleLocationError(
     error
 ) {
 
-
     console.error(
         "GPS Error:",
         error
     );
 
 
-    let message = "Location unavailable";
+    let message =
+        "Location unavailable";
+
+
+    if (error) {
+
+        if (error.code === 1) {
+
+            message =
+                "Location permission denied";
+
+        }
+
+        else if (error.code === 2) {
+
+            message =
+                "Unable to determine location";
+
+        }
+
+        else if (error.code === 3) {
+
+            message =
+                "Location request timed out";
+        }
+
+    }
+
 
     updateStatus(
         message
     );
 
 
+    /*
+       Keep the GPS state explicit.
+    */
+
+    window.gpsTrackingActive =
+        false;
 }
 
 
@@ -1296,7 +1714,6 @@ function updateText(
     elementId,
     value
 ) {
-
 
     const element =
         document.getElementById(
@@ -1310,8 +1727,6 @@ function updateText(
             value;
 
     }
-
-
 }
 
 
@@ -1322,7 +1737,6 @@ function updateText(
 function updateStatus(
     message
 ) {
-
 
     const status =
         document.getElementById(
@@ -1336,8 +1750,124 @@ function updateStatus(
             message;
 
     }
+}
 
 
+/* ==========================================================
+   ESCAPE HTML
+   Prevent backend text from being interpreted as HTML.
+========================================================== */
+
+function escapeHTML(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+    }
+
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+/* ==========================================================
+   PUBLIC GPS HELPERS
+========================================================== */
+
+/*
+   Other frontend modules can call:
+
+       getCurrentGPS()
+
+   and receive the latest real browser GPS.
+*/
+
+function getCurrentGPS() {
+
+    if (
+        currentLatitude === null ||
+        currentLongitude === null
+    ) {
+
+        return null;
+    }
+
+
+    return {
+
+        latitude:
+            currentLatitude,
+
+        longitude:
+            currentLongitude,
+
+        accuracy:
+            currentAccuracy,
+
+        timestamp:
+            Date.now()
+    };
+}
+
+
+/* ==========================================================
+   RESET ROUTE
+========================================================== */
+
+function resetRoute() {
+
+    routeCoordinates = [];
+
+    totalDistance = 0;
+
+    lastPosition = null;
+
+
+    if (routeLine) {
+
+        routeLine.setLatLngs([]);
+
+    }
+
+
+    updateText(
+        "routePoints",
+        "0"
+    );
+
+
+    updateText(
+        "distance",
+        "0 m"
+    );
+
+
+    updateStatus(
+        "Route cleared"
+    );
 }
 
 
@@ -1346,34 +1876,90 @@ function updateStatus(
 ========================================================== */
 
 window.addEventListener(
-
     "beforeunload",
-
     () => {
 
-
         if (watchId !== null) {
-
 
             navigator.geolocation.clearWatch(
                 watchId
             );
 
-
+            watchId = null;
         }
 
 
         if (autoRefreshInterval) {
 
-
             clearInterval(
                 autoRefreshInterval
             );
 
-
+            autoRefreshInterval = null;
         }
 
 
+        window.gpsTrackingActive =
+            false;
     }
+);
 
+
+/* ==========================================================
+   GLOBAL EXPORTS
+========================================================== */
+
+window.initializeMap =
+    initializeMap;
+
+window.startLiveTracking =
+    startLiveTracking;
+
+window.stopLiveTracking =
+    stopLiveTracking;
+
+window.updateLiveLocation =
+    updateLiveLocation;
+
+window.centerOnUser =
+    centerOnUser;
+
+window.showCompleteRoute =
+    showCompleteRoute;
+
+window.loadPotholeLocations =
+    loadPotholeLocations;
+
+window.updateLiveMap =
+    updateLiveMap;
+
+window.clearLivePotholeMarker =
+    clearLivePotholeMarker;
+
+window.getCurrentGPS =
+    getCurrentGPS;
+
+window.resetRoute =
+    resetRoute;
+
+window.calculateDistance =
+    calculateDistance;
+
+window.getSeverityStyle =
+    getSeverityStyle;
+
+
+/* ==========================================================
+   INITIAL STATE
+========================================================== */
+
+window.latestGPS =
+    null;
+
+window.gpsTrackingActive =
+    false;
+
+
+console.log(
+    "RoadGuard AI map.js loaded successfully."
 );

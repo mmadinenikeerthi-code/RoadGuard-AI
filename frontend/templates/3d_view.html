@@ -5,305 +5,918 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>RoadGuard AI | 3D Road Inspection</title>
+    <title>RoadGuard AI - 3D Road View</title>
 
-    <!-- ==================================================
-         SHARED DARK SHELL (sidebar / topbar / content)
-    =================================================== -->
 
-    <link
-        rel="stylesheet"
-        href="/static/css/style.css"
-    >
+    <!-- =====================================================
+         ROADGUARD SHARED STYLES
+    ====================================================== -->
 
-    <link
-        rel="stylesheet"
-        href="/static/css/roadguard-3d.css"
-    >
+    <link rel="stylesheet" href="/frontend/css/style.css">
+
+
+    <!-- =====================================================
+         FONT AWESOME
+    ====================================================== -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+    <!-- =====================================================
+         ROADGUARD 3D PAGE — FORCE FULL AVAILABLE WIDTH
+
+         These rules ONLY control page/layout sizing.
+
+         They DO NOT create any 3D geometry.
+
+         The 3D model is loaded exclusively from the
+         real COLMAP reconstruction through roadguard-3d.js.
+    ====================================================== -->
+
+    <style>
+        /* =====================================================
+           HTML / BODY
+        ====================================================== */
+
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+
+            width: 100% !important;
+
+            min-width: 0 !important;
+            max-width: none !important;
+
+            overflow-x: hidden !important;
+        }
+
+
+        body {
+            display: block !important;
+        }
+
+
+        /* =====================================================
+           MAIN APPLICATION
+        ====================================================== */
+
+        .app {
+            display: flex !important;
+
+            flex-direction: row !important;
+
+            align-items: stretch !important;
+
+            width: 100vw !important;
+
+            min-width: 0 !important;
+            max-width: none !important;
+
+            min-height: 100vh !important;
+
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+
+        /* =====================================================
+           SIDEBAR
+        ====================================================== */
+
+        .app>.sidebar,
+        .sidebar {
+
+            flex: 0 0 260px !important;
+
+            width: 260px !important;
+
+            min-width: 260px !important;
+            max-width: 260px !important;
+
+            box-sizing: border-box !important;
+        }
+
+
+        /* =====================================================
+           MAIN AREA
+        ====================================================== */
+
+        .app>.main,
+        .main {
+
+            flex: 1 1 0% !important;
+
+            width: auto !important;
+
+            min-width: 0 !important;
+            max-width: none !important;
+
+            margin: 0 !important;
+            padding: 0 !important;
+
+            box-sizing: border-box !important;
+
+            display: block !important;
+
+            overflow-x: hidden !important;
+        }
+
+
+        /* =====================================================
+           TOP BAR
+        ====================================================== */
+
+        .main>.topbar,
+        .topbar {
+
+            width: 100% !important;
+
+            min-width: 0 !important;
+            max-width: none !important;
+
+            box-sizing: border-box !important;
+        }
+
+
+        /* =====================================================
+           PAGE CONTENT
+        ====================================================== */
+
+        .main>.content,
+        .content {
+
+            display: block !important;
+
+            width: 100% !important;
+
+            min-width: 0 !important;
+            max-width: none !important;
+
+            margin: 0 !important;
+
+            padding: 24px !important;
+
+            box-sizing: border-box !important;
+        }
+
+
+        /* =====================================================
+           CARDS
+        ====================================================== */
+
+        .content>.card {
+
+            display: block !important;
+
+            width: 100% !important;
+
+            min-width: 0 !important;
+            max-width: none !important;
+
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+
+            box-sizing: border-box !important;
+        }
+
+
+        /* =====================================================
+           3D VIEWER CONTAINER
+
+           IMPORTANT:
+           This is ONLY the viewport for the real
+           Three.js / COLMAP reconstruction.
+
+           NO procedural geometry is created here.
+        ====================================================== */
+
+        #three-container {
+
+            position: relative !important;
+
+            display: block !important;
+
+            width: 100% !important;
+
+            min-width: 0 !important;
+            max-width: none !important;
+
+            height: 600px !important;
+
+            min-height: 600px !important;
+
+            margin: 0 !important;
+            padding: 0 !important;
+
+            box-sizing: border-box !important;
+
+            overflow: hidden !important;
+        }
+
+
+        /* =====================================================
+           THREE.JS CANVAS
+        ====================================================== */
+
+        #three-container canvas {
+
+            display: block !important;
+
+            width: 100% !important;
+
+            height: 100% !important;
+
+            min-width: 0 !important;
+            max-width: none !important;
+
+            margin: 0 !important;
+            padding: 0 !important;
+
+            box-sizing: border-box !important;
+        }
+
+
+        /* =====================================================
+           LOADING / ERROR OVERLAYS
+        ====================================================== */
+
+        #loading,
+        #errorMessage {
+
+            position: absolute !important;
+
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+
+            width: 100% !important;
+            height: 100% !important;
+
+            box-sizing: border-box !important;
+        }
+
+
+        /* =====================================================
+           HIDDEN STATE
+        ====================================================== */
+
+        #loading.hidden,
+        #errorMessage.hidden {
+
+            display: none !important;
+        }
+
+
+        /* =====================================================
+           RECONSTRUCTION STATUS
+        ====================================================== */
+
+        #reconstructionStatus {
+
+            width: 100% !important;
+
+            min-width: 0 !important;
+
+            box-sizing: border-box !important;
+        }
+
+
+        /* =====================================================
+           STATS
+        ====================================================== */
+
+        .stats-grid {
+
+            width: 100% !important;
+
+            min-width: 0 !important;
+
+            box-sizing: border-box !important;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE — TABLET
+        ====================================================== */
+
+        @media (max-width: 900px) {
+
+            .app {
+
+                width: 100% !important;
+
+            }
+
+
+            .sidebar {
+
+                flex: 0 0 220px !important;
+
+                width: 220px !important;
+
+                min-width: 220px !important;
+                max-width: 220px !important;
+            }
+
+
+            .main {
+
+                flex: 1 1 0% !important;
+
+                width: auto !important;
+
+                min-width: 0 !important;
+            }
+
+
+            #three-container {
+
+                height: 500px !important;
+
+                min-height: 500px !important;
+            }
+
+        }
+
+
+        /* =====================================================
+           RESPONSIVE — MOBILE
+        ====================================================== */
+
+        @media (max-width: 700px) {
+
+            .app {
+
+                display: block !important;
+            }
+
+
+            .sidebar {
+
+                width: 100% !important;
+
+                min-width: 0 !important;
+
+                max-width: none !important;
+            }
+
+
+            .main {
+
+                width: 100% !important;
+
+                min-width: 0 !important;
+            }
+
+
+            .content {
+
+                width: 100% !important;
+
+                padding: 16px !important;
+            }
+
+
+            #three-container {
+
+                width: 100% !important;
+
+                height: 500px !important;
+
+                min-height: 500px !important;
+            }
+
+        }
+    </style>
 
 </head>
 
 
 <body>
 
-<!-- =====================================================
-     ROADGUARD AI - UNIFIED DARK APPLICATION SHELL
-====================================================== -->
+    <!-- =====================================================
+         APPLICATION
+    ====================================================== -->
 
-<div class="app">
+    <div class="app">
 
 
-    <!-- =================================================
-         SIDEBAR
-    ================================================== -->
+        <!-- =====================================================
+             SIDEBAR
+        ====================================================== -->
 
-    <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar">
 
-        <div class="brand">
 
-            <div class="brand-logo">
-                RG
-            </div>
+            <!-- BRAND -->
 
-            <div class="brand-text">
+            <div class="brand">
 
-                <div class="brand-name">
-                    RoadGuard AI
+                <div class="brand-logo">
+                    RG
                 </div>
 
-                <div class="brand-subtitle">
-                    Smart Road Intelligence
-                </div>
 
-            </div>
+                <div class="brand-text">
 
-        </div>
+                    <div class="brand-name">
+                        RoadGuard AI
+                    </div>
 
-
-        <nav class="navigation">
-
-            <a href="/" class="nav-item">
-                <span class="nav-icon">&#9673;</span>
-                <span class="nav-label">Dashboard</span>
-            </a>
-
-            <a href="/detect" class="nav-item">
-                <span class="nav-icon">&#9635;</span>
-                <span class="nav-label">AI Detection</span>
-            </a>
-
-            <a href="/3d?report_id=21" class="nav-item active">
-                <span class="nav-icon">&#9671;</span>
-                <span class="nav-label">3D Road View</span>
-            </a>
-
-            <a href="/analytics" class="nav-item">
-                <span class="nav-icon">&#8961;</span>
-                <span class="nav-label">Analytics</span>
-            </a>
-
-            <a href="/reports" class="nav-item">
-                <span class="nav-icon">&#9636;</span>
-                <span class="nav-label">Reports</span>
-            </a>
-
-            <a href="/map" class="nav-item">
-                <span class="nav-icon">&#8982;</span>
-                <span class="nav-label">Map &amp; Hotspots</span>
-            </a>
-
-        </nav>
-
-
-        <div class="system-status">
-
-            <span class="status-dot"></span>
-
-            <span class="status-text">AI System Online</span>
-
-        </div>
-
-    </aside>
-
-
-    <!-- =================================================
-         MAIN
-    ================================================== -->
-
-    <main class="main">
-
-        <header class="topbar">
-
-            <div class="topbar-left">
-
-                <div class="topbar-title">
-
-                    <h1>3D Road View</h1>
-
-                    <p>
-
-                        <span class="topbar-brand">RoadGuard AI</span>
-
-                        &middot;
-
-                        AI-Powered Pothole Detection &amp; Road Monitoring
-
-                    </p>
+                    <div class="brand-subtitle">
+                        Smart Road Intelligence
+                    </div>
 
                 </div>
 
             </div>
 
 
-            <div class="topbar-actions">
+            <!-- =================================================
+                 NAVIGATION
+            ================================================== -->
 
-                <div class="topbar-status">
+            <nav class="navigation">
 
-                    <span class="status-dot"></span>
 
-                    <span>AI System Online</span>
+                <!-- DASHBOARD -->
 
-                </div>
+                <a href="/" class="nav-item">
 
-                <button
-                    id="focusAllBtn"
-                    class="primary-button"
-                    type="button"
-                >
-                    &#9678; Focus Detections
-                </button>
+                    <span class="nav-icon">
+                        &#9673;
+                    </span>
+
+                    <span class="nav-label">
+                        Dashboard
+                    </span>
+
+                </a>
+
+
+                <!-- AI DETECTION -->
+
+                <a href="/detect" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#9635;
+                    </span>
+
+                    <span class="nav-label">
+                        AI Detection
+                    </span>
+
+                </a>
+
+
+                <!-- 3D ROAD VIEW -->
+
+                <a href="/3d-view?report_id=24" class="nav-item active">
+
+                    <span class="nav-icon">
+                        &#9671;
+                    </span>
+
+                    <span class="nav-label">
+                        3D Road View
+                    </span>
+
+                </a>
+
+
+                <!-- ANALYTICS -->
+
+                <a href="/analytics" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#8961;
+                    </span>
+
+                    <span class="nav-label">
+                        Analytics
+                    </span>
+
+                </a>
+
+
+                <!-- REPORTS -->
+
+                <a href="/reports" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#9636;
+                    </span>
+
+                    <span class="nav-label">
+                        Reports
+                    </span>
+
+                </a>
+
+
+                <!-- MAP -->
+
+                <a href="/map" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#8982;
+                    </span>
+
+                    <span class="nav-label">
+                        Map &amp; Hotspots
+                    </span>
+
+                </a>
+
+            </nav>
+
+
+            <!-- =================================================
+                 SYSTEM STATUS
+            ================================================== -->
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <span class="status-text">
+                    AI System Online
+                </span>
 
             </div>
 
-        </header>
+        </aside>
 
 
+        <!-- =====================================================
+             MAIN
+        ====================================================== -->
+
+        <main class="main">
 
 
+            <!-- =================================================
+                 TOP BAR
+            ================================================== -->
 
-        <!-- ==================================================
-             CONTENT
-        =================================================== -->
-
-        <section class="content">
+            <header class="topbar">
 
 
-            <!-- PAGE TITLE -->
+                <div class="topbar-left">
 
-            <div class="page-title">
+                    <div class="topbar-title">
 
-                <div>
+                        <h1>
+                            3D Road View
+                        </h1>
 
-                    <h2>
-                        Interactive Road Digital Twin
-                    </h2>
+                        <p>
 
-                    <p>
-                        Inspect AI-detected road defects
-                        in a spatial 3D environment.
-                    </p>
+                            <span class="topbar-brand">
+                                RoadGuard AI
+                            </span>
+
+                            &middot;
+
+                            COLMAP-Based Road Reconstruction
+
+                        </p>
+
+                    </div>
 
                 </div>
 
 
-                <div class="scene-status">
+                <div class="topbar-actions">
 
-                    <span class="live-dot"></span>
+                    <div class="topbar-status">
 
-                    LIVE INSPECTION
+                        <span class="status-dot"></span>
+
+                        <span>
+                            AI System Online
+                        </span>
+
+                    </div>
 
                 </div>
 
-            </div>
+            </header>
 
 
-            <!-- ==================================================
-                 VIEWER GRID
-            =================================================== -->
+            <!-- =================================================
+                 PAGE CONTENT
+            ================================================== -->
 
-            <div class="viewer-grid">
-
-
-                <!-- ==================================================
-                     3D VIEW
-                =================================================== -->
-
-                <section class="viewer-card">
+            <div class="content">
 
 
-                    <div class="viewer-header">
+                <!-- =================================================
+                     3D VIEWER CARD
+                ================================================== -->
 
-                        <div style="display: flex; align-items: center; gap: 14px;">
+                <section class="card">
 
-                            <div>
-                                <span class="viewer-title">
-                                    3D Road Environment
-                                </span>
-                                <span class="viewer-description">
-                                    Digital inspection scene
-                                </span>
-                            </div>
 
-                            <div class="report-select-wrapper" style="display: flex; align-items: center; gap: 8px;">
-                                <label for="reportSelector" style="font-size: 11px; color: var(--muted); font-weight: 600;">Report:</label>
-                                <select id="reportSelector" class="report-dropdown" style="background: #172236; border: 1px solid #2b3951; color: #e2e8f0; border-radius: 6px; padding: 5px 8px; font-size: 11px; outline: none; cursor: pointer; min-width: 140px;">
-                                    <option value="">Loading reports...</option>
-                                </select>
-                                <span id="viewModeBadge" class="mode-badge" style="font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: rgba(63, 169, 255, 0.15); color: #3fa9ff; border: 1px solid rgba(63, 169, 255, 0.3);">COLMAP 3D</span>
-                            </div>
+                    <!-- SECTION HEADER -->
+
+                    <div class="section-header">
+
+                        <h2>
+
+                            <i class="fas fa-cube" aria-hidden="true"></i>
+
+                            Real 3D Road Reconstruction
+
+                        </h2>
+
+
+                        <p>
+
+                            View the actual photogrammetric
+                            reconstruction generated from road imagery.
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         RECONSTRUCTION STATUS
+                    ================================================== -->
+
+                    <div id="reconstructionStatus" class="status-message">
+
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+
+                        Loading reconstruction...
+
+                    </div>
+
+
+                    <!-- =================================================
+                         REPORT INFORMATION
+                    ================================================== -->
+
+                    <div class="stats-grid" style="margin-bottom: 20px;">
+
+
+                        <!-- REPORT ID -->
+
+                        <div class="stat-card">
+
+                            <span class="stat-label">
+                                Report ID
+                            </span>
+
+                            <strong id="reportId">
+                                --
+                            </strong>
 
                         </div>
 
 
-                        <div class="camera-buttons">
+                        <!-- RECONSTRUCTION -->
 
-                            <button
-                                id="perspectiveBtn"
-                                type="button"
-                            >
-                                Perspective
-                            </button>
+                        <div class="stat-card">
 
+                            <span class="stat-label">
+                                Reconstruction
+                            </span>
 
-                            <button
-                                id="topBtn"
-                                type="button"
-                            >
-                                Top
-                            </button>
+                            <strong id="reconstructionState">
+                                --
+                            </strong>
+
+                        </div>
 
 
-                            <button
-                                id="resetBtn"
-                                type="button"
-                            >
-                                Reset
-                            </button>
+                        <!-- 3D POINTS -->
+
+                        <div class="stat-card">
+
+                            <span class="stat-label">
+                                3D Points
+                            </span>
+
+                            <strong id="pointCount">
+                                --
+                            </strong>
+
+                        </div>
+
+
+                        <!-- MESH -->
+
+                        <div class="stat-card">
+
+                            <span class="stat-label">
+                                Mesh
+                            </span>
+
+                            <strong id="meshStatus">
+                                --
+                            </strong>
 
                         </div>
 
                     </div>
 
 
-                    <!-- THREE.JS CONTAINER -->
+                    <!-- =================================================
+                         REAL THREE.JS VIEWER
 
-                    <div
-                        id="three-container"
-                        class="three-container"
-                    >
+                         IMPORTANT:
 
-                        <div
-                            id="loading"
-                            class="loading"
-                        >
+                         This container only hosts the REAL
+                         COLMAP reconstruction.
 
-                            <div class="loading-spinner"></div>
+                         No procedural road.
+                         No PlaneGeometry.
+                         No BoxGeometry.
+                         No GridHelper.
+                         No synthetic mesh.
+                    ================================================== -->
 
-                            <div id="loadingText">Initializing 3D inspection...</div>
+                    <div id="three-container" class="three-viewer-container">
+
+
+                        <!-- =================================================
+                             LOADING OVERLAY
+                        ================================================== -->
+
+                        <div id="loading" class="viewer-message">
+
+                            <div class="loader"></div>
+
+
+                            <h3>
+                                Loading 3D Reconstruction
+                            </h3>
+
+
+                            <p id="loadingText">
+
+                                Loading real COLMAP reconstruction...
+
+                            </p>
 
                         </div>
 
-                        <div id="errorMessage" class="error-overlay" style="position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(7, 11, 20, 0.95); color: #ff5266; z-index: 25; padding: 20px; text-align: center;">
-                            <div style="font-size: 32px;">⚠️</div>
-                            <div id="errorTitle" style="font-weight: 700; font-size: 14px; color: #f8fafc;">3D Reconstruction Notice</div>
-                            <div id="errorDetail" style="color: #94a3b8; font-size: 12px; max-width: 440px; line-height: 1.5;"></div>
-                            <button id="retryBtn" class="primary-button" style="margin-top: 10px; padding: 6px 14px; font-size: 11px;">Retry</button>
+
+                        <!-- =================================================
+                             ERROR OVERLAY
+                        ================================================== -->
+
+                        <div id="errorMessage" class="viewer-message hidden" style="display:none;">
+
+
+                            <div class="empty-icon">
+
+                                <i class="fas fa-cube" aria-hidden="true"></i>
+
+                            </div>
+
+
+                            <h3 id="errorTitle">
+
+                                3D Reconstruction Unavailable
+
+                            </h3>
+
+
+                            <p id="errorDetail">
+
+                                No valid COLMAP reconstruction is
+                                currently available.
+
+                            </p>
+
+
+                            <button id="retryBtn" type="button">
+
+                                Retry
+
+                            </button>
+
                         </div>
 
 
-                        <div class="scene-label">
-                            ROADGUARD AI · DIGITAL TWIN
+                        <!-- =================================================
+                             THREE.JS INSERTS ITS CANVAS HERE
+                        ================================================== -->
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     RECONSTRUCTION PIPELINE
+                ================================================== -->
+
+                <section class="card">
+
+
+                    <h2>
+
+                        <i class="fas fa-diagram-project" aria-hidden="true"></i>
+
+                        Reconstruction Pipeline
+
+                    </h2>
+
+
+                    <p style="margin-bottom:20px;">
+
+                        RoadGuard AI uses a real photogrammetry
+                        pipeline. The viewer displays reconstruction
+                        output generated by COLMAP and does not
+                        generate a synthetic road when reconstruction
+                        data is unavailable.
+
+                    </p>
+
+
+                    <div class="features">
+
+
+                        <!-- IMAGE INPUT -->
+
+                        <div class="feature-card">
+
+                            <h3>
+                                1. Image Input
+                            </h3>
+
+                            <p>
+
+                                Road imagery is supplied to the
+                                photogrammetry pipeline.
+
+                            </p>
+
                         </div>
 
 
-                        <div class="interaction-hint">
-                            Drag to rotate · Scroll to zoom ·
-                            Click a pothole
+                        <!-- COLMAP -->
+
+                        <div class="feature-card">
+
+                            <h3>
+                                2. COLMAP SfM
+                            </h3>
+
+                            <p>
+
+                                COLMAP performs feature extraction,
+                                image matching, camera estimation,
+                                and sparse reconstruction.
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- DENSE -->
+
+                        <div class="feature-card">
+
+                            <h3>
+                                3. Dense Reconstruction
+                            </h3>
+
+                            <p>
+
+                                Dense reconstruction is generated
+                                when the required COLMAP processing
+                                succeeds.
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- VISUALIZATION -->
+
+                        <div class="feature-card">
+
+                            <h3>
+                                4. 3D Visualization
+                            </h3>
+
+                            <p>
+
+                                Three.js displays the actual
+                                reconstruction produced by the
+                                backend.
+
+                            </p>
+
                         </div>
 
                     </div>
@@ -311,379 +924,163 @@
                 </section>
 
 
-                <!-- ==================================================
-                     RIGHT ANALYSIS PANEL
-                =================================================== -->
+                <!-- =================================================
+                     RECONSTRUCTION STATUS
+                ================================================== -->
 
-                <aside class="analysis-column">
-
-
-                    <!-- ==================================================
-                         SUMMARY
-                    =================================================== -->
-
-                    <section class="panel">
-
-                        <div class="panel-title">
-                            Detection Analysis
-                        </div>
+                <section class="card">
 
 
-                        <div class="metric">
+                    <h2>
 
-                            <span>
-                                Total Potholes
-                            </span>
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
 
-                            <strong id="totalPotholes">
-                                0
-                            </strong>
+                        Reconstruction Status
 
-                        </div>
+                    </h2>
 
 
-                        <div class="metric">
-
-                            <span>
-                                Selected Object
-                            </span>
-
-                            <strong id="selectedObject">
-                                None
-                            </strong>
-
-                        </div>
+                    <div class="features">
 
 
-                        <div class="metric">
+                        <!-- NOT STARTED -->
 
-                            <span>
-                                Average Confidence
-                            </span>
+                        <div class="feature-card">
 
-                            <strong id="confidence">
-                                --
-                            </strong>
-
-                        </div>
-
-
-                        <div class="metric">
-
-                            <span>
-                                Road Condition
-                            </span>
-
-                            <strong
-                                id="roadCondition"
-                                class="condition"
-                            >
-                                --
-                            </strong>
-
-                        </div>
-
-                    </section>
-
-
-                    <!-- ==================================================
-                         SELECTED POTHOLE
-                    =================================================== -->
-
-                    <section class="panel selected-panel">
-
-                        <div class="panel-title">
-                            Selected Pothole
-                        </div>
-
-
-                        <!-- EMPTY STATE -->
-
-                        <div
-                            id="noSelection"
-                            class="no-selection"
-                        >
-
-                            <div class="selection-icon">
-                                ◇
-                            </div>
-
-
-                            <strong>
-                                Select a pothole
-                            </strong>
-
+                            <h3>
+                                NOT_STARTED
+                            </h3>
 
                             <p>
-                                Click a detected road defect
-                                in the 3D environment to
-                                inspect its details.
+
+                                COLMAP reconstruction has not started
+                                for this report.
+
                             </p>
 
                         </div>
 
 
-                        <!-- DETAILS -->
+                        <!-- FAILED -->
 
-                        <div
-                            id="potholeDetails"
-                            class="pothole-details hidden"
-                        >
+                        <div class="feature-card">
 
-                            <div class="pothole-heading">
+                            <h3>
+                                FAILED
+                            </h3>
 
-                                <div>
+                            <p>
 
-                                    <span class="small-label">
-                                        DETECTION
-                                    </span>
+                                The reconstruction pipeline failed.
+                                No fake 3D model is displayed.
 
-                                    <h3 id="detailId">
-                                        P-001
-                                    </h3>
-
-                                </div>
-
-
-                                <span
-                                    id="detailSeverity"
-                                    class="severity-badge"
-                                >
-                                    HIGH
-                                </span>
-
-                            </div>
-
-
-                            <div class="detail-row">
-
-                                <span>
-                                    AI Confidence
-                                </span>
-
-                                <strong id="detailConfidence">
-                                    --
-                                </strong>
-
-                            </div>
-
-
-                            <div class="detail-row">
-
-                                <span>
-                                    Estimated Width
-                                </span>
-
-                                <strong id="detailWidth">
-                                    --
-                                </strong>
-
-                            </div>
-
-
-                            <div class="detail-row">
-
-                                <span>
-                                    Estimated Depth
-                                </span>
-
-                                <strong id="detailDepth">
-                                    --
-                                </strong>
-
-                            </div>
-
-
-                            <div class="detail-row">
-
-                                <span>
-                                    Position
-                                </span>
-
-                                <strong id="detailPosition">
-                                    --
-                                </strong>
-
-                            </div>
-
-
-                            <div class="detail-row">
-
-                                <span>
-                                    Detection Status
-                                </span>
-
-                                <strong class="verified">
-                                    VERIFIED BY AI
-                                </strong>
-
-                            </div>
-
-
-                            <button
-                                id="focusSelectedBtn"
-                                class="focus-button"
-                                type="button"
-                            >
-                                ◎ Focus Selected Pothole
-                            </button>
-
-                        </div>
-
-                    </section>
-
-
-                    <!-- ==================================================
-                         INSPECTION CONTROLS
-                    =================================================== -->
-
-                    <section class="panel">
-
-                        <div class="panel-title">
-                            Inspection Controls
-                        </div>
-
-
-                        <div class="control-row">
-
-                            <span class="control-icon">
-                                ↻
-                            </span>
-
-                            <span>
-                                Drag
-                            </span>
-
-                            <small>
-                                Rotate
-                            </small>
+                            </p>
 
                         </div>
 
 
-                        <div class="control-row">
+                        <!-- SPARSE -->
 
-                            <span class="control-icon">
-                                ⌕
-                            </span>
+                        <div class="feature-card">
 
-                            <span>
-                                Scroll
-                            </span>
+                            <h3>
+                                SPARSE_ONLY
+                            </h3>
 
-                            <small>
-                                Zoom
-                            </small>
+                            <p>
 
-                        </div>
+                                COLMAP produced a sparse SfM model,
+                                but a dense reconstruction or mesh
+                                is not available.
 
-
-                        <div class="control-row">
-
-                            <span class="control-icon">
-                                ◈
-                            </span>
-
-                            <span>
-                                Click
-                            </span>
-
-                            <small>
-                                Inspect defect
-                            </small>
+                            </p>
 
                         </div>
 
 
-                        <div class="control-row">
+                        <!-- DENSE -->
 
-                            <span class="control-icon">
-                                ⊞
-                            </span>
+                        <div class="feature-card">
 
-                            <span>
-                                Right Drag
-                            </span>
+                            <h3>
+                                DENSE_POINT_CLOUD
+                            </h3>
 
-                            <small>
-                                Pan scene
-                            </small>
+                            <p>
 
-                        </div>
+                                A real dense point cloud is available
+                                for visualization.
 
-                    </section>
-
-
-                    <!-- ==================================================
-                         LEGEND
-                    =================================================== -->
-
-                    <section class="panel">
-
-                        <div class="panel-title">
-                            Detection Legend
-                        </div>
-
-
-                        <div class="legend-item">
-
-                            <span class="legend-dot high"></span>
-
-                            High Severity
+                            </p>
 
                         </div>
 
 
-                        <div class="legend-item">
+                        <!-- MESH -->
 
-                            <span class="legend-dot medium"></span>
+                        <div class="feature-card">
 
-                            Moderate Severity
+                            <h3>
+                                MESH_AVAILABLE
+                            </h3>
+
+                            <p>
+
+                                A real reconstructed mesh is available
+                                for the 3D viewer.
+
+                            </p>
 
                         </div>
 
+                    </div>
 
-                        <div class="legend-item">
-
-                            <span class="legend-dot low"></span>
-
-                            Low Severity
-
-                        </div>
-
-                    </section>
-
-
-                </aside>
+                </section>
 
             </div>
 
-        </section>
+        </main>
 
-    </main>
-
-</div>
+    </div>
 
 
-<!-- ==========================================================
-     THREE.JS IMPORT MAP
-=========================================================== -->
+    <!-- =========================================================
+         THREE.JS IMPORT MAP
 
-<script type="importmap">
-{
-    "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+         This allows Three.js example modules such as
+         OrbitControls / PLYLoader to resolve:
+
+             import ... from "three"
+
+         IMPORTANT:
+         No geometry is generated here.
+    ========================================================== -->
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js"
+        }
     }
-}
-</script>
+    </script>
 
 
-<!-- ==========================================================
-     ROADGUARD 3D JAVASCRIPT
-=========================================================== -->
+    <!-- =========================================================
+         ROADGUARD REAL 3D VIEWER
 
-<script type="module" src="/static/js/roadguard-3d.js?v=2"></script>
+         roadguard-3d.js is responsible for:
+
+         - Fetching /3d/reports-list
+         - Fetching /3d/road-view/{report_id}
+         - Loading the real COLMAP PLY
+         - Rendering it with Three.js
+         - Showing real reconstruction metadata
+
+         It must NOT generate a synthetic road.
+    ========================================================== -->
+
+    <script type="module" src="/frontend/js/roadguard-3d.js"></script>
+
 
 </body>
 

@@ -3,47 +3,34 @@
 // REPORTS AUDIT REGISTER
 // ==========================================================
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+document.addEventListener("DOMContentLoaded", () => {
+    loadReports();
 
-        loadReports();
-
-        // Refresh every 5 seconds
-        setInterval(
-            loadReports,
-            5000
-        );
-    }
-);
+    // Refresh report list every 5 seconds
+    setInterval(loadReports, 5000);
+});
 
 
 // ==========================================================
-// LOAD REPORTS
+// LOAD REPORTS FROM DATABASE
 // ==========================================================
 
 async function loadReports() {
 
-    const tbody =
-        document.getElementById(
-            "reports-table-body"
-        );
+    const tbody = document.getElementById("reports-table-body");
 
     if (!tbody) {
-
-        console.error(
-            "reports-table-body not found."
-        );
-
+        console.error("reports-table-body not found.");
         return;
     }
 
     try {
 
-        const reports =
-            await API.get(
-                "/api/reports"
-            );
+        const reports = await API.get("/api/reports");
+
+        if (!Array.isArray(reports)) {
+            throw new Error("Reports API did not return an array.");
+        }
 
         tbody.innerHTML = "";
 
@@ -51,10 +38,7 @@ async function loadReports() {
         // NO REPORTS
         // --------------------------------------------------
 
-        if (
-            !Array.isArray(reports) ||
-            reports.length === 0
-        ) {
+        if (reports.length === 0) {
 
             tbody.innerHTML = `
                 <tr>
@@ -66,8 +50,17 @@ async function loadReports() {
                             padding:2rem;
                         "
                     >
-                        No detection logs recorded
-                        in database.
+                        <i class="fa-solid fa-database"
+                           style="font-size:1.5rem; margin-bottom:0.6rem;">
+                        </i>
+
+                        <div>
+                            No detection reports found.
+                        </div>
+
+                        <small>
+                            Run an AI detection to create a report.
+                        </small>
                     </td>
                 </tr>
             `;
@@ -75,286 +68,266 @@ async function loadReports() {
             return;
         }
 
+
         // --------------------------------------------------
-        // DISPLAY REPORTS
+        // DISPLAY REAL DATABASE REPORTS
         // --------------------------------------------------
 
-        reports.forEach(
-            report => {
+        reports.forEach(report => {
 
-                const tr =
-                    document.createElement(
-                        "tr"
-                    );
+            const tr = document.createElement("tr");
 
-                // ------------------------------------------
-                // Severity
-                // ------------------------------------------
+            // ------------------------------------------------
+            // SEVERITY
+            // ------------------------------------------------
 
-                const severity =
-                    (
-                        report.severity ||
-                        "LOW"
-                    ).toUpperCase();
+            const severity =
+                String(report.severity || "LOW").toUpperCase();
 
-                const badgeClass =
-                    `badge-${severity.toLowerCase()}`;
+            const badgeClass =
+                `badge-${severity.toLowerCase()}`;
 
-                // ------------------------------------------
-                // Coordinates
-                // ------------------------------------------
 
-                let coordinates =
-                    "N/A";
+            // ------------------------------------------------
+            // COORDINATES
+            // ------------------------------------------------
 
-                if (
-                    report.latitude !== null &&
-                    report.latitude !== undefined &&
-                    report.longitude !== null &&
-                    report.longitude !== undefined
-                ) {
+            let coordinates = "N/A";
 
-                    const lat =
-                        Number(
-                            report.latitude
-                        );
+            const lat = Number(report.latitude);
+            const lon = Number(report.longitude);
 
-                    const lon =
-                        Number(
-                            report.longitude
-                        );
-
-                    if (
-                        Number.isFinite(lat) &&
-                        Number.isFinite(lon)
-                    ) {
-
-                        coordinates =
-                            `${lat.toFixed(5)}, ` +
-                            `${lon.toFixed(5)}`;
-                    }
-                }
-
-                // ------------------------------------------
-                // Pothole count
-                // ------------------------------------------
-
-                const potholeCount =
-                    Number(
-                        report.pothole_count || 0
-                    );
-
-                // ------------------------------------------
-                // Confidence
-                // ------------------------------------------
-
-                const confidence =
-                    Number(
-                        report.confidence || 0
-                    );
-
-                const confidencePercent =
-                    Math.max(
-                        0,
-                        Math.min(
-                            100,
-                            confidence * 100
-                        )
-                    );
-
-                // ------------------------------------------
-                // Date
-                // ------------------------------------------
-
-                let dateText = "N/A";
-
-                if (
-                    report.created_at
-                ) {
-
-                    const date =
-                        new Date(
-                            report.created_at
-                        );
-
-                    if (
-                        !Number.isNaN(
-                            date.getTime()
-                        )
-                    ) {
-
-                        dateText =
-                            date.toLocaleString();
-                    }
-                }
-
-                // ------------------------------------------
-                // Media type
-                // ------------------------------------------
-
-                const mediaType =
-                    (
-                        report.media_type ||
-                        "UNKNOWN"
-                    ).toUpperCase();
-
-                // ------------------------------------------
-                // Location
-                // ------------------------------------------
-
-                const location =
-                    report.location_name ||
-                    "Unknown Location";
-
-                // ------------------------------------------
-                // CREATE TABLE ROW
-                // ------------------------------------------
-
-                tr.innerHTML = `
-
-                    <td>
-                        #${report.id}
-                    </td>
-
-                    <td>
-                        <span
-                            style="
-                                text-transform:uppercase;
-                                font-size:0.75rem;
-                                font-weight:600;
-                            "
-                        >
-                            ${escapeHtml(
-                                mediaType
-                            )}
-                        </span>
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                            location
-                        )}
-                    </td>
-
-                    <td
-                        style="
-                            font-family:monospace;
-                            font-size:0.8rem;
-                            color:var(--text-muted);
-                        "
-                    >
-                        ${coordinates}
-                    </td>
-
-                    <td>
-                        <strong>
-                            ${potholeCount}
-                        </strong>
-                    </td>
-
-                    <td>
-                        <span
-                            class="badge ${badgeClass}"
-                        >
-                            ${escapeHtml(
-                                severity
-                            )}
-                        </span>
-                    </td>
-
-                    <td>
-                        ${confidencePercent.toFixed(0)}%
-                    </td>
-
-                    <td
-                        style="
-                            color:var(--text-muted);
-                            font-size:0.8rem;
-                        "
-                    >
-                        ${dateText}
-                    </td>
-
-                    <td style="white-space:nowrap;">
-
-                        <a
-                            class="btn btn-primary"
-                            style="
-                                padding:0.35rem 0.6rem;
-                                font-size:0.75rem;
-                                margin-right:0.35rem;
-                                text-decoration:none;
-                            "
-                            href="/3d?report_id=${report.id}"
-                            title="Open the 3D reconstruction"
-                        >
-                            <i class="fa-solid fa-cube"></i>
-                        </a>
-
-                        <a
-                            class="btn"
-                            style="
-                                padding:0.35rem 0.55rem;
-                                font-size:0.75rem;
-                                margin-right:0.35rem;
-                                text-decoration:none;
-                                background:#b91c1c;
-                                color:#ffffff;
-                                border-radius:4px;
-                                font-weight:600;
-                            "
-                            href="/api/reports/${report.id}/download/pdf"
-                            download="RoadGuard_Report_${report.id}.pdf"
-                            title="Download Report PDF"
-                        >
-                            <i class="fa-solid fa-file-pdf"></i> PDF
-                        </a>
-
-                        <a
-                            class="btn"
-                            style="
-                                padding:0.35rem 0.55rem;
-                                font-size:0.75rem;
-                                margin-right:0.35rem;
-                                text-decoration:none;
-                                background:#047857;
-                                color:#ffffff;
-                                border-radius:4px;
-                                font-weight:600;
-                            "
-                            href="/api/reports/${report.id}/download/csv"
-                            download="RoadGuard_Report_${report.id}.csv"
-                            title="Download Report CSV"
-                        >
-                            <i class="fa-solid fa-file-csv"></i> CSV
-                        </a>
-
-                        <button
-                            class="btn btn-danger"
-                            style="
-                                padding:0.35rem 0.6rem;
-                                font-size:0.75rem;
-                            "
-                            onclick="
-                                deleteReport(
-                                    ${report.id}
-                                )
-                            "
-                            title="Delete report"
-                        >
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-
-                    </td>
-                `;
-
-                tbody.appendChild(
-                    tr
-                );
+            if (
+                Number.isFinite(lat) &&
+                Number.isFinite(lon) &&
+                !(lat === 0 && lon === 0)
+            ) {
+                coordinates =
+                    `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
             }
-        );
 
-    } catch (error) {
+
+            // ------------------------------------------------
+            // POTHOLE COUNT
+            // ------------------------------------------------
+
+            const potholeCount =
+                Number(report.pothole_count || 0);
+
+
+            // ------------------------------------------------
+            // CONFIDENCE
+            // ------------------------------------------------
+
+            const confidence =
+                Number(report.confidence || 0);
+
+            const confidencePercent =
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        confidence * 100
+                    )
+                );
+
+
+            // ------------------------------------------------
+            // CREATED DATE
+            // ------------------------------------------------
+
+            let dateText = "N/A";
+
+            if (report.created_at) {
+
+                const date =
+                    new Date(report.created_at);
+
+                if (!Number.isNaN(date.getTime())) {
+
+                    dateText =
+                        date.toLocaleString();
+                }
+            }
+
+
+            // ------------------------------------------------
+            // MEDIA TYPE
+            // ------------------------------------------------
+
+            const mediaType =
+                String(
+                    report.media_type || "UNKNOWN"
+                ).toUpperCase();
+
+
+            // ------------------------------------------------
+            // LOCATION
+            // ------------------------------------------------
+
+            const location =
+                report.location_name ||
+                "Unknown Location";
+
+
+            // ------------------------------------------------
+            // BUILD ROW
+            // ------------------------------------------------
+
+            tr.innerHTML = `
+
+                <td>
+                    <strong>
+                        #${Number(report.id)}
+                    </strong>
+                </td>
+
+
+                <td>
+                    <span
+                        style="
+                            text-transform:uppercase;
+                            font-size:0.75rem;
+                            font-weight:600;
+                        "
+                    >
+                        ${escapeHtml(mediaType)}
+                    </span>
+                </td>
+
+
+                <td>
+                    ${escapeHtml(location)}
+                </td>
+
+
+                <td
+                    style="
+                        font-family:monospace;
+                        font-size:0.8rem;
+                        color:var(--text-muted);
+                    "
+                >
+                    ${escapeHtml(coordinates)}
+                </td>
+
+
+                <td>
+                    <strong>
+                        ${potholeCount}
+                    </strong>
+                </td>
+
+
+                <td>
+                    <span class="badge ${badgeClass}">
+                        ${escapeHtml(severity)}
+                    </span>
+                </td>
+
+
+                <td>
+                    ${confidencePercent.toFixed(0)}%
+                </td>
+
+
+                <td
+                    style="
+                        color:var(--text-muted);
+                        font-size:0.8rem;
+                    "
+                >
+                    ${escapeHtml(dateText)}
+                </td>
+
+
+                <td style="white-space:nowrap;">
+
+                    <!-- REAL COLMAP 3D VIEW -->
+                    <a
+                        class="btn btn-primary"
+                        style="
+                            padding:0.35rem 0.6rem;
+                            font-size:0.75rem;
+                            margin-right:0.35rem;
+                            text-decoration:none;
+                        "
+                        href="/3d-view?report_id=${Number(report.id)}"
+                        title="Open real 3D reconstruction"
+                    >
+                        <i class="fa-solid fa-cube"></i>
+                        3D
+                    </a>
+
+
+                    <!-- PDF DOWNLOAD -->
+                    <a
+                        class="btn"
+                        style="
+                            padding:0.35rem 0.55rem;
+                            font-size:0.75rem;
+                            margin-right:0.35rem;
+                            text-decoration:none;
+                            background:#b91c1c;
+                            color:#ffffff;
+                            border-radius:4px;
+                            font-weight:600;
+                        "
+                        href="/api/reports/${Number(report.id)}/download/pdf"
+                        download="RoadGuard_Report_${Number(report.id)}.pdf"
+                        title="Download PDF report"
+                    >
+                        <i class="fa-solid fa-file-pdf"></i>
+                        PDF
+                    </a>
+
+
+                    <!-- CSV DOWNLOAD -->
+                    <a
+                        class="btn"
+                        style="
+                            padding:0.35rem 0.55rem;
+                            font-size:0.75rem;
+                            margin-right:0.35rem;
+                            text-decoration:none;
+                            background:#047857;
+                            color:#ffffff;
+                            border-radius:4px;
+                            font-weight:600;
+                        "
+                        href="/api/reports/${Number(report.id)}/download/csv"
+                        download="RoadGuard_Report_${Number(report.id)}.csv"
+                        title="Download CSV report"
+                    >
+                        <i class="fa-solid fa-file-csv"></i>
+                        CSV
+                    </a>
+
+
+                    <!-- DELETE -->
+                    <button
+                        class="btn btn-danger"
+                        style="
+                            padding:0.35rem 0.6rem;
+                            font-size:0.75rem;
+                        "
+                        onclick="deleteReport(${Number(report.id)})"
+                        title="Delete report"
+                    >
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+
+                </td>
+            `;
+
+
+            tbody.appendChild(tr);
+
+        });
+
+    }
+
+    catch (error) {
 
         console.error(
             "Failed to load reports:",
@@ -371,13 +344,17 @@ async function loadReports() {
                         padding:2rem;
                     "
                 >
-                    Failed to load reports
-                    from API.
-                    <br>
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <div>
+                        Failed to load reports from backend.
+                    </div>
+
                     <small>
-                        Check that the
-                        RoadGuard AI backend
-                        is running.
+                        ${escapeHtml(
+            error.message ||
+            "Unknown API error"
+        )}
                     </small>
                 </td>
             </tr>
@@ -390,9 +367,7 @@ async function loadReports() {
 // DELETE REPORT
 // ==========================================================
 
-async function deleteReport(
-    id
-) {
+async function deleteReport(id) {
 
     const confirmed =
         confirm(
@@ -411,7 +386,9 @@ async function deleteReport(
 
         await loadReports();
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
             "Delete report failed:",
@@ -419,7 +396,7 @@ async function deleteReport(
         );
 
         alert(
-            "Failed to delete record: " +
+            "Failed to delete report: " +
             (
                 error.message ||
                 error
@@ -433,9 +410,7 @@ async function deleteReport(
 // HTML ESCAPE
 // ==========================================================
 
-function escapeHtml(
-    value
-) {
+function escapeHtml(value) {
 
     if (
         value === null ||
@@ -445,24 +420,9 @@ function escapeHtml(
     }
 
     return String(value)
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
