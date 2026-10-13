@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RoadGuard AI - 3D Road View</title>
+
+
+    <!-- =====================================================
+         ROADGUARD SHARED STYLES
+    ====================================================== -->
+
+    <link rel="stylesheet" href="/frontend/css/style.css">
+
+
+    <!-- =====================================================
+         FONT AWESOME
+    ====================================================== -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+    <!-- =====================================================
+         3D ROAD VIEW STYLES
+    ====================================================== -->
+
+    <style>
+        /* =====================================================
+           PAGE
+        ===================================================== */
+
+        html,
+        body {
+
+            margin: 0;
+            padding: 0;
+
+            width: 100%;
+            min-height: 100%;
+
+            overflow-x: hidden;
+
+        }
+
+
+        body {
+
+            background: #07111f;
+
+        }
+
+
+        .app {
+
+            display: flex;
+
+            flex-direction: row;
+
+            width: 100vw;
+
+            min-height: 100vh;
+
+        }
+
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+
+        .app>.sidebar {
+
+            flex: 0 0 260px;
+
+            width: 260px;
+            min-width: 260px;
+
+            box-sizing: border-box;
+
+        }
+
+
+        /* =====================================================
+           MAIN
+        ===================================================== */
+
+        .main {
+
+            flex: 1 1 auto;
+
+            min-width: 0;
+
+            width: auto;
+
+            overflow-x: hidden;
+
+        }
+
+
+        /* =====================================================
+           CONTENT
+        ===================================================== */
+
+        .content {
+
+            width: 100%;
+
+            box-sizing: border-box;
+
+            padding: 24px;
+
+        }
+
+
+        /* =====================================================
+           CARD
+        ===================================================== */
+
+        .card {
+
+            width: 100%;
+
+            box-sizing: border-box;
+
+            margin-bottom: 24px;
+
+        }
+
+
+        /* =====================================================
+           3D HEADER
+        ===================================================== */
+
+        .three-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 20px;
+
+            margin-bottom: 18px;
+
+        }
+
+
+        .three-header-left h2 {
+
+            margin: 0 0 6px 0;
+
+        }
+
+
+        .three-header-left p {
+
+            margin: 0;
+
+            opacity: 0.75;
+
+        }
+
+
+        /* =====================================================
+           CONTROLS
+        ===================================================== */
+
+        .three-controls {
+
+            display: flex;
+
+            align-items: center;
+
+            flex-wrap: wrap;
+
+            gap: 10px;
+
+            margin-bottom: 16px;
+
+        }
+
+
+        .three-controls select {
+
+            min-width: 250px;
+
+            padding: 10px 12px;
+
+            border-radius: 8px;
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            background: #101b2d;
+
+            color: #fff;
+
+        }
+
+
+        .three-controls button {
+
+            padding: 10px 14px;
+
+            border-radius: 8px;
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            background: #16243a;
+
+            color: #fff;
+
+            cursor: pointer;
+
+        }
+
+
+        .three-controls button:hover {
+
+            background: #203451;
+
+        }
+
+
+        /* =====================================================
+           MODE BADGE
+        ===================================================== */
+
+        .view-mode-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            padding: 7px 12px;
+
+            border-radius: 999px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.04em;
+
+            margin-bottom: 14px;
+
+        }
+
+
+        .view-mode-badge.true-360 {
+
+            background: rgba(34, 197, 94, 0.15);
+
+            color: #4ade80;
+
+            border: 1px solid rgba(34, 197, 94, 0.3);
+
+        }
+
+
+        .view-mode-badge.reconstruction {
+
+            background: rgba(245, 158, 11, 0.15);
+
+            color: #fbbf24;
+
+            border: 1px solid rgba(245, 158, 11, 0.3);
+
+        }
+
+
+        /* =====================================================
+           3D VIEWER
+        ===================================================== */
+
+        #threeContainer {
+
+            position: relative;
+
+            width: 100%;
+
+            height: 650px;
+
+            min-height: 500px;
+
+            overflow: hidden;
+
+            border-radius: 14px;
+
+            background: #050b15;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        #threeContainer canvas {
+
+            display: block;
+
+            width: 100%;
+
+            height: 100%;
+
+        }
+
+
+        /* =====================================================
+           LOADING OVERLAY
+        ===================================================== */
+
+        #loadingOverlay {
+
+            position: absolute;
+
+            inset: 0;
+
+            z-index: 20;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            text-align: center;
+
+            background: rgba(5, 11, 21, 0.88);
+
+            backdrop-filter: blur(4px);
+
+            transition: opacity 0.25s ease;
+
+        }
+
+
+        .three-loader {
+
+            width: 42px;
+
+            height: 42px;
+
+            border-radius: 50%;
+
+            border: 4px solid rgba(255, 255, 255, 0.12);
+
+            border-top-color: #60a5fa;
+
+            animation: threeSpin 0.8s linear infinite;
+
+            margin-bottom: 18px;
+
+        }
+
+
+        @keyframes threeSpin {
+
+            to {
+
+                transform: rotate(360deg);
+
+            }
+
+        }
+
+
+        #loadingOverlay h3 {
+
+            margin: 0 0 8px;
+
+        }
+
+
+        #loadingOverlay p {
+
+            margin: 0;
+
+            opacity: 0.7;
+
+        }
+
+
+        /* =====================================================
+           STATUS BAR
+        ===================================================== */
+
+        #threeStatusBar {
+
+            margin-top: 12px;
+
+            padding: 11px 14px;
+
+            border-radius: 8px;
+
+            background: #101b2d;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            font-size: 13px;
+
+            color: #cbd5e1;
+
+        }
+
+
+        #threeStatusBar.error {
+
+            color: #fca5a5;
+
+            border-color: rgba(239, 68, 68, 0.35);
+
+        }
+
+
+        /* =====================================================
+           SUMMARY
+        ===================================================== */
+
+        .three-summary {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 14px;
+
+            margin-bottom: 18px;
+
+        }
+
+
+        .three-stat {
+
+            padding: 16px;
+
+            border-radius: 10px;
+
+            background: #101b2d;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        .three-stat-label {
+
+            display: block;
+
+            font-size: 12px;
+
+            opacity: 0.65;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .three-stat-value {
+
+            display: block;
+
+            font-size: 22px;
+
+            font-weight: 700;
+
+        }
+
+
+        /* =====================================================
+           POTHOLE INFO
+        ===================================================== */
+
+        #potholeInfoPanel {
+
+            margin-top: 16px;
+
+        }
+
+
+        .pothole-info-card {
+
+            padding: 18px;
+
+            border-radius: 10px;
+
+            background: #101b2d;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        .pothole-info-card h4 {
+
+            margin-top: 0;
+
+        }
+
+
+        .pothole-info-card p {
+
+            margin: 8px 0;
+
+        }
+
+
+        /* =====================================================
+           PIPELINE
+        ===================================================== */
+
+        .pipeline-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 14px;
+
+        }
+
+
+        .pipeline-item {
+
+            padding: 18px;
+
+            border-radius: 10px;
+
+            background: #101b2d;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        }
+
+
+        .pipeline-item h3 {
+
+            margin-top: 0;
+
+        }
+
+
+        .pipeline-item p {
+
+            opacity: 0.75;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ====================================================== */
+
+        @media (max-width: 1000px) {
+
+            .three-summary {
+
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+
+            }
+
+
+            .pipeline-grid {
+
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .app {
+
+                display: block;
+
+            }
+
+
+            .app>.sidebar {
+
+                width: 100%;
+
+                min-width: 0;
+
+            }
+
+
+            .content {
+
+                padding: 16px;
+
+            }
+
+
+            #threeContainer {
+
+                height: 500px;
+
+            }
+
+
+            .three-summary {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .pipeline-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .three-header {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="app">
+
+
+        <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    RG
+                </div>
+
+                <div class="brand-text">
+
+                    <div class="brand-name">
+                        RoadGuard AI
+                    </div>
+
+                    <div class="brand-subtitle">
+                        Smart Road Intelligence
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <nav class="navigation">
+
+                <a href="/" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#9673;
+                    </span>
+
+                    <span class="nav-label">
+                        Dashboard
+                    </span>
+
+                </a>
+
+
+                <a href="/detect" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#9635;
+                    </span>
+
+                    <span class="nav-label">
+                        AI Detection
+                    </span>
+
+                </a>
+
+
+                <a href="/3d-view" class="nav-item active">
+
+                    <span class="nav-icon">
+                        &#9671;
+                    </span>
+
+                    <span class="nav-label">
+                        3D Road View
+                    </span>
+
+                </a>
+
+
+                <a href="/analytics" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#8961;
+                    </span>
+
+                    <span class="nav-label">
+                        Analytics
+                    </span>
+
+                </a>
+
+
+                <a href="/reports" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#9636;
+                    </span>
+
+                    <span class="nav-label">
+                        Reports
+                    </span>
+
+                </a>
+
+
+                <a href="/map" class="nav-item">
+
+                    <span class="nav-icon">
+                        &#8982;
+                    </span>
+
+                    <span class="nav-label">
+                        Map &amp; Hotspots
+                    </span>
+
+                </a>
+
+            </nav>
+
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <span class="status-text">
+                    AI System Online
+                </span>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+        <main class="main">
+
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div class="topbar-left">
+
+                    <div class="topbar-title">
+
+                        <h1>
+                            3D Road View
+                        </h1>
+
+                        <p>
+
+                            <span class="topbar-brand">
+                                RoadGuard AI
+                            </span>
+
+                            &middot;
+
+                            AI-Powered Road Damage Visualization
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="topbar-actions">
+
+                    <div class="topbar-status">
+
+                        <span class="status-dot"></span>
+
+                        <span>
+                            AI System Online
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- CONTENT -->
+
+            <div class="content">
+
+
+                <!-- =================================================
+                 MAIN 3D CARD
+            ================================================== -->
+
+                <section class="card">
+
+
+                    <div class="three-header">
+
+                        <div class="three-header-left">
+
+                            <h2>
+
+                                <i class="fas fa-road" aria-hidden="true"></i>
+
+                                3D Road Visualization
+
+                            </h2>
+
+                            <p>
+
+                                Interactive road view with
+                                report-specific pothole detections.
+
+                            </p>
+
+                        </div>
+
+
+                        <div>
+
+                            <span id="viewModeBadge" class="view-mode-badge reconstruction">
+
+                                3D ROAD VIEW
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- REPORT CONTROLS -->
+
+                    <div class="three-controls">
+
+
+                        <label for="reportSelector">
+                            Report:
+                        </label>
+
+
+                        <select id="reportSelector">
+
+                            <option value="">
+                                Loading reports...
+                            </option>
+
+                        </select>
+
+
+                        <button id="reloadSceneBtn" type="button">
+
+                            <i class="fas fa-rotate"></i>
+
+                            Reload
+
+                        </button>
+
+
+                        <button id="resetCameraBtn" type="button">
+
+                            <i class="fas fa-camera"></i>
+
+                            Reset Camera
+
+                        </button>
+
+
+                        <button id="runReconstructionBtn" type="button">
+
+                            <i class="fas fa-cubes"></i>
+
+                            Build 3D Model
+
+                        </button>
+
+
+                        <button id="openPlyViewerBtn" type="button">
+
+                            <i class="fas fa-expand"></i>
+
+                            Open 3D Reconstruction
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- SUMMARY -->
+
+                    <div class="three-summary">
+
+
+                        <div class="three-stat">
+
+                            <span class="three-stat-label">
+                                Report ID
+                            </span>
+
+                            <strong class="three-stat-value" id="reportId">
+
+                                --
+
+                            </strong>
+
+                        </div>
+
+
+                        <div class="three-stat">
+
+                            <span class="three-stat-label">
+                                Detected Potholes
+                            </span>
+
+                            <strong class="three-stat-value" id="totalObjects">
+
+                                --
+
+                            </strong>
+
+                        </div>
+
+
+                        <div class="three-stat">
+
+                            <span class="three-stat-label">
+                                Media Type
+                            </span>
+
+                            <strong class="three-stat-value" id="mediaFormat">
+
+                                --
+
+                            </strong>
+
+                        </div>
+
+
+                        <div class="three-stat">
+
+                            <span class="three-stat-label">
+                                3D Mode
+                            </span>
+
+                            <strong class="three-stat-value">
+
+                                ROAD VIEW
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                     THREE.JS CONTAINER
+                ================================================== -->
+
+                    <div id="threeContainer">
+
+
+                        <!-- LOADING -->
+
+                        <div id="loadingOverlay">
+
+                            <div class="three-loader"></div>
+
+                            <h3>
+                                Loading 3D Road View
+                            </h3>
+
+                            <p id="threeStatus">
+
+                                Loading report...
+
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div id="threeStatusBar">
+
+                        Loading 3D road view...
+
+                    </div>
+
+
+                    <!-- POTHOLE DETAILS -->
+
+                    <div id="potholeInfoPanel">
+
+                        <div class="pothole-info-card">
+
+                            <h4>
+                                Pothole Details
+                            </h4>
+
+                            <p>
+                                Click a pothole marker in the
+                                3D road view to inspect it.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+
+                <!-- =================================================
+                 WHAT THIS VIEW REPRESENTS
+            ================================================== -->
+
+                <section class="card">
+
+                    <h2>
+
+                        <i class="fas fa-layer-group"></i>
+
+                        RoadGuard AI 3D Visualization
+
+                    </h2>
+
+                    <p>
+
+                        This view provides an interactive
+                        Three.js representation of the road
+                        inspection scene. Pothole markers are
+                        loaded from the selected RoadGuard AI
+                        report and displayed on the road surface.
+
+                    </p>
+
+
+                    <div class="pipeline-grid">
+
+
+                        <div class="pipeline-item">
+
+                            <h3>
+                                1. Road Imagery
+                            </h3>
+
+                            <p>
+
+                                Road images or videos are supplied
+                                to the RoadGuard AI detection pipeline.
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="pipeline-item">
+
+                            <h3>
+                                2. AI Detection
+                            </h3>
+
+                            <p>
+
+                                YOLO-based detection identifies
+                                potholes and stores their report
+                                metadata.
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="pipeline-item">
+
+                            <h3>
+                                3. 3D Visualization
+                            </h3>
+
+                            <p>
+
+                                Three.js presents the road inspection
+                                scene and places the report's detected
+                                potholes as interactive markers.
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="pipeline-item">
+
+                            <h3>
+                                4. Reconstruction
+
+                            </h3>
+
+                            <p>
+
+                                When available, the actual COLMAP
+                                reconstruction can be opened separately
+                                using the 3D Reconstruction viewer.
+
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                 JUDGE-FRIENDLY EXPLANATION
+            ================================================== -->
+
+                <section class="card">
+
+                    <h2>
+
+                        <i class="fas fa-circle-info"></i>
+
+                        3D Road Monitoring
+
+                    </h2>
+
+                    <p>
+
+                        RoadGuard AI combines AI-based pothole
+                        detection with an interactive spatial
+                        visualization. Each selected report can be
+                        inspected independently, and detected
+                        potholes can be selected to view their
+                        severity, confidence and available location
+                        information.
+
+                    </p>
+
+                    <p>
+
+                        The separate reconstruction viewer is used
+                        when a real photogrammetric reconstruction
+                        generated by the backend is available.
+
+                    </p>
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================================================
+     THREE.JS
+========================================================== -->
+
+    <script type="module" src="/frontend/js/three_d.js"></script>
+
+
+</body>
+
+</html>
