@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        RoadGuard AI | Analytics
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family:
+                Inter,
+                Arial,
+                sans-serif;
+            background: #060b14;
+            color: #e5e7eb;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        .app {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ==================================================
+           SIDEBAR
+           ================================================== */
+
+        .sidebar {
+            width: 250px;
+            min-width: 250px;
+            min-height: 100vh;
+            background: #0a101c;
+            border-right: 1px solid #1e293b;
+            padding: 22px 16px;
+        }
+
+        .brand {
+            font-size: 21px;
+            font-weight: 800;
+            color: #38bdf8;
+            margin-bottom: 30px;
+        }
+
+        .brand span {
+            color: #f8fafc;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav a {
+            display: block;
+            padding: 12px 14px;
+            border-radius: 9px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .nav a:hover,
+        .nav a.active {
+            color: #f8fafc;
+            background: #172033;
+        }
+
+        .nav a.active {
+            border-left: 3px solid #38bdf8;
+        }
+
+        /* ==================================================
+           MAIN
+           ================================================== */
+
+        .main {
+            flex: 1 1 auto;
+            min-width: 0;
+            width: 0;
+        }
+
+        .topbar {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 26px;
+            border-bottom: 1px solid #1e293b;
+            background: #080e19;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .status {
+            font-size: 13px;
+            color: #22c55e;
+        }
+
+        .content {
+            width: 100%;
+            padding: 26px;
+        }
+
+        /* ==================================================
+           CARDS
+           ================================================== */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: #0d1522;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        .stat-sub {
+            margin-top: 7px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns:
+                minmax(0, 1fr) minmax(0, 1fr);
+            gap: 18px;
+        }
+
+        .card {
+            background: #0d1522;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 0;
+        }
+
+        .card h2 {
+            margin: 0 0 18px;
+            font-size: 16px;
+        }
+
+        /* ==================================================
+           SEVERITY
+           ================================================== */
+
+        .severity-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 14px 0;
+        }
+
+        .severity-name {
+            width: 85px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        .severity-bar {
+            flex: 1;
+            height: 9px;
+            background: #1e293b;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .severity-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: inherit;
+        }
+
+        .critical {
+            background: #ef4444;
+        }
+
+        .high {
+            background: #f97316;
+        }
+
+        .moderate {
+            background: #f59e0b;
+        }
+
+        .low {
+            background: #22c55e;
+        }
+
+        .severity-count {
+            width: 35px;
+            text-align: right;
+            font-weight: 700;
+        }
+
+        /* ==================================================
+           DAILY ANALYTICS
+           ================================================== */
+
+        .daily-chart {
+            min-height: 230px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 20px 4px 5px;
+        }
+
+        .day-column {
+            min-width: 42px;
+            height: 190px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .day-value {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .day-bar {
+            width: 25px;
+            min-height: 3px;
+            background: #38bdf8;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .day-label {
+            font-size: 10px;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        /* ==================================================
+           MEDIA
+           ================================================== */
+
+        .media-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .media-box {
+            background: #111b2b;
+            border: 1px solid #253247;
+            border-radius: 9px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .media-number {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .media-label {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* ==================================================
+           REPORT TABLE
+           ================================================== */
+
+        .reports-card {
+            margin-top: 18px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 13px 10px;
+            border-bottom: 1px solid #1e293b;
+            font-size: 13px;
+        }
+
+        th {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        td {
+            color: #cbd5e1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .badge-critical {
+            color: #fecaca;
+            background: rgba(239,
+                    68,
+                    68,
+                    0.15);
+        }
+
+        .badge-high {
+            color: #fed7aa;
+            background: rgba(249,
+                    115,
+                    22,
+                    0.15);
+        }
+
+        .badge-moderate {
+            color: #fde68a;
+            background: rgba(245,
+                    158,
+                    11,
+                    0.15);
+        }
+
+        .badge-low {
+            color: #bbf7d0;
+            background: rgba(34,
+                    197,
+                    94,
+                    0.15);
+        }
+
+        .view-btn {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: #38bdf8;
+            background: rgba(56,
+                    189,
+                    248,
+                    0.1);
+            text-decoration: none;
+            font-size: 11px;
+        }
+
+        .view-btn:hover {
+            background: rgba(56,
+                    189,
+                    248,
+                    0.2);
+        }
+
+        /* ==================================================
+           LOADING / ERROR
+           ================================================== */
+
+        .message {
+            padding: 35px;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .error {
+            color: #fca5a5;
+        }
+
+        /* ==================================================
+           RESPONSIVE
+           ================================================== */
+
+        @media (max-width: 1000px) {
+
+            .stats-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+            .dashboard-grid {
+                grid-template-columns:
+                    minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .app {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                min-height: auto;
+                border-right: none;
+                border-bottom: 1px solid #1e293b;
+            }
+
+            .nav {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .nav a {
+                white-space: nowrap;
+            }
+
+            .main {
+                width: 100%;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns:
+                    minmax(0, 1fr);
+            }
+
+            .topbar {
+                padding: 0 16px;
+            }
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="app">
+
+        <!-- ==================================================
+         SIDEBAR
+         ================================================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                RoadGuard <span>AI</span>
+            </div>
+
+            <nav class="nav">
+
+                <a href="/dashboard">
+                    Dashboard
+                </a>
+
+                <a href="/detect">
+                    Detect
+                </a>
+
+                <a href="/map">
+                    Map & Hotspots
+                </a>
+
+                <a href="/reports">
+                    Reports
+                </a>
+
+                <a href="/analytics" class="active">
+                    Analytics
+                </a>
+
+                <a href="/3d-view">
+                    3D Inspection
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- ==================================================
+         MAIN
+         ================================================== -->
+
+        <main class="main">
+
+            <header class="topbar">
+
+                <div class="page-title">
+                    Road Analytics
+                </div>
+
+                <div class="status" id="connectionStatus">
+                    Loading...
+                </div>
+
+            </header>
+
+
+            <section class="content">
+
+                <!-- ==================================================
+                 STATISTICS
+                 ================================================== -->
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Total Reports
+                        </div>
+
+                        <div class="stat-value" id="totalReports">
+                            --
+                        </div>
+
+                        <div class="stat-sub">
+                            Stored inspections
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Total Potholes
+                        </div>
+
+                        <div class="stat-value" id="totalPotholes">
+                            --
+                        </div>
+
+                        <div class="stat-sub">
+                            Detected defects
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Average Confidence
+                        </div>
+
+                        <div class="stat-value" id="averageConfidence">
+                            --
+                        </div>
+
+                        <div class="stat-sub">
+                            YOLO detection confidence
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-label">
+                            Critical Reports
+                        </div>
+
+                        <div class="stat-value" id="criticalReports">
+                            --
+                        </div>
+
+                        <div class="stat-sub">
+                            Highest severity
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                 ANALYTICS GRID
+                 ================================================== -->
+
+                <div class="dashboard-grid">
+
+
+                    <!-- ==================================================
+                     SEVERITY
+                     ================================================== -->
+
+                    <div class="card">
+
+                        <h2>
+                            Severity Distribution
+                        </h2>
+
+
+                        <div class="severity-row">
+
+                            <div class="severity-name">
+                                Critical
+                            </div>
+
+                            <div class="severity-bar">
+
+                                <div id="criticalBar" class="severity-fill critical"></div>
+
+                            </div>
+
+                            <div id="criticalCount" class="severity-count">
+                                0
+                            </div>
+
+                        </div>
+
+
+                        <div class="severity-row">
+
+                            <div class="severity-name">
+                                High
+                            </div>
+
+                            <div class="severity-bar">
+
+                                <div id="highBar" class="severity-fill high"></div>
+
+                            </div>
+
+                            <div id="highCount" class="severity-count">
+                                0
+                            </div>
+
+                        </div>
+
+
+                        <div class="severity-row">
+
+                            <div class="severity-name">
+                                Moderate
+                            </div>
+
+                            <div class="severity-bar">
+
+                                <div id="moderateBar" class="severity-fill moderate"></div>
+
+                            </div>
+
+                            <div id="moderateCount" class="severity-count">
+                                0
+                            </div>
+
+                        </div>
+
+
+                        <div class="severity-row">
+
+                            <div class="severity-name">
+                                Low
+                            </div>
+
+                            <div class="severity-bar">
+
+                                <div id="lowBar" class="severity-fill low"></div>
+
+                            </div>
+
+                            <div id="lowCount" class="severity-count">
+                                0
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                     MEDIA
+                     ================================================== -->
+
+                    <div class="card">
+
+                        <h2>
+                            Inspection Sources
+                        </h2>
+
+                        <div class="media-grid">
+
+                            <div class="media-box">
+
+                                <div id="imageReports" class="media-number">
+                                    0
+                                </div>
+
+                                <div class="media-label">
+                                    Images
+                                </div>
+
+                            </div>
+
+
+                            <div class="media-box">
+
+                                <div id="videoReports" class="media-number">
+                                    0
+                                </div>
+
+                                <div class="media-label">
+                                    Videos
+                                </div>
+
+                            </div>
+
+
+                            <div class="media-box">
+
+                                <div id="otherReports" class="media-number">
+                                    0
+                                </div>
+
+                                <div class="media-label">
+                                    Other
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                     DAILY REPORTS
+                     ================================================== -->
+
+                    <div class="card">
+
+                        <h2>
+                            Reports Over Time
+                        </h2>
+
+                        <div id="dailyChart" class="daily-chart">
+
+                            <div class="message">
+                                Loading analytics...
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                     ANALYTICS SUMMARY
+                     ================================================== -->
+
+                    <div class="card">
+
+                        <h2>
+                            System Summary
+                        </h2>
+
+                        <div id="analyticsSummary" style="
+                            line-height:1.8;
+                            color:#94a3b8;
+                            font-size:13px;
+                        ">
+                            Loading analytics...
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                 RECENT REPORTS
+                 ================================================== -->
+
+                <div class="card reports-card">
+
+                    <h2>
+                        Recent Inspection Reports
+                    </h2>
+
+                    <div id="reportsLoading" class="message">
+                        Loading reports...
+                    </div>
+
+                    <div id="reportsError" class="message error" style="display:none;"></div>
+
+                    <div id="reportsTableWrapper" class="table-wrapper" style="display:none;">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Report
+                                    </th>
+
+                                    <th>
+                                        Source
+                                    </th>
+
+                                    <th>
+                                        Potholes
+                                    </th>
+
+                                    <th>
+                                        Severity
+                                    </th>
+
+                                    <th>
+                                        Confidence
+                                    </th>
+
+                                    <th>
+                                        Location
+                                    </th>
+
+                                    <th>
+                                        Date
+                                    </th>
+
+                                    <th>
+                                        Open
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="reportsTableBody"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        // ======================================================
+        // ROADGUARD ANALYTICS
+        // ======================================================
+
+        const API_BASE_URL = "";
+
+
+        // ======================================================
+        // HELPERS
+        // ======================================================
+
+        function setText(
+            id,
+            value
+        ) {
+
+            const element =
+                document.getElementById(id);
+
+            if (element) {
+                element.textContent =
+                    value;
+            }
+        }
+
+
+        function formatConfidence(
+            value
+        ) {
+
+            const number =
+                Number(value || 0);
+
+            return (
+                number * 100
+            ).toFixed(1) + "%";
+        }
+
+
+        function formatDate(
+            value
+        ) {
+
+            if (!value) {
+                return "--";
+            }
+
+            try {
+
+                return new Date(
+                    value
+                ).toLocaleString();
+
+            } catch {
+
+                return String(
+                    value
+                );
+            }
+        }
+
+
+        function severityBadge(
+            severity
+        ) {
+
+            const normalized =
+                String(
+                    severity || "LOW"
+                ).toUpperCase();
+
+            let className =
+                "badge-low";
+
+            if (
+                normalized === "CRITICAL"
+            ) {
+                className =
+                    "badge-critical";
+
+            } else if (
+                normalized === "HIGH"
+            ) {
+                className =
+                    "badge-high";
+
+            } else if (
+                normalized === "MODERATE"
+            ) {
+                className =
+                    "badge-moderate";
+            }
+
+            return `
+            <span class="badge ${className}">
+                ${normalized}
+            </span>
+        `;
+        }
+
+
+        // ======================================================
+        // LOAD ANALYTICS
+        // ======================================================
+
+        async function loadAnalytics() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE_URL}/api/analytics`,
+                        {
+                            cache: "no-store"
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Analytics API returned HTTP ${response.status}`
+                    );
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success ||
+                    !data.analytics
+                ) {
+
+                    throw new Error(
+                        "Invalid analytics response."
+                    );
+                }
+
+
+                renderAnalytics(
+                    data.analytics
+                );
+
+
+                setText(
+                    "connectionStatus",
+                    "● Live Data"
+                );
+
+
+                return data.analytics;
+
+            } catch (error) {
+
+                console.error(
+                    "Analytics loading failed:",
+                    error
+                );
+
+
+                setText(
+                    "connectionStatus",
+                    "● API Error"
+                );
+
+
+                setText(
+                    "analyticsSummary",
+                    "Unable to load analytics data: " +
+                    error.message
+                );
+
+
+                throw error;
+            }
+        }
+
+
+        // ======================================================
+        // RENDER ANALYTICS
+        // ======================================================
+
+        function renderAnalytics(
+            analytics
+        ) {
+
+            setText(
+                "totalReports",
+                analytics.total_reports
+            );
+
+
+            setText(
+                "totalPotholes",
+                analytics.total_potholes
+            );
+
+
+            setText(
+                "averageConfidence",
+                formatConfidence(
+                    analytics.average_confidence
+                )
+            );
+
+
+            const severity =
+                analytics.severity || {};
+
+
+            setText(
+                "criticalReports",
+                severity.CRITICAL || 0
+            );
+
+
+            renderSeverity(
+                severity
+            );
+
+
+            const media =
+                analytics.media_types || {};
+
+
+            setText(
+                "imageReports",
+                media.IMAGE || 0
+            );
+
+
+            setText(
+                "videoReports",
+                media.VIDEO || 0
+            );
+
+
+            setText(
+                "otherReports",
+                media.OTHER || 0
+            );
+
+
+            renderDailyChart(
+                analytics.daily_reports || []
+            );
+
+
+            const total =
+                Number(
+                    analytics.total_reports || 0
+                );
+
+
+            const potholes =
+                Number(
+                    analytics.total_potholes || 0
+                );
+
+
+            const average =
+                formatConfidence(
+                    analytics.average_confidence
+                );
+
+
+            document.getElementById(
+                "analyticsSummary"
+            ).innerHTML = `
+
+            <div>
+                Total inspection reports:
+                <strong style="color:#f8fafc">
+                    ${total}
+                </strong>
+            </div>
+
+            <div>
+                Total detected potholes:
+                <strong style="color:#f8fafc">
+                    ${potholes}
+                </strong>
+            </div>
+
+            <div>
+                Average YOLO confidence:
+                <strong style="color:#38bdf8">
+                    ${average}
+                </strong>
+            </div>
+
+            <div>
+                Critical severity reports:
+                <strong style="color:#ef4444">
+                    ${severity.CRITICAL || 0}
+                </strong>
+            </div>
+
+            <div>
+                High severity reports:
+                <strong style="color:#f97316">
+                    ${severity.HIGH || 0}
+                </strong>
+            </div>
+        `;
+        }
+
+
+        // ======================================================
+        // SEVERITY CHART
+        // ======================================================
+
+        function renderSeverity(
+            severity
+        ) {
+
+            const critical =
+                Number(
+                    severity.CRITICAL || 0
+                );
+
+            const high =
+                Number(
+                    severity.HIGH || 0
+                );
+
+            const moderate =
+                Number(
+                    severity.MODERATE || 0
+                );
+
+            const low =
+                Number(
+                    severity.LOW || 0
+                );
+
+
+            const max =
+                Math.max(
+                    critical,
+                    high,
+                    moderate,
+                    low,
+                    1
+                );
+
+
+            setText(
+                "criticalCount",
+                critical
+            );
+
+            setText(
+                "highCount",
+                high
+            );
+
+            setText(
+                "moderateCount",
+                moderate
+            );
+
+            setText(
+                "lowCount",
+                low
+            );
+
+
+            document.getElementById(
+                "criticalBar"
+            ).style.width =
+                `${(
+                    critical / max
+                ) * 100}%`;
+
+
+            document.getElementById(
+                "highBar"
+            ).style.width =
+                `${(
+                    high / max
+                ) * 100}%`;
+
+
+            document.getElementById(
+                "moderateBar"
+            ).style.width =
+                `${(
+                    moderate / max
+                ) * 100}%`;
+
+
+            document.getElementById(
+                "lowBar"
+            ).style.width =
+                `${(
+                    low / max
+                ) * 100}%`;
+        }
+
+
+        // ======================================================
+        // DAILY CHART
+        // ======================================================
+
+        function renderDailyChart(
+            dailyReports
+        ) {
+
+            const chart =
+                document.getElementById(
+                    "dailyChart"
+                );
+
+
+            if (!chart) {
+                return;
+            }
+
+
+            chart.innerHTML = "";
+
+
+            if (
+                !dailyReports ||
+                dailyReports.length === 0
+            ) {
+
+                chart.innerHTML = `
+                <div class="message">
+                    No report history available.
+                </div>
+            `;
+
+                return;
+            }
+
+
+            const max =
+                Math.max(
+                    ...dailyReports.map(
+                        item =>
+                            Number(
+                                item.reports || 0
+                            )
+                    ),
+                    1
+                );
+
+
+            dailyReports
+                .slice(-14)
+                .forEach(
+                    item => {
+
+                        const value =
+                            Number(
+                                item.reports || 0
+                            );
+
+
+                        const column =
+                            document.createElement(
+                                "div"
+                            );
+
+                        column.className =
+                            "day-column";
+
+
+                        const valueEl =
+                            document.createElement(
+                                "div"
+                            );
+
+                        valueEl.className =
+                            "day-value";
+
+                        valueEl.textContent =
+                            value;
+
+
+                        const bar =
+                            document.createElement(
+                                "div"
+                            );
+
+                        bar.className =
+                            "day-bar";
+
+
+                        bar.style.height =
+                            `${Math.max(
+                                4,
+                                (
+                                    value / max
+                                ) * 150
+                            )}px`;
+
+
+                        const label =
+                            document.createElement(
+                                "div"
+                            );
+
+                        label.className =
+                            "day-label";
+
+                        label.textContent =
+                            String(
+                                item.date
+                            ).slice(5);
+
+
+                        column.appendChild(
+                            valueEl
+                        );
+
+                        column.appendChild(
+                            bar
+                        );
+
+                        column.appendChild(
+                            label
+                        );
+
+
+                        chart.appendChild(
+                            column
+                        );
+                    }
+                );
+        }
+
+
+        // ======================================================
+        // LOAD REPORTS
+        // ======================================================
+
+        async function loadReports() {
+
+            const loading =
+                document.getElementById(
+                    "reportsLoading"
+                );
+
+            const error =
+                document.getElementById(
+                    "reportsError"
+                );
+
+            const wrapper =
+                document.getElementById(
+                    "reportsTableWrapper"
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE_URL}/api/analytics/reports`,
+                        {
+                            cache: "no-store"
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Reports API returned HTTP ${response.status}`
+                    );
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success ||
+                    !Array.isArray(
+                        data.reports
+                    )
+                ) {
+
+                    throw new Error(
+                        "Invalid reports response."
+                    );
+                }
+
+
+                renderReportsTable(
+                    data.reports
+                );
+
+
+                loading.style.display =
+                    "none";
+
+
+                error.style.display =
+                    "none";
+
+
+                wrapper.style.display =
+                    "block";
+
+            } catch (err) {
+
+                console.error(
+                    "Reports loading failed:",
+                    err
+                );
+
+
+                loading.style.display =
+                    "none";
+
+
+                error.textContent =
+                    err.message;
+
+
+                error.style.display =
+                    "block";
+            }
+        }
+
+
+        // ======================================================
+        // REPORT TABLE
+        // ======================================================
+
+        function renderReportsTable(
+            reports
+        ) {
+
+            const tbody =
+                document.getElementById(
+                    "reportsTableBody"
+                );
+
+
+            tbody.innerHTML = "";
+
+
+            if (
+                reports.length === 0
+            ) {
+
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="8">
+                        No reports available.
+                    </td>
+                </tr>
+            `;
+
+                return;
+            }
+
+
+            reports.forEach(
+                report => {
+
+                    const row =
+                        document.createElement(
+                            "tr"
+                        );
+
+
+                    const viewerUrl =
+                        `/3d-view?report_id=${encodeURIComponent(
+                            report.id
+                        )}`;
+
+
+                    row.innerHTML = `
+
+                    <td>
+                        #${report.id}
+                    </td>
+
+                    <td>
+                        ${String(
+                        report.media_type ||
+                        "OTHER"
+                    ).toUpperCase()}
+                    </td>
+
+                    <td>
+                        ${report.pothole_count || 0}
+                    </td>
+
+                    <td>
+                        ${severityBadge(
+                        report.severity
+                    )}
+                    </td>
+
+                    <td>
+                        ${formatConfidence(
+                        report.confidence
+                    )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                        report.location ||
+                        "Unknown Location"
+                    )}
+                    </td>
+
+                    <td>
+                        ${formatDate(
+                        report.created_at
+                    )}
+                    </td>
+
+                    <td>
+                        <a
+                            class="view-btn"
+                            href="${viewerUrl}"
+                        >
+                            3D View
+                        </a>
+                    </td>
+
+                `;
+
+
+                    tbody.appendChild(
+                        row
+                    );
+                }
+            );
+        }
+
+
+        // ======================================================
+        // HTML ESCAPE
+        // ======================================================
+
+        function escapeHtml(
+            value
+        ) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.textContent =
+                String(
+                    value ?? ""
+                );
+
+            return div.innerHTML;
+        }
+
+
+        // ======================================================
+        // INITIAL LOAD
+        // ======================================================
+
+        async function initializeAnalytics() {
+
+            try {
+
+                await Promise.all([
+                    loadAnalytics(),
+                    loadReports()
+                ]);
+
+            } catch (error) {
+
+                console.error(
+                    "Analytics initialization error:",
+                    error
+                );
+            }
+        }
+
+
+        initializeAnalytics();
+
+
+        // ======================================================
+        // AUTO REFRESH
+        // ======================================================
+
+        setInterval(
+            () => {
+
+                loadAnalytics()
+                    .catch(() => { });
+
+                loadReports()
+                    .catch(() => { });
+
+            },
+            30000
+        );
+
+    </script>
+
+</body>
+
+</html>

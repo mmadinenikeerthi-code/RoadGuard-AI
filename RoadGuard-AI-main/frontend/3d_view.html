@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadGuard AI — 3D Satellite Road View (CesiumJS)</title>
+
+    <!-- GOOGLE FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- CESIUMJS WIDGETS -->
+    <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.130/Build/Cesium/Widgets/widgets.css" />
+
+    <!-- CESIUM ROAD VIEW STYLES -->
+    <link rel="stylesheet" href="/frontend/css/cesium_road_view.css" />
+</head>
+<body>
+
+<div class="roadguard-map-page">
+    <!-- CESIUM 3D SATELLITE GLOBE -->
+    <div id="cesiumContainer" aria-label="Interactive 3D Satellite Globe"></div>
+
+    <!-- TOPBAR NAVIGATION & TOOLBAR -->
+    <header class="map-topbar">
+        <div class="topbar-left">
+            <div class="map-brand">
+                <i class="fa-solid fa-satellite-dish brand-icon"></i>
+                <div>
+                    <h1>RoadGuard AI</h1>
+                    <p>3D Satellite Road View</p>
+                </div>
+            </div>
+
+            <div class="topbar-links">
+                <a href="/" class="topbar-nav-btn" title="Return to Dashboard">
+                    <i class="fa-solid fa-gauge"></i> Dashboard
+                </a>
+                <a href="/reports" class="topbar-nav-btn" title="View All Inspection Reports">
+                    <i class="fa-solid fa-file-lines"></i> Reports
+                </a>
+            </div>
+        </div>
+
+        <!-- CAMERA & MAP CONTROLS -->
+        <div class="map-toolbar">
+            <button id="btnToggleMarkers" class="toolbar-btn active" type="button" title="Show or hide detected pothole markers">
+                <i class="fa-solid fa-map-pin"></i> <span id="toggleMarkersText">Markers: ON</span>
+            </button>
+            <button id="btnFocusAll" class="toolbar-btn" type="button" title="Zoom to fit all geolocated potholes">
+                <i class="fa-solid fa-crosshairs"></i> Focus All
+            </button>
+            <button id="btnTopDown" class="toolbar-btn" type="button" title="Switch to top-down 2D satellite view">
+                <i class="fa-solid fa-satellite"></i> Top-Down
+            </button>
+            <button id="btn3DAngle" class="toolbar-btn" type="button" title="Switch to 3D perspective terrain tilt">
+                <i class="fa-solid fa-cube"></i> 3D Tilt
+            </button>
+            <button id="btnResetGlobe" class="toolbar-btn" type="button" title="Reset to global orbit overview">
+                <i class="fa-solid fa-globe"></i> Orbit
+            </button>
+        </div>
+
+        <div class="topbar-right">
+            <div id="mapStatus" class="map-status" data-state="loading">
+                Connecting to Cesium ion satellite imagery...
+            </div>
+            <button id="btnToggleDrawer" class="drawer-trigger-btn" type="button" title="Open Detections Drawer">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Detections</span>
+                <span id="drawerBadge" class="drawer-count-badge">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- SEVERITY LEGEND -->
+    <aside class="map-legend">
+        <h2>Pothole Risk Level</h2>
+
+        <div class="legend-item">
+            <span class="legend-dot high"></span>
+            <span class="legend-label">High Risk (Critical / Severe)</span>
+        </div>
+
+        <div class="legend-item">
+            <span class="legend-dot medium"></span>
+            <span class="legend-label">Medium Risk (Moderate)</span>
+        </div>
+
+        <div class="legend-item">
+            <span class="legend-dot low"></span>
+            <span class="legend-label">Low Risk (Minor)</span>
+        </div>
+
+        <div class="map-help">
+            <strong>Real Satellite Imagery:</strong> Provided via Cesium ion.<br>
+            <strong>Pothole Markers:</strong> Positioned at verified GPS coordinates from AI inspection.
+        </div>
+    </aside>
+
+    <!-- DETECTIONS SIDEBAR DRAWER -->
+    <aside id="detectionsDrawer" class="detections-drawer">
+        <div class="drawer-header">
+            <div class="drawer-title-box">
+                <i class="fa-solid fa-road-barrier"></i>
+                <div>
+                    <h2>Pothole Inspections</h2>
+                    <p>AI Detection Results & Georeferencing</p>
+                </div>
+            </div>
+            <button id="btnCloseDrawer" class="drawer-close-btn" type="button" title="Close Panel">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- TABS -->
+        <div class="drawer-tabs">
+            <button id="tabBtnGeolocated" class="drawer-tab active" type="button" onclick="switchDrawerTab('geolocated')">
+                <i class="fa-solid fa-location-dot"></i> Geolocated (<span id="countGeolocated">0</span>)
+            </button>
+            <button id="tabBtnUnlocated" class="drawer-tab" type="button" onclick="switchDrawerTab('unlocated')">
+                <i class="fa-solid fa-location-crosshairs"></i> Location Unavailable (<span id="countUnlocated">0</span>)
+            </button>
+        </div>
+
+        <!-- RISK FILTER -->
+        <div class="drawer-filter-bar">
+            <span>Filter Risk:</span>
+            <button class="filter-pill active" data-filter="all" onclick="filterRisk('all')">All</button>
+            <button class="filter-pill filter-high" data-filter="high" onclick="filterRisk('high')">High</button>
+            <button class="filter-pill filter-medium" data-filter="medium" onclick="filterRisk('medium')">Medium</button>
+            <button class="filter-pill filter-low" data-filter="low" onclick="filterRisk('low')">Low</button>
+        </div>
+
+        <!-- TAB 1: GEOLOCATED DETECTIONS -->
+        <div id="tabContentGeolocated" class="drawer-tab-content">
+            <div id="geolocatedList" class="detections-card-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- TAB 2: LOCATION UNAVAILABLE DETECTIONS -->
+        <div id="tabContentUnlocated" class="drawer-tab-content hidden">
+            <div class="unlocated-notice-box">
+                <div class="notice-header">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <strong>Georeferencing Required for Satellite Mapping</strong>
+                </div>
+                <p>
+                    YOLOv8 detected road defects in these media uploads, but <strong>no real-world GPS coordinates</strong> were found in the file metadata or supplied during upload.
+                </p>
+                <p class="notice-sub">
+                    To display these potholes on the Cesium satellite globe, attach camera EXIF GPS tags, synchronise vehicle telemetry, or enter coordinates in the upload form.
+                </p>
+            </div>
+
+            <div id="unlocatedList" class="detections-card-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </aside>
+
+    <!-- INTERACTIVE POTHOLE POPUP MODAL (HUD) -->
+    <div id="potholePopupCard" class="pothole-popup-card hidden">
+        <div class="popup-header">
+            <div class="popup-title">
+                <span id="popupSeverityBadge" class="badge badge-high">HIGH RISK</span>
+                <h3 id="popupTitle">Pothole Report #--</h3>
+            </div>
+            <button id="btnClosePopup" class="popup-close-btn" type="button"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="popup-body">
+            <div class="popup-field">
+                <span class="field-label"><i class="fa-solid fa-location-dot"></i> Coordinates:</span>
+                <strong id="popupCoords" class="field-value">--</strong>
+            </div>
+            <div class="popup-field">
+                <span class="field-label"><i class="fa-solid fa-map-pin"></i> Location Name:</span>
+                <span id="popupLocationName" class="field-value">--</span>
+            </div>
+            <div class="popup-field">
+                <span class="field-label"><i class="fa-solid fa-road"></i> Potholes Detected:</span>
+                <strong id="popupPotholesCount" class="field-value">--</strong>
+            </div>
+            <div class="popup-field">
+                <span class="field-label"><i class="fa-solid fa-brain"></i> AI Confidence:</span>
+                <span id="popupConfidence" class="field-value">--</span>
+            </div>
+            <div class="popup-field">
+                <span class="field-label"><i class="fa-solid fa-clock"></i> Detection Time:</span>
+                <span id="popupTimestamp" class="field-value">--</span>
+            </div>
+            <div class="popup-field">
+                <span class="field-label"><i class="fa-solid fa-film"></i> Media Type:</span>
+                <span id="popupMediaType" class="field-value" style="text-transform: capitalize;">--</span>
+            </div>
+        </div>
+
+        <div class="popup-actions">
+            <button id="btnPopupZoomRoad" class="primary-popup-btn" type="button">
+                <i class="fa-solid fa-street-view"></i> Zoom to Road Level
+            </button>
+            <a id="popupReportLink" href="#" class="secondary-popup-btn">
+                <i class="fa-solid fa-file-invoice"></i> View Report
+            </a>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div id="mapLoading" class="map-loading">
+        <div class="loading-card">
+            <div class="loading-spinner"></div>
+            <h2>RoadGuard AI — 3D Satellite View</h2>
+            <p id="loadingMessage">Connecting to Cesium ion satellite imagery...</p>
+        </div>
+    </div>
+</div>
+
+<!-- CESIUMJS SCRIPT -->
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.130/Build/Cesium/Cesium.js"></script>
+<!-- ROADGUARD CESIUM SATELLITE ENGINE -->
+<script src="/frontend/js/cesium_road_view.js"></script>
+
+</body>
+</html>
