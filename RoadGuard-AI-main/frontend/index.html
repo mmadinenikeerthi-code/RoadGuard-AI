@@ -3,9 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>RoadGuard AI | Smart Road Monitoring</title>
 
     <!-- GOOGLE FONT -->
@@ -19,7 +17,6 @@
 
     <!-- THREE.JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
 
@@ -32,10 +29,6 @@
     <link rel="stylesheet" href="/frontend/css/style.css">
 
     <style>
-        /* =========================================================
-            ROOT
-        ========================================================== */
-
         :root {
             --bg: #070b14;
             --sidebar: #0d1422;
@@ -54,10 +47,6 @@
             --text: #f8fafc;
             --muted: #94a3b8;
         }
-
-        /* =========================================================
-            PAGES
-        ========================================================== */
 
         .page {
             display: none;
@@ -80,10 +69,6 @@
             }
         }
 
-        /* =========================================================
-            SECTION HEADER
-        ========================================================== */
-
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -103,9 +88,7 @@
 
         .primary-btn {
             border: none;
-            background: linear-gradient(135deg,
-                    var(--blue),
-                    var(--cyan));
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
             color: white;
             padding: 13px 20px;
             border-radius: 10px;
@@ -116,10 +99,6 @@
         .primary-btn:hover {
             opacity: 0.9;
         }
-
-        /* =========================================================
-            STATS
-        ========================================================== */
 
         .stats-grid {
             display: grid;
@@ -182,10 +161,6 @@
             color: var(--green);
         }
 
-        /* =========================================================
-            DASHBOARD GRID
-        ========================================================== */
-
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1.4fr 1fr;
@@ -217,10 +192,6 @@
             align-items: center;
             justify-content: center;
         }
-
-        /* =========================================================
-            RECENT DETECTIONS
-        ========================================================== */
 
         .detection-list {
             display: flex;
@@ -275,10 +246,6 @@
             background: rgba(34, 197, 94, 0.15);
             color: var(--green);
         }
-
-        /* =========================================================
-            DETECTION PAGE
-        ========================================================== */
 
         .upload-options {
             display: grid;
@@ -381,9 +348,7 @@
             padding: 16px;
             border: none;
             border-radius: 12px;
-            background: linear-gradient(135deg,
-                    var(--blue),
-                    var(--cyan));
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
             color: white;
             font-size: 16px;
             font-weight: 700;
@@ -394,10 +359,6 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
-
-        /* =========================================================
-            3D PAGE
-        ========================================================== */
 
         .visualization-layout {
             display: grid;
@@ -481,10 +442,6 @@
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
-        /* =========================================================
-            REPORTS
-        ========================================================== */
-
         .table-card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -520,10 +477,6 @@
             cursor: pointer;
         }
 
-        /* =========================================================
-            CESIUMJS MAP STYLING
-        ========================================================== */
-
         #cesiumContainer {
             width: 100%;
             height: 600px;
@@ -540,16 +493,6 @@
             margin-top: 12px;
         }
 
-        @media (max-width: 700px) {
-            #cesiumContainer {
-                height: 450px;
-                min-height: 350px;
-            }
-        }
-
-        /* =========================================================
-            WELCOME BANNER
-        ========================================================== */
         .welcome-banner {
             background: linear-gradient(135deg, rgba(37, 99, 235, 0.16) 0%, rgba(6, 182, 212, 0.10) 100%), var(--card);
             border: 1px solid rgba(59, 130, 246, 0.3);
@@ -677,9 +620,6 @@
             line-height: 1.35;
         }
 
-        /* =========================================================
-            EMPTY STATE BOXES
-        ========================================================== */
         .empty-state-box {
             display: flex;
             flex-direction: column;
@@ -712,9 +652,6 @@
             line-height: 1.45;
         }
 
-        /* =========================================================
-            DETECTION STATUS & RESULT CARDS
-        ========================================================== */
         .detection-status-card {
             margin-top: 22px;
             background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(17, 26, 43, 0.95));
@@ -742,17 +679,6 @@
             }
         }
 
-        .detection-status-card h4 {
-            font-size: 15px;
-            color: var(--text);
-            margin-bottom: 3px;
-        }
-
-        .detection-status-card p {
-            font-size: 12.5px;
-            color: var(--muted);
-        }
-
         .detection-error-card {
             margin-top: 22px;
             background: rgba(239, 68, 68, 0.1);
@@ -762,25 +688,6 @@
             display: flex;
             align-items: flex-start;
             gap: 16px;
-        }
-
-        .detection-error-card .error-icon {
-            font-size: 26px;
-            color: #ef4444;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .detection-error-card h4 {
-            font-size: 15px;
-            color: #f87171;
-            margin-bottom: 3px;
-        }
-
-        .detection-error-card p {
-            font-size: 12.5px;
-            color: var(--muted);
-            margin-bottom: 10px;
         }
 
         .small-btn {
@@ -884,219 +791,99 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-
-        @media (max-width: 900px) {
-            .welcome-banner {
-                grid-template-columns: 1fr;
-            }
-
-            .result-metrics-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
     </style>
 </head>
 
 <body>
-
     <div class="app">
-
-        <!-- =====================================================
-         SIDEBAR
-    ====================================================== -->
-
+        <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
-
             <div class="brand">
-
-                <div class="brand-logo">
-                    RG
-                </div>
-
+                <div class="brand-logo">RG</div>
                 <div class="brand-text">
-
-                    <div class="brand-name">
-                        RoadGuard AI
-                    </div>
-
-                    <div class="brand-subtitle">
-                        Smart Road Intelligence
-                    </div>
-
+                    <div class="brand-name">RoadGuard AI</div>
+                    <div class="brand-subtitle">Smart Road Intelligence</div>
                 </div>
-
             </div>
 
             <nav class="navigation">
-
-                <a href="/" class="nav-item active">
+                <a href="/" class="nav-item active" onclick="showPage('dashboard', this); return false;">
                     <span class="nav-icon">◉</span>
-                    <span class="nav-label">
-                        Dashboard
-                    </span>
+                    <span class="nav-label">Dashboard</span>
                 </a>
-
-                <a href="/detect" class="nav-item">
+                <a href="/detect" class="nav-item" onclick="showPage('detect', this); return false;">
                     <span class="nav-icon">▣</span>
-                    <span class="nav-label">
-                        AI Detection
-                    </span>
+                    <span class="nav-label">AI Detection</span>
                 </a>
-
-                <a href="/3d-view" class="nav-item">
+                <a href="/3d-view" class="nav-item" onclick="showPage('visualization', this); return false;">
                     <span class="nav-icon">◇</span>
-                    <span class="nav-label">
-                        3D Road View
-                    </span>
+                    <span class="nav-label">3D Road View</span>
                 </a>
-
-                <a href="/analytics" class="nav-item">
+                <a href="/analytics" class="nav-item" onclick="showPage('analytics', this); return false;">
                     <span class="nav-icon">⌁</span>
-                    <span class="nav-label">
-                        Analytics
-                    </span>
+                    <span class="nav-label">Analytics</span>
                 </a>
-
-                <a href="/reports" class="nav-item">
+                <a href="/reports" class="nav-item" onclick="showPage('reports', this); return false;">
                     <span class="nav-icon">▤</span>
-                    <span class="nav-label">
-                        Reports
-                    </span>
+                    <span class="nav-label">Reports</span>
                 </a>
-
-                <a href="/map" class="nav-item">
+                <a href="/map" class="nav-item" onclick="showPage('map', this); return false;">
                     <span class="nav-icon">⌖</span>
-                    <span class="nav-label">
-                        Map & Hotspots
-                    </span>
+                    <span class="nav-label">Map & Hotspots</span>
                 </a>
-
             </nav>
 
             <div class="system-status">
-
                 <span class="status-dot"></span>
-
-                <span class="status-text">
-                    AI System Online
-                </span>
-
+                <span class="status-text">AI System Online</span>
             </div>
-
         </aside>
 
-
-        <!-- =====================================================
-         MAIN
-    ====================================================== -->
-
+        <!-- MAIN -->
         <main class="main">
-
-            <!-- TOPBAR -->
-
             <header class="topbar">
-
                 <div class="topbar-left">
-
                     <button class="menu-btn" type="button" title="Toggle sidebar" onclick="toggleSidebar()">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-
                     <div class="topbar-title">
-
-                        <h1 id="topTitle">
-                            Dashboard
-                        </h1>
-
-                        <p>
-                            <span class="topbar-brand">
-                                RoadGuard AI
-                            </span>
-
-                            ·
-
-                            AI-Powered Pothole Detection & Road Monitoring
-                        </p>
-
+                        <h1 id="topTitle">Dashboard</h1>
+                        <p><span class="topbar-brand">RoadGuard AI</span> · AI-Powered Pothole Detection & Road
+                            Monitoring</p>
                     </div>
-
                 </div>
-
                 <div class="topbar-actions">
-
                     <div class="topbar-status">
-
                         <span class="status-dot"></span>
-
-                        <span>
-                            AI System Online
-                        </span>
-
+                        <span>AI System Online</span>
                     </div>
-
                     <button class="notification" type="button" title="Notifications">
                         <i class="fa-regular fa-bell"></i>
                     </button>
-
                     <div class="user">
-
-                        <div class="avatar">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-
+                        <div class="avatar"><i class="fa-solid fa-user"></i></div>
                         <div class="user-info">
-
-                            <strong>
-                                Administrator
-                            </strong>
-
-                            <p>
-                                Road Authority
-                            </p>
-
+                            <strong>Administrator</strong>
+                            <p>Road Authority</p>
                         </div>
-
                     </div>
-
                 </div>
-
             </header>
 
-
-            <!-- CONTENT -->
-
             <div class="content">
-
-
-                <!-- =================================================
-                 DASHBOARD
-            ================================================== -->
-
+                <!-- DASHBOARD -->
                 <section class="page active" id="dashboard">
-
                     <div class="section-header">
-
                         <div>
-
-                            <h2>
-                                Road Monitoring Dashboard
-                            </h2>
-
-                            <p>
-                                Real-time AI road condition overview
-                            </p>
-
+                            <h2>Road Monitoring Dashboard</h2>
+                            <p>Real-time AI road condition overview</p>
                         </div>
-
-                        <button class="primary-btn" onclick="showPage('detect')">
-                            <i class="fa-solid fa-plus"></i>
-                            New Detection
+                        <button class="primary-btn"
+                            onclick="showPage('detect', document.querySelector('.nav-item[href=\'/detect\']'))">
+                            <i class="fa-solid fa-plus"></i> New Detection
                         </button>
-
                     </div>
 
-
-                    <!-- WELCOME & QUICK START BANNER -->
                     <div class="welcome-banner">
                         <div class="welcome-content">
                             <div class="welcome-tag">
@@ -1109,13 +896,16 @@
                                 hazard risk levels, and inspect photogrammetric 3D reconstructions.
                             </p>
                             <div class="welcome-actions">
-                                <button class="primary-btn" onclick="showPage('detect')">
+                                <button class="primary-btn"
+                                    onclick="showPage('detect', document.querySelector('.nav-item[href=\'/detect\']'))">
                                     <i class="fa-solid fa-upload"></i> Upload Road Video
                                 </button>
-                                <a href="/reports" class="secondary-btn">
+                                <a href="/reports" class="secondary-btn"
+                                    onclick="showPage('reports', document.querySelector('.nav-item[href=\'/reports\']')); return false;">
                                     <i class="fa-solid fa-file-lines"></i> View Reports
                                 </a>
-                                <a href="/3d-view?report_id=1" class="secondary-btn">
+                                <a href="/3d-view?report_id=1" class="secondary-btn"
+                                    onclick="showPage('visualization', document.querySelector('.nav-item[href=\'/3d-view\']')); return false;">
                                     <i class="fa-solid fa-cube"></i> Open 3D Viewer
                                 </a>
                             </div>
@@ -1145,18 +935,18 @@
                         </div>
                     </div>
 
-                    <!-- PROCESSING BANNER (WHEN ACTIVE) -->
-                    <div id="dashboardProcessingBanner" class="hidden" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; color: #93c5fd; display: flex; align-items: center; gap: 14px;">
+                    <div id="dashboardProcessingBanner" class="hidden"
+                        style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; color: #93c5fd; display: flex; align-items: center; gap: 14px;">
                         <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 20px; color: #38bdf8;"></i>
                         <div>
                             <strong style="color: #f1f5f9; font-size: 14px;">AI Road Inspection in Progress...</strong>
-                            <p style="margin: 3px 0 0; font-size: 12px; color: #94a3b8;">YOLOv8 is analyzing the uploaded road media. Genuine defect metrics and analytics will update here automatically upon completion.</p>
+                            <p style="margin: 3px 0 0; font-size: 12px; color: #94a3b8;">YOLOv8 is analyzing the
+                                uploaded road media. Genuine defect metrics and analytics will update here automatically
+                                upon completion.</p>
                         </div>
                     </div>
 
-                    <!-- STATS -->
                     <div class="stats-grid">
-
                         <div class="stat-card">
                             <div class="stat-top">
                                 <span class="stat-label">Total Potholes</span>
@@ -1193,23 +983,19 @@
                             <div class="stat-value" id="avgConfidence">N/A</div>
                             <div class="stat-change" style="color:#22c55e">Average YOLOv8 accuracy</div>
                         </div>
-
                     </div>
 
-                    <!-- DASHBOARD CONTENT -->
                     <div class="dashboard-grid">
-
-                        <!-- CHART -->
                         <div class="card">
                             <div class="card-title">
                                 <h3>Pothole Detection Analytics</h3>
                             </div>
                             <div class="chart-container" id="dashboardChartContainer">
-                                <p style="color:var(--muted); font-size:13px; text-align:center; padding:40px 0;">No detection data available yet.</p>
+                                <p style="color:var(--muted); font-size:13px; text-align:center; padding:40px 0;">No
+                                    detection data available yet.</p>
                             </div>
                         </div>
 
-                        <!-- RECENT DETECTIONS -->
                         <div class="card">
                             <div class="card-title">
                                 <h3>Recent Detections</h3>
@@ -1218,161 +1004,101 @@
                                 <div class="empty-state-box">
                                     <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
                                     <h4>No detections yet. Upload a road video or image to get started.</h4>
-                                    <button class="primary-btn" onclick="showPage('detect')">
+                                    <button class="primary-btn"
+                                        onclick="showPage('detect', document.querySelector('.nav-item[href=\'/detect\']'))"
+                                        style="margin-top:12px;">
                                         <i class="fa-solid fa-plus"></i> New Detection
                                     </button>
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
                 </section>
 
-
-                <!-- =================================================
-                 AI DETECTION
-            ================================================== -->
-
+                <!-- AI DETECTION -->
                 <section class="page" id="detect">
-
                     <div class="section-header">
-
                         <div>
-
-                            <h2>
-                                AI Pothole Detection
-                            </h2>
-
-                            <p>
-                                Upload or capture road media for AI analysis
-                            </p>
-
+                            <h2>AI Pothole Detection</h2>
+                            <p>Upload or capture road media for AI analysis</p>
                         </div>
-
                     </div>
-
 
                     <div class="upload-options">
-
-
-                        <!-- CAMERA -->
-
                         <div class="upload-option active" id="cameraOption" onclick="selectUpload('camera')">
-
                             <i class="fa-solid fa-camera"></i>
-
-                            <h3>
-                                Camera
-                            </h3>
-
-                            <p>
-                                Capture a road image directly
-                            </p>
-
+                            <h3>Camera</h3>
+                            <p>Capture a road image directly</p>
                         </div>
-
-
-                        <!-- VIDEO -->
-
                         <div class="upload-option" id="videoOption" onclick="selectUpload('video')">
-
                             <i class="fa-solid fa-video"></i>
-
-                            <h3>
-                                Video
-                            </h3>
-
-                            <p>
-                                Upload road inspection video
-                            </p>
-
+                            <h3>Video</h3>
+                            <p>Upload road inspection video</p>
                         </div>
-
-
-                        <!-- IMAGE -->
-
                         <div class="upload-option" id="imageOption" onclick="selectUpload('image')">
-
                             <i class="fa-solid fa-image"></i>
-
-                            <h3>
-                                Image
-                            </h3>
-
-                            <p>
-                                Upload a road image
-                            </p>
-
+                            <h3>Image</h3>
+                            <p>Upload a road image</p>
                         </div>
-
                     </div>
 
-
                     <div class="upload-panel">
-
                         <div class="upload-box" onclick="openFileInput()">
-
                             <i id="uploadIcon" class="fa-solid fa-camera"></i>
-
-                            <h3 id="uploadTitle">
-                                Capture Road Image
-                            </h3>
-
-                            <p id="uploadDescription">
-                                Click here to open your camera
-                            </p>
-
+                            <h3 id="uploadTitle">Capture Road Image</h3>
+                            <p id="uploadDescription">Click here to open your camera</p>
                             <input type="file" id="mediaInput" hidden>
-
                         </div>
 
-
-                        <!-- PREVIEW -->
-
                         <div class="preview-area" id="previewArea">
-
                             <img id="imagePreview" class="hidden" alt="Selected road image">
-
                             <video id="videoPreview" class="hidden" controls></video>
 
-                            <!-- OPTIONAL GPS FOR SATELLITE ROAD VIEW -->
-                            <div class="gps-input-panel" style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 14px 18px; margin: 16px 0; text-align: left;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <span style="font-size: 13px; font-weight: 700; color: #f1f5f9; display: flex; align-items: center; gap: 7px;">
-                                        <i class="fa-solid fa-satellite" style="color: #38bdf8;"></i> GPS Coordinates (Optional for 3D Satellite Map)
+                            <div class="gps-input-panel"
+                                style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 14px 18px; margin: 16px 0; text-align: left;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span
+                                        style="font-size: 13px; font-weight: 700; color: #f1f5f9; display: flex; align-items: center; gap: 7px;">
+                                        <i class="fa-solid fa-satellite" style="color: #38bdf8;"></i> GPS Coordinates
+                                        (Optional for 3D Satellite Map)
                                     </span>
-                                    <button type="button" onclick="detectGPSLocation()" style="font-size: 11px; padding: 5px 11px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    <button type="button" onclick="detectGPSLocation()"
+                                        style="font-size: 11px; padding: 5px 11px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                                         <i class="fa-solid fa-location-crosshairs"></i> Detect My GPS
                                     </button>
                                 </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
                                     <div>
-                                        <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px;">Latitude</label>
-                                        <input type="number" step="any" id="uploadLatitude" placeholder="e.g. 12.978600" style="width: 100%; padding: 8px 12px; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; color: #fff; font-size: 12px;">
+                                        <label
+                                            style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px;">Latitude</label>
+                                        <input type="number" step="any" id="uploadLatitude" placeholder="e.g. 12.978600"
+                                            style="width: 100%; padding: 8px 12px; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; color: #fff; font-size: 12px;">
                                     </div>
                                     <div>
-                                        <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px;">Longitude</label>
-                                        <input type="number" step="any" id="uploadLongitude" placeholder="e.g. 77.364000" style="width: 100%; padding: 8px 12px; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; color: #fff; font-size: 12px;">
+                                        <label
+                                            style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px;">Longitude</label>
+                                        <input type="number" step="any" id="uploadLongitude"
+                                            placeholder="e.g. 77.364000"
+                                            style="width: 100%; padding: 8px 12px; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; color: #fff; font-size: 12px;">
                                     </div>
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px;">Road / Segment Location</label>
-                                    <input type="text" id="uploadLocationName" placeholder="e.g. State Highway 17, Km 42" style="width: 100%; padding: 8px 12px; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; color: #fff; font-size: 12px;">
+                                    <label
+                                        style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px;">Road
+                                        / Segment Location</label>
+                                    <input type="text" id="uploadLocationName"
+                                        placeholder="e.g. State Highway 17, Km 42"
+                                        style="width: 100%; padding: 8px 12px; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; color: #fff; font-size: 12px;">
                                 </div>
-                                <p style="margin: 6px 0 0; font-size: 11px; color: #64748b;">
-                                    Leave blank if coordinates are unknown. Geotagged images with EXIF GPS will be detected automatically.
-                                </p>
                             </div>
 
                             <button class="analyze-btn" onclick="analyzeMedia()">
-                                <i class="fa-solid fa-brain"></i>
-                                Analyze with RoadGuard AI
+                                <i class="fa-solid fa-brain"></i> Analyze with RoadGuard AI
                             </button>
-
                         </div>
 
-                        <!-- PROCESSING STATUS -->
                         <div id="detectionProcessing" class="detection-status-card hidden">
                             <div class="loader-spinner"></div>
                             <div class="status-content">
@@ -1381,7 +1107,6 @@
                             </div>
                         </div>
 
-                        <!-- DETECTION ERROR ALERT -->
                         <div id="detectionErrorAlert" class="detection-error-card hidden">
                             <div class="error-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
                             <div class="error-content">
@@ -1393,7 +1118,6 @@
                             </div>
                         </div>
 
-                        <!-- DETECTION RESULT PANEL -->
                         <div id="detectionResultPanel" class="detection-result-card hidden">
                             <div class="result-header">
                                 <div class="result-badge">
@@ -1402,14 +1126,12 @@
                                 <span class="report-id-tag" id="resultReportBadge">Report #--</span>
                             </div>
 
-                            <!-- ANNOTATED MEDIA VIEWER -->
                             <div class="result-media-container" id="resultMediaContainer">
                                 <video id="annotatedVideo" class="result-media hidden" controls autoplay loop
                                     playsinline></video>
                                 <img id="annotatedImage" class="result-media hidden" alt="Annotated detection output">
                             </div>
 
-                            <!-- METRICS GRID -->
                             <div class="result-metrics-grid">
                                 <div class="result-metric-box">
                                     <span class="metric-label">Potholes Detected</span>
@@ -1429,7 +1151,6 @@
                                 </div>
                             </div>
 
-                            <!-- ACTIONS -->
                             <div class="result-actions">
                                 <button id="btnOpen3DView" class="primary-btn" onclick="viewResultIn3D()">
                                     <i class="fa-solid fa-cube"></i> View in 3D Road View
@@ -1437,357 +1158,151 @@
                                 <button class="secondary-btn" onclick="resetUploadForm()">
                                     <i class="fa-solid fa-arrow-rotate-left"></i> Upload Another Video
                                 </button>
-                                <button class="secondary-btn" onclick="showPage('dashboard')">
+                                <button class="secondary-btn"
+                                    onclick="showPage('dashboard', document.querySelector('.nav-item[href=\'/\']'))">
                                     <i class="fa-solid fa-gauge"></i> Return to Dashboard
                                 </button>
                             </div>
                         </div>
-
                     </div>
-
                 </section>
 
-
-                <!-- =================================================
-                 3D VISUALIZATION
-            ================================================== -->
-
+                <!-- 3D VISUALIZATION -->
                 <section class="page" id="visualization">
-
                     <div class="section-header">
-
                         <div>
-
-                            <h2>
-                                360° 3D Road Visualization
-                            </h2>
-
-                            <p>
-                                Interactive AI-powered pothole inspection
-                            </p>
-
+                            <h2>360° 3D Road Visualization</h2>
+                            <p>Interactive AI-powered pothole inspection</p>
                         </div>
-
                         <button class="primary-btn" onclick="focusPotholes()">
-
-                            <i class="fa-solid fa-crosshairs"></i>
-
-                            Focus Potholes
-
+                            <i class="fa-solid fa-crosshairs"></i> Focus Potholes
                         </button>
-
                     </div>
 
-
                     <div class="visualization-layout">
-
-
-                        <!-- VIEWER -->
-
                         <div class="viewer-card">
-
                             <div class="viewer-toolbar">
-
-                                <strong>
-
-                                    <i class="fa-solid fa-cube"></i>
-
-                                    Interactive Road Model
-
-                                </strong>
-
-
+                                <strong><i class="fa-solid fa-cube"></i> Interactive Road Model</strong>
                                 <div class="viewer-controls">
-
-                                    <button class="control-btn" onclick="topView()">
-                                        Top
-                                    </button>
-
-                                    <button class="control-btn" onclick="sideView()">
-                                        Side
-                                    </button>
-
+                                    <button class="control-btn" onclick="topView()">Top</button>
+                                    <button class="control-btn" onclick="sideView()">Side</button>
                                     <button class="control-btn" onclick="resetView()">
                                         <i class="fa-solid fa-rotate-left"></i>
                                     </button>
-
                                 </div>
-
                             </div>
-
-
                             <div id="three-container"></div>
-
                         </div>
 
-
-                        <!-- ANALYSIS -->
-
                         <div class="analysis-panel">
-
-
                             <div class="analysis-card">
-
-                                <h3>
-                                    Detection Analysis
-                                </h3>
-
-
+                                <h3>Detection Analysis</h3>
                                 <div class="info-row">
-
-                                    <span>
-                                        Total Potholes
-                                    </span>
-
-                                    <strong id="potholeCount3D">
-                                        0
-                                    </strong>
-
+                                    <span>Total Potholes</span>
+                                    <strong id="potholeCount3D">0</strong>
                                 </div>
-
-
                                 <div class="info-row">
-
-                                    <span>
-                                        Selected Object
-                                    </span>
-
-                                    <strong id="selectedObject">
-                                        None
-                                    </strong>
-
+                                    <span>Selected Object</span>
+                                    <strong id="selectedObject">None</strong>
                                 </div>
-
-
                                 <div class="info-row">
-
-                                    <span>
-                                        AI Confidence
-                                    </span>
-
-                                    <strong id="confidence3D">
-                                        N/A
-                                    </strong>
-
+                                    <span>AI Confidence</span>
+                                    <strong id="confidence3D">N/A</strong>
                                 </div>
-
-
                                 <div class="info-row">
-
-                                    <span>
-                                        Road Condition
-                                    </span>
-
-                                    <strong style="color:#94a3b8">
-                                        N/A
-                                    </strong>
-
+                                    <span>Road Condition</span>
+                                    <strong style="color:#94a3b8">N/A</strong>
                                 </div>
-
                             </div>
 
-
                             <div class="analysis-card">
-
-                                <h3>
-                                    Selected Pothole
-                                </h3>
-
+                                <h3>Selected Pothole</h3>
                                 <div class="pothole-status">
-
-                                    <strong id="potholeSeverity">
-                                        Select a pothole
-                                    </strong>
-
-                                    <p id="potholeDetails" style="
-                                        font-size:12px;
-                                        margin-top:10px;
-                                        color:#cbd5e1
-                                    ">
-                                        Click on a pothole in the
-                                        3D road model to inspect it.
+                                    <strong id="potholeSeverity">Select a pothole</strong>
+                                    <p id="potholeDetails" style="font-size:12px; margin-top:10px; color:#cbd5e1">
+                                        Click on a pothole in the 3D road model to inspect it.
                                     </p>
-
                                 </div>
-
                             </div>
 
-
                             <div class="analysis-card">
-
-                                <h3>
-                                    Controls
-                                </h3>
-
-                                <p style="
-                                    color:#94a3b8;
-                                    font-size:13px;
-                                    line-height:1.8
-                                ">
+                                <h3>Controls</h3>
+                                <p style="color:#94a3b8; font-size:13px; line-height:1.8">
                                     🖱 Drag to rotate<br>
                                     🔍 Scroll to zoom<br>
                                     🖱 Right click to pan<br>
                                     🕳 Click potholes for analysis
                                 </p>
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </section>
 
-
-                <!-- =================================================
-                 ANALYTICS
-            ================================================== -->
-
+                <!-- ANALYTICS -->
                 <section class="page" id="analytics">
-
                     <div class="section-header">
-
                         <div>
-
-                            <h2>
-                                AI Analytics
-                            </h2>
-
-                            <p>
-                                Detection trends and road condition intelligence
-                            </p>
-
+                            <h2>AI Analytics</h2>
+                            <p>Detection trends and road condition intelligence</p>
                         </div>
-
                     </div>
-
 
                     <div class="dashboard-grid" style="grid-template-columns:1fr 1fr">
-
                         <div class="card">
-
                             <div class="card-title">
-
-                                <h3>
-                                    Severity Distribution
-                                </h3>
-
+                                <h3>Severity Distribution</h3>
                             </div>
-
                             <div class="chart-container">
-
                                 <canvas id="severityChart"></canvas>
-
                             </div>
-
                         </div>
-
 
                         <div class="card">
-
                             <div class="card-title">
-
-                                <h3>
-                                    AI Detection Confidence
-                                </h3>
-
+                                <h3>AI Detection Confidence</h3>
                             </div>
-
                             <div class="chart-container">
-
                                 <canvas id="confidenceChart"></canvas>
-
                             </div>
-
                         </div>
-
                     </div>
-
 
                     <div class="card" style="margin-top:25px">
-
                         <div class="card-title">
-
-                            <h3>
-                                Road Intelligence Summary
-                            </h3>
-
+                            <h3>Road Intelligence Summary</h3>
                         </div>
-
-                        <p style="
-                            color:#94a3b8;
-                            line-height:1.9
-                        ">
-                            RoadGuard AI analyzes uploaded images
-                            and videos using computer vision.
-                            The system identifies potholes,
-                            classifies severity, calculates
-                            detection confidence, and presents
-                            results through reports and
-                            interactive 3D visualization.
+                        <p style="color:#94a3b8; line-height:1.9">
+                            RoadGuard AI analyzes uploaded images and videos using computer vision.
+                            The system identifies potholes, classifies severity, calculates detection confidence,
+                            and presents results through reports and interactive 3D visualization.
                         </p>
-
                     </div>
-
                 </section>
 
-
-                <!-- =================================================
-                 REPORTS
-            ================================================== -->
-
+                <!-- REPORTS -->
                 <section class="page" id="reports">
-
                     <div class="section-header">
-
                         <div>
-
-                            <h2>
-                                Detection Reports
-                            </h2>
-
-                            <p>
-                                AI-generated road inspection history
-                            </p>
-
+                            <h2>Detection Reports</h2>
+                            <p>AI-generated road inspection history</p>
                         </div>
-
                         <button class="primary-btn" onclick="loadReports()">
-
-                            <i class="fa-solid fa-rotate"></i>
-
-                            Refresh Reports
-
+                            <i class="fa-solid fa-rotate"></i> Refresh Reports
                         </button>
-
                     </div>
 
-
                     <div class="table-card">
-
                         <table>
-
                             <thead>
-
                                 <tr>
-
                                     <th>ID</th>
-
                                     <th>Location</th>
-
                                     <th>Potholes</th>
-
                                     <th>Severity</th>
-
                                     <th>Confidence</th>
-
                                     <th>Action</th>
-
                                 </tr>
-
                             </thead>
-
-
                             <tbody id="reportsTable">
                                 <tr>
                                     <td colspan="6" style="text-align:center; padding:32px; color:#94a3b8;">
@@ -1797,52 +1312,29 @@
                                     </td>
                                 </tr>
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </section>
 
-
-                <!-- =================================================
-                 MAP (CESIUMJS INTEGRATION)
-            ================================================== -->
-
+                <!-- MAP -->
                 <section class="page" id="map">
-
                     <div class="section-header">
-
                         <div>
-
-                            <h2>
-                                Road Hotspots Map
-                            </h2>
-
-                            <p>
-                                Location-based pothole monitoring
-                            </p>
-
+                            <h2>Road Hotspots Map</h2>
+                            <p>Location-based pothole monitoring</p>
                         </div>
-
                     </div>
-
 
                     <div class="card">
                         <div class="card-title">
-                            <h3>
-                                <i class="fa-solid fa-map-location-dot"></i>
-                                RoadGuard AI — Geographic View
-                            </h3>
-
+                            <h3><i class="fa-solid fa-map-location-dot"></i> RoadGuard AI — Geographic View</h3>
                             <div style="display:flex; gap:10px; align-items:center;">
                                 <button class="secondary-btn" type="button" onclick="refreshRoadMap()">
-                                    <i class="fa-solid fa-rotate"></i>
-                                    Refresh Map
+                                    <i class="fa-solid fa-rotate"></i> Refresh Map
                                 </button>
-                                <a href="/3d-view" class="primary-btn" style="text-decoration:none; padding:9px 15px; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
-                                    <i class="fa-solid fa-satellite-dish"></i>
-                                    Full 3D Satellite View
+                                <a href="/3d-view" class="primary-btn"
+                                    style="text-decoration:none; padding:9px 15px; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+                                    <i class="fa-solid fa-satellite-dish"></i> Full 3D Satellite View
                                 </a>
                             </div>
                         </div>
@@ -1853,395 +1345,161 @@
                             Open Map &amp; Hotspots to initialize the map.
                         </p>
                     </div>
-
                 </section>
-
             </div>
-
         </main>
-
     </div>
 
-
-    <!-- =========================================================
-     JAVASCRIPT
-========================================================== -->
-
+    <!-- JAVASCRIPT -->
     <script>
-
-        /* =========================================================
-            CONFIGURATION
-        ========================================================== */
-
         const API_BASE = "/api";
         const CESIUM_ION_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlowU1hnSmhEdzJDU2xCcjkiLCJqdGkiOiIxOTMyMmY3Zi04Yjg5LTQ2Y2QtOGJjYi1hYTkxY2I4ODhiYzMiLCJpZCI6NTIxNDY4LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTE3OTY1MDh9.e6hCrIRPiDALzAnYnOZS1LwZ80iA2TzWVXArJ-tgSgo";
 
         let currentUploadType = "camera";
         let roadMapViewer = null;
 
-
-        /* =========================================================
-            PAGE NAVIGATION
-        ========================================================== */
-
         function showPage(pageName, button) {
+            document.querySelectorAll(".page").forEach(page => {
+                page.classList.remove("active");
+            });
 
-            document
-                .querySelectorAll(".page")
-                .forEach(page => {
-                    page.classList.remove("active");
-                });
-
-
-            const page =
-                document.getElementById(pageName);
-
-
+            const page = document.getElementById(pageName);
             if (page) {
                 page.classList.add("active");
             }
 
-
             if (button) {
-
-                document
-                    .querySelectorAll(".nav-item")
-                    .forEach(item => {
-                        item.classList.remove("active");
-                    });
-
+                document.querySelectorAll(".nav-item").forEach(item => {
+                    item.classList.remove("active");
+                });
                 button.classList.add("active");
             }
 
-
             const titles = {
-
                 dashboard: "Dashboard",
-
                 detect: "AI Detection",
-
                 visualization: "360° 3D Road View",
-
                 analytics: "Analytics",
-
                 reports: "Reports",
-
                 map: "Map & Hotspots"
-
             };
 
-
-            const topTitle =
-                document.getElementById("topTitle");
-
-
+            const topTitle = document.getElementById("topTitle");
             if (topTitle) {
-
-                topTitle.textContent =
-                    titles[pageName] ||
-                    "RoadGuard AI";
-
+                topTitle.textContent = titles[pageName] || "RoadGuard AI";
             }
+
             if (pageName === "dashboard") {
                 loadDashboardData();
             }
-
             if (pageName === "visualization") {
-
                 setTimeout(() => {
-
                     initThree();
-
                 }, 100);
-
             }
-
-
             if (pageName === "reports") {
-
                 loadReports();
-
             }
-
             if (pageName === "map") {
                 setTimeout(() => {
                     initRoadMap();
                 }, 100);
             }
 
-
-            const contentArea =
-                document.querySelector(".content");
-
-
+            const contentArea = document.querySelector(".content");
             if (contentArea) {
-
                 contentArea.scrollTop = 0;
-
             }
-
         }
-
-
-        /* =========================================================
-            SIDEBAR
-        ========================================================== */
 
         function toggleSidebar() {
-
-            const sidebar =
-                document.getElementById("sidebar");
-
-
+            const sidebar = document.getElementById("sidebar");
             if (sidebar) {
-
                 sidebar.classList.toggle("collapsed");
-
             }
-
         }
-
-
-        /* =========================================================
-            UPLOAD OPTIONS
-        ========================================================== */
 
         function selectUpload(type) {
-
             currentUploadType = type;
+            document.querySelectorAll(".upload-option").forEach(option => {
+                option.classList.remove("active");
+            });
 
-
-            document
-                .querySelectorAll(".upload-option")
-                .forEach(option => {
-
-                    option.classList.remove("active");
-
-                });
-
-
-            const selectedOption =
-                document.getElementById(
-                    type + "Option"
-                );
-
-
+            const selectedOption = document.getElementById(type + "Option");
             if (selectedOption) {
-
                 selectedOption.classList.add("active");
-
             }
 
+            const input = document.getElementById("mediaInput");
+            const icon = document.getElementById("uploadIcon");
+            const title = document.getElementById("uploadTitle");
+            const description = document.getElementById("uploadDescription");
 
-            const input =
-                document.getElementById("mediaInput");
-
-            const icon =
-                document.getElementById("uploadIcon");
-
-            const title =
-                document.getElementById("uploadTitle");
-
-            const description =
-                document.getElementById(
-                    "uploadDescription"
-                );
-
-
-            if (
-                !input ||
-                !icon ||
-                !title ||
-                !description
-            ) {
-
-                return;
-
-            }
-
+            if (!input || !icon || !title || !description) return;
 
             if (type === "camera") {
-
                 input.accept = "image/*";
-
                 input.capture = "environment";
-
-                icon.className =
-                    "fa-solid fa-camera";
-
-                title.textContent =
-                    "Capture Road Image";
-
-                description.textContent =
-                    "Click to open your camera";
-
+                icon.className = "fa-solid fa-camera";
+                title.textContent = "Capture Road Image";
+                description.textContent = "Click to open your camera";
             }
-
-
             if (type === "video") {
-
                 input.accept = "video/*";
-
                 input.removeAttribute("capture");
-
-                icon.className =
-                    "fa-solid fa-video";
-
-                title.textContent =
-                    "Upload Road Video";
-
-                description.textContent =
-                    "Click to select a road inspection video";
-
+                icon.className = "fa-solid fa-video";
+                title.textContent = "Upload Road Video";
+                description.textContent = "Click to select a road inspection video";
             }
-
-
             if (type === "image") {
-
                 input.accept = "image/*";
-
                 input.removeAttribute("capture");
-
-                icon.className =
-                    "fa-solid fa-image";
-
-                title.textContent =
-                    "Upload Road Image";
-
-                description.textContent =
-                    "Click to select a road image";
-
+                icon.className = "fa-solid fa-image";
+                title.textContent = "Upload Road Image";
+                description.textContent = "Click to select a road image";
             }
-
         }
-
-
-        /* =========================================================
-            OPEN FILE INPUT
-        ========================================================== */
 
         function openFileInput() {
-
-            const input =
-                document.getElementById("mediaInput");
-
-
+            const input = document.getElementById("mediaInput");
             if (input) {
-
                 input.click();
-
             }
-
         }
 
-
-        /* =========================================================
-            FILE PREVIEW
-        ========================================================== */
-
-        const mediaInput =
-            document.getElementById("mediaInput");
-
-
+        const mediaInput = document.getElementById("mediaInput");
         if (mediaInput) {
+            mediaInput.addEventListener("change", function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
 
-            mediaInput.addEventListener(
-                "change",
-                function (event) {
+                const previewArea = document.getElementById("previewArea");
+                const image = document.getElementById("imagePreview");
+                const video = document.getElementById("videoPreview");
 
-                    const file =
-                        event.target.files[0];
+                if (!previewArea || !image || !video) return;
 
+                previewArea.style.display = "block";
+                image.classList.add("hidden");
+                video.classList.add("hidden");
 
-                    if (!file) {
+                const resultPanel = document.getElementById("detectionResultPanel");
+                if (resultPanel) resultPanel.classList.add("hidden");
 
-                        return;
+                const errorAlert = document.getElementById("detectionErrorAlert");
+                if (errorAlert) errorAlert.classList.add("hidden");
 
-                    }
-
-
-                    const previewArea =
-                        document.getElementById(
-                            "previewArea"
-                        );
-
-                    const image =
-                        document.getElementById(
-                            "imagePreview"
-                        );
-
-                    const video =
-                        document.getElementById(
-                            "videoPreview"
-                        );
-
-
-                    if (
-                        !previewArea ||
-                        !image ||
-                        !video
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    previewArea.style.display =
-                        "block";
-
-
-                    image.classList.add("hidden");
-
-                    video.classList.add("hidden");
-
-
-                    // Reset old result panel while new media is selected
-                    const resultPanel = document.getElementById("detectionResultPanel");
-                    if (resultPanel) resultPanel.classList.add("hidden");
-
-                    const errorAlert = document.getElementById("detectionErrorAlert");
-                    if (errorAlert) errorAlert.classList.add("hidden");
-
-
-                    const url =
-                        URL.createObjectURL(file);
-
-
-                    if (
-                        file.type.startsWith("image")
-                    ) {
-
-                        image.src = url;
-
-                        image.classList.remove(
-                            "hidden"
-                        );
-
-                    }
-
-
-                    if (
-                        file.type.startsWith("video")
-                    ) {
-
-                        video.src = url;
-
-                        video.classList.remove(
-                            "hidden"
-                        );
-
-                    }
-
+                const url = URL.createObjectURL(file);
+                if (file.type.startsWith("image")) {
+                    image.src = url;
+                    image.classList.remove("hidden");
                 }
-            );
-
+                if (file.type.startsWith("video")) {
+                    video.src = url;
+                    video.classList.remove("hidden");
+                }
+            });
         }
-
-
-        /* =========================================================
-            ANALYZE MEDIA & AI INFERENCE
-        ========================================================== */
 
         let latestReportId = null;
         let sessionAnalyzed = false;
@@ -2294,13 +1552,11 @@
                 if (statusMsg) statusMsg.textContent = "Uploading road media to RoadGuard backend...";
             }
 
-            // Signal processing state to dashboard
             updateDashboardProcessingState(true);
 
             const formData = new FormData();
             formData.append("file", file);
 
-            // Optional GPS coordinates for real satellite mapping
             const latInput = document.getElementById("uploadLatitude");
             const lonInput = document.getElementById("uploadLongitude");
             const locInput = document.getElementById("uploadLocationName");
@@ -2325,24 +1581,19 @@
 
                 if (!response.ok) {
                     const errDetail = await response.text();
-                    throw new Error(`Server returned error ${response.status}: ${errDetail}`);
+                    throw new Error("Server returned error " + response.status + ": " + errDetail);
                 }
 
                 const report = await response.json();
                 latestReportId = report.id;
-
                 sessionAnalyzed = true;
                 sessionReportData = report;
 
-                // Save genuine AI detection report to session storage
                 saveSessionReport(report);
 
                 if (processingCard) processingCard.classList.add("hidden");
 
-                // Display results
                 displayDetectionResult(report);
-
-                // Refresh stats across the app immediately with genuine data
                 await loadDashboardData();
 
             } catch (error) {
@@ -2350,7 +1601,7 @@
                 if (processingCard) processingCard.classList.add("hidden");
                 if (errorAlert) {
                     const errorMsg = document.getElementById("detectionErrorMsg");
-                    if (errorMsg) errorMsg.textContent = error.message || "Detection failed. Please check the backend connection and try again.";
+                    if (errorMsg) errorMsg.textContent = error.message || "Detection failed.";
                     errorAlert.classList.remove("hidden");
                 }
             } finally {
@@ -2366,17 +1617,15 @@
             const resultPanel = document.getElementById("detectionResultPanel");
             if (!resultPanel) return;
 
-            // Report ID Badge
             const badgeEl = document.getElementById("resultReportBadge");
-            if (badgeEl) badgeEl.textContent = `Report #${report.id}`;
+            if (badgeEl) badgeEl.textContent = "Report #" + report.id;
 
-            // Media Display
             const videoEl = document.getElementById("annotatedVideo");
             const imgEl = document.getElementById("annotatedImage");
             const mediaPath = report.result_path || report.media_path;
 
             if (mediaPath) {
-                const fullMediaUrl = mediaPath.startsWith("http") || mediaPath.startsWith("/") ? mediaPath : `/${mediaPath}`;
+                const fullMediaUrl = mediaPath.startsWith("http") || mediaPath.startsWith("/") ? mediaPath : "/" + mediaPath;
                 const isVideo = (report.media_type || "").toLowerCase().includes("video") || fullMediaUrl.match(/\.(mp4|avi|mov|mkv|webm)$/i);
 
                 if (isVideo) {
@@ -2396,7 +1645,6 @@
                 }
             }
 
-            // Metrics
             const countEl = document.getElementById("resultPotholeCount");
             if (countEl) countEl.textContent = String(report.pothole_count || 0);
 
@@ -2404,7 +1652,7 @@
             if (severityEl) {
                 const sev = (report.severity || "LOW").toUpperCase();
                 severityEl.textContent = sev;
-                severityEl.className = `metric-value badge ${getSeverityClass(sev)}`;
+                severityEl.className = "metric-value badge " + getSeverityClass(sev);
             }
 
             const confEl = document.getElementById("resultConfidence");
@@ -2457,15 +1705,9 @@
             if (processingCard) processingCard.classList.add("hidden");
         }
 
-
-        /* =========================================================
-            CESIUMJS MAP INITIALIZATION & REFRESH ENGINE
-        ========================================================== */
-
         async function initRoadMap() {
             const container = document.getElementById("cesiumContainer");
             const status = document.getElementById("mapStatus");
-
             if (!container) return;
 
             if (roadMapViewer) {
@@ -2475,12 +1717,12 @@
             }
 
             if (typeof Cesium === "undefined") {
-                status.textContent = "CesiumJS failed to load. Check your internet connection.";
+                status.textContent = "CesiumJS failed to load.";
                 return;
             }
 
             if (CESIUM_ION_TOKEN === "PASTE_YOUR_CESIUM_ION_TOKEN_HERE") {
-                status.textContent = "Add your Cesium ion access token to enable the map.";
+                status.textContent = "Add your Cesium ion access token.";
                 return;
             }
 
@@ -2498,11 +1740,7 @@
                 });
 
                 roadMapViewer.camera.flyTo({
-                    destination: Cesium.Cartesian3.fromDegrees(
-                        78.9629,
-                        20.5937,
-                        2500000
-                    )
+                    destination: Cesium.Cartesian3.fromDegrees(78.9629, 20.5937, 2500000)
                 });
 
                 window.addEventListener("resize", () => {
@@ -2512,15 +1750,14 @@
                 await refreshRoadMap();
             } catch (error) {
                 console.error("Cesium initialization error:", error);
-                status.textContent = "Map initialization failed. Check your Cesium token and browser console.";
+                status.textContent = "Map initialization failed.";
             }
         }
 
         async function refreshRoadMap() {
             const status = document.getElementById("mapStatus");
-
             if (!roadMapViewer) {
-                status.textContent = "Open Map & Hotspots to initialize the map.";
+                status.textContent = "Open Map & Hotspots to initialize.";
                 return;
             }
 
@@ -2528,51 +1765,25 @@
 
             try {
                 const response = await fetch(API_BASE + "/reports/");
-
-                if (!response.ok) {
-                    throw new Error("Reports API returned HTTP " + response.status);
-                }
+                if (!response.ok) throw new Error("Reports API error");
 
                 const payload = await response.json();
-                const reports = Array.isArray(payload)
-                    ? payload
-                    : (payload.reports || payload.items || []);
-
+                const reports = Array.isArray(payload) ? payload : (payload.reports || payload.items || []);
                 let markerCount = 0;
 
                 for (const report of reports) {
-                    const lat = Number(
-                        report.latitude ??
-                        report.lat ??
-                        report.gps_latitude ??
-                        report.location?.latitude
-                    );
+                    const lat = Number(report.latitude ?? report.lat ?? report.gps_latitude ?? report.location?.latitude);
+                    const lon = Number(report.longitude ?? report.lon ?? report.lng ?? report.gps_longitude ?? report.location?.longitude);
 
-                    const lon = Number(
-                        report.longitude ??
-                        report.lon ??
-                        report.lng ??
-                        report.gps_longitude ??
-                        report.location?.longitude
-                    );
-
-                    if (
-                        !Number.isFinite(lat) ||
-                        !Number.isFinite(lon) ||
-                        (lat === 0 && lon === 0) ||
-                        lat < -90 || lat > 90 ||
-                        lon < -180 || lon > 180
-                    ) {
-                        continue;
-                    }
+                    if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) continue;
 
                     const id = String(report.id ?? "Unknown");
                     const sev = String(report.severity || "LOW").toUpperCase();
-                    let markerColor = Cesium.Color.fromCssColorString("#eab308"); // Yellow (Low)
+                    let markerColor = Cesium.Color.fromCssColorString("#eab308");
                     if (sev.includes("CRIT") || sev.includes("HIGH") || sev.includes("SEV")) {
-                        markerColor = Cesium.Color.fromCssColorString("#ef4444"); // Red (High)
+                        markerColor = Cesium.Color.fromCssColorString("#ef4444");
                     } else if (sev.includes("MED") || sev.includes("MOD")) {
-                        markerColor = Cesium.Color.fromCssColorString("#f97316"); // Orange (Medium)
+                        markerColor = Cesium.Color.fromCssColorString("#f97316");
                     }
 
                     roadMapViewer.entities.add({
@@ -2593,15 +1804,8 @@
                             outlineWidth: 2,
                             style: Cesium.LabelStyle.FILL_AND_OUTLINE
                         },
-                        description:
-                            "<strong>Report #" + id + "</strong>" +
-                            "<br>Location: " + (report.location_name ?? "Road Inspection Point") +
-                            "<br>Severity: " + sev +
-                            "<br>Potholes: " + (report.pothole_count ?? 1) +
-                            "<br>Coordinates: " + lat.toFixed(6) + ", " + lon.toFixed(6) +
-                            "<br><br><a href='/3d-view?report_id=" + id + "' style='color:#38bdf8;'>Open in 3D Satellite Viewer &rarr;</a>"
+                        description: "<strong>Report #" + id + "</strong><br>Location: " + (report.location_name ?? "Road Inspection Point") + "<br>Severity: " + sev + "<br>Potholes: " + (report.pothole_count ?? 1) + "<br><br><a href='/3d-view?report_id=" + id + "' style='color:#38bdf8;'>Open in 3D Satellite Viewer &rarr;</a>"
                     });
-
                     markerCount++;
                 }
 
@@ -2609,18 +1813,13 @@
                     await roadMapViewer.flyTo(roadMapViewer.entities);
                     status.textContent = markerCount + " report location(s) displayed.";
                 } else {
-                    status.textContent = "Map loaded, but no reports with valid GPS coordinates were found.";
+                    status.textContent = "Map loaded, but no valid GPS reports found.";
                 }
             } catch (error) {
-                console.error("Could not load road map reports:", error);
-                status.textContent = "Could not load report locations. Check the backend API and browser console.";
+                console.error("Map load error:", error);
+                status.textContent = "Could not load report locations.";
             }
         }
-
-
-        /* =========================================================
-            LIVE CHARTS & DASHBOARD DATA ENGINE (SESSION-LOCKED)
-        ========================================================== */
 
         let dashboardChartInstance = null;
         let severityChartInstance = null;
@@ -2634,7 +1833,7 @@
                     if (Array.isArray(parsed) && parsed.length > 0) return parsed;
                 }
             } catch (e) {
-                console.warn("Could not read session reports:", e);
+                console.warn("Session read error:", e);
             }
             if (sessionAnalyzed && sessionReportData) {
                 return [sessionReportData];
@@ -2648,7 +1847,7 @@
                 current.unshift(report);
                 sessionStorage.setItem("roadguard_session_reports", JSON.stringify(current));
             } catch (e) {
-                console.warn("Could not save session report:", e);
+                console.warn("Session save error:", e);
             }
         }
 
@@ -2661,7 +1860,6 @@
             const sessionReports = getSessionReports();
 
             if (!sessionReports || sessionReports.length === 0) {
-                // Strict zero/empty state before user uploads and successfully analyzes media
                 if (totalPotholesEl) totalPotholesEl.textContent = "0";
                 if (highRiskEl) highRiskEl.textContent = "0";
                 if (totalReportsEl) totalReportsEl.textContent = "0";
@@ -2676,12 +1874,8 @@
                 const totalPotholes = sessionReports.reduce((sum, r) => sum + (Number(r.pothole_count) || 0), 0);
                 const highRisk = sessionReports.filter(r => ["HIGH", "CRITICAL"].includes((r.severity || "").toUpperCase())).length;
                 const totalReports = sessionReports.length;
-                const confValues = sessionReports
-                    .map(r => Number(r.confidence))
-                    .filter(c => Number.isFinite(c) && c > 0);
-                const avgConf = confValues.length > 0
-                    ? confValues.reduce((sum, c) => sum + c, 0) / confValues.length
-                    : 0;
+                const confValues = sessionReports.map(r => Number(r.confidence)).filter(c => Number.isFinite(c) && c > 0);
+                const avgConf = confValues.length > 0 ? confValues.reduce((sum, c) => sum + c, 0) / confValues.length : 0;
 
                 if (totalPotholesEl) totalPotholesEl.textContent = String(totalPotholes);
                 if (highRiskEl) highRiskEl.textContent = String(highRisk);
@@ -2691,7 +1885,7 @@
                 renderRecentDetections(sessionReports);
                 updateDashboardCharts(sessionReports, null);
             } catch (err) {
-                console.error("Error loading session dashboard data:", err);
+                console.error("Dashboard load error:", err);
                 renderRecentDetections([]);
                 updateDashboardCharts([], null);
             }
@@ -2706,7 +1900,7 @@
                 <div class="empty-state-box">
                     <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
                     <h4>No detections yet. Upload a road video or image to get started.</h4>
-                    <button class="primary-btn" onclick="showPage('detect')">
+                    <button class="primary-btn" onclick="showPage('detect', document.querySelector('.nav-item[href=\'/detect\']'))" style="margin-top:12px;">
                         <i class="fa-solid fa-plus"></i> New Detection
                     </button>
                 </div>
@@ -2720,9 +1914,7 @@
             recent.forEach(report => {
                 const severity = (report.severity || "LOW").toUpperCase();
                 const conf = report.confidence ? (report.confidence <= 1.0 ? Math.round(report.confidence * 100) : Math.round(report.confidence)) : 0;
-                const locationTitle = (report.location_name && report.location_name !== "Unknown Location")
-                    ? report.location_name
-                    : "Road Inspection #" + report.id;
+                const locationTitle = (report.location_name && report.location_name !== "Unknown Location") ? report.location_name : "Road Inspection #" + report.id;
 
                 const item = document.createElement("div");
                 item.className = "detection-item";
@@ -2739,9 +1931,7 @@
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span class="badge ${getSeverityClass(severity)}">
-                        ${escapeHtml(severity)}
-                    </span>
+                    <span class="badge ${getSeverityClass(severity)}">${escapeHtml(severity)}</span>
                     <button class="view-btn" onclick="openReport3D(${report.id})" title="Inspect in 3D">
                         <i class="fa-solid fa-cube"></i>
                     </button>
@@ -2761,7 +1951,7 @@
                     <td colspan="6" style="text-align:center; padding:32px; color:#94a3b8;">
                         <i class="fa-regular fa-folder-open" style="font-size:24px; display:block; margin-bottom:8px; color:#64748b;"></i>
                         <strong>No detection reports available yet.</strong>
-                        <p style="margin-top:6px; font-size:12px;">Upload road media to automatically generate AI inspection reports.</p>
+                        <p style="margin-top:6px; font-size:12px;">Upload road media to generate reports.</p>
                     </td>
                 </tr>
             `;
@@ -2804,7 +1994,6 @@
         }
 
         function updateDashboardCharts(reports, analytics) {
-            // 1. Dashboard Trends Chart
             const dashboardContainer = document.getElementById("dashboardChartContainer");
             if (!dashboardContainer) return;
 
@@ -2830,12 +2019,12 @@
             if (reports.length === 1) {
                 const r = reports[0];
                 const timeStr = r.created_at ? new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Inspection";
-                labels = [`Start`, `Report #${r.id} (${timeStr})`];
+                labels = ["Start", "Report #" + r.id + " (" + timeStr + ")"];
                 data = [0, Number(r.pothole_count) || 0];
             } else {
                 reports.forEach(r => {
                     const timeStr = r.created_at ? new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ("#" + r.id);
-                    labels.push(`Report #${r.id} (${timeStr})`);
+                    labels.push("Report #" + r.id + " (" + timeStr + ")");
                     data.push(Number(r.pothole_count) || 0);
                 });
             }
@@ -2868,7 +2057,6 @@
                 }
             });
 
-            // 2. Severity Distribution Chart
             const severityCtx = document.getElementById("severityChart");
             if (severityCtx) {
                 if (severityChartInstance) {
@@ -2884,12 +2072,6 @@
                     sLabels = ["No Detections"];
                     sData = [1];
                     sColors = ["#334155"];
-                } else if (analytics && (analytics.total_reports > 0 || analytics.total_potholes > 0)) {
-                    sData = [
-                        analytics.severity.LOW || 0,
-                        analytics.severity.MODERATE || 0,
-                        (analytics.severity.HIGH || 0) + (analytics.severity.CRITICAL || 0)
-                    ];
                 } else {
                     let low = 0, mod = 0, high = 0;
                     reports.forEach(r => {
@@ -2921,7 +2103,6 @@
                 });
             }
 
-            // 3. Confidence Bar Chart
             const confidenceCtx = document.getElementById("confidenceChart");
             if (confidenceCtx) {
                 if (confidenceChartInstance) {
@@ -2937,7 +2118,7 @@
                     cData = [0];
                 } else {
                     const recent = reports.slice(0, 5);
-                    cLabels = recent.map(r => `Report #${r.id}`);
+                    cLabels = recent.map(r => "Report #" + r.id);
                     cData = recent.map(r => {
                         const c = r.confidence || 0;
                         return c <= 1.0 ? Math.round(c * 100) : Math.round(c);
@@ -2970,205 +2151,51 @@
             }
         }
 
-        // Initialize Dashboard Data on startup
         loadDashboardData();
 
-
-        /* =========================================================
-            THREE.JS 3D VIEW
-        ========================================================== */
-
-        let scene;
-        let camera;
-        let renderer;
-        let controls;
-
+        let scene, camera, renderer, controls;
         let potholes = [];
-
-        let raycaster;
-        let mouse;
-
+        let raycaster, mouse;
         let threeInitialized = false;
 
-
         function initThree() {
+            if (threeInitialized) return;
 
-            if (threeInitialized) {
+            const container = document.getElementById("three-container");
+            if (!container) return;
 
+            if (typeof THREE === "undefined" || typeof THREE.OrbitControls === "undefined") {
+                console.error("Three.js or OrbitControls not loaded.");
                 return;
-
             }
-
-
-            const container =
-                document.getElementById(
-                    "three-container"
-                );
-
-
-            if (!container) {
-
-                return;
-
-            }
-
-
-            if (
-                typeof THREE === "undefined"
-            ) {
-
-                console.error(
-                    "Three.js is not loaded."
-                );
-
-                return;
-
-            }
-
-
-            if (
-                typeof THREE.OrbitControls ===
-                "undefined"
-            ) {
-
-                console.error(
-                    "OrbitControls is not loaded."
-                );
-
-                return;
-
-            }
-
 
             threeInitialized = true;
 
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020617);
 
-            /* SCENE */
+            const width = Math.max(container.clientWidth, 1);
+            const height = Math.max(container.clientHeight, 1);
 
-            scene =
-                new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 1000);
+            camera.position.set(12, 10, 16);
 
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio || 1);
+            container.appendChild(renderer.domElement);
 
-            scene.background =
-                new THREE.Color(
-                    0x020617
-                );
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.target.set(0, 0, 0);
 
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+            scene.add(ambientLight);
 
-            /* CAMERA */
-
-            const width =
-                Math.max(
-                    container.clientWidth,
-                    1
-                );
-
-            const height =
-                Math.max(
-                    container.clientHeight,
-                    1
-                );
-
-
-            camera =
-                new THREE.PerspectiveCamera(
-                    55,
-                    width / height,
-                    0.1,
-                    1000
-                );
-
-
-            camera.position.set(
-                12,
-                10,
-                16
-            );
-
-
-            /* RENDERER */
-
-            renderer =
-                new THREE.WebGLRenderer({
-                    antialias: true
-                });
-
-
-            renderer.setSize(
-                width,
-                height
-            );
-
-
-            renderer.setPixelRatio(
-                window.devicePixelRatio || 1
-            );
-
-
-            container.appendChild(
-                renderer.domElement
-            );
-
-
-            /* CONTROLS */
-
-            controls =
-                new THREE.OrbitControls(
-                    camera,
-                    renderer.domElement
-                );
-
-
-            controls.enableDamping =
-                true;
-
-            controls.dampingFactor =
-                0.05;
-
-
-            controls.target.set(
-                0,
-                0,
-                0
-            );
-
-
-            /* LIGHTS */
-
-            const ambientLight =
-                new THREE.AmbientLight(
-                    0xffffff,
-                    1.5
-                );
-
-
-            scene.add(
-                ambientLight
-            );
-
-
-            const directionalLight =
-                new THREE.DirectionalLight(
-                    0xffffff,
-                    2
-                );
-
-
-            directionalLight.position.set(
-                10,
-                15,
-                10
-            );
-
-
-            scene.add(
-                directionalLight
-            );
-
-
-            /* =====================================================
-                REAL 3D RECONSTRUCTION MODEL LOADER
-            ====================================================== */
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+            directionalLight.position.set(10, 15, 10);
+            scene.add(directionalLight);
 
             const roadGroup = new THREE.Group();
             roadGroup.name = "roadGroup";
@@ -3220,8 +2247,6 @@
                                         side: THREE.DoubleSide
                                     })
                                 );
-                                roadMesh.castShadow = true;
-                                roadMesh.receiveShadow = true;
                             } else {
                                 roadMesh = new THREE.Points(
                                     geometry,
@@ -3267,434 +2292,103 @@
                 const overlay = document.createElement("div");
                 overlay.className = "colmap-notice-overlay";
                 overlay.style.cssText = "position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(2,6,23,0.92);color:#94a3b8;font-size:12px;gap:8px;z-index:10;text-align:center;padding:16px;";
-                overlay.innerHTML = `<span style="font-size:26px;">⚠️</span><strong style="color:#f8fafc;font-size:13px;">${msg}</strong><a href="/3d-view" style="color:#38bdf8;font-size:11px;text-decoration:none;margin-top:6px;">Open 3D Road View →</a>`;
+                overlay.innerHTML = "<span style='font-size:26px;'>⚠️</span><strong style='color:#f8fafc;font-size:13px;'>" + msg + "</strong><a href='/3d-view' style='color:#38bdf8;font-size:11px;text-decoration:none;margin-top:6px;'>Open 3D Road View &rarr;</a>";
                 c.style.position = "relative";
                 c.appendChild(overlay);
             }
 
             loadRealReconstructionScene();
 
-
-
-            /* RAYCASTER */
-
-            raycaster =
-                new THREE.Raycaster();
-
-
-            mouse =
-                new THREE.Vector2();
-
-
-            renderer.domElement.addEventListener(
-                "click",
-                onPotholeClick
-            );
-
-
-            /* ANIMATION */
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            renderer.domElement.addEventListener("click", onPotholeClick);
 
             animate();
-
-
-            /* RESIZE */
-
-            window.addEventListener(
-                "resize",
-                resizeThree
-            );
-
+            window.addEventListener("resize", resizeThree);
         }
-
 
         function resizeThree() {
+            if (!renderer || !camera) return;
+            const container = document.getElementById("three-container");
+            if (!container) return;
 
-            if (
-                !renderer ||
-                !camera
-            ) {
+            const width = Math.max(container.clientWidth, 1);
+            const height = Math.max(container.clientHeight, 1);
 
-                return;
-
-            }
-
-
-            const container =
-                document.getElementById(
-                    "three-container"
-                );
-
-
-            if (!container) {
-
-                return;
-
-            }
-
-
-            const width =
-                Math.max(
-                    container.clientWidth,
-                    1
-                );
-
-
-            const height =
-                Math.max(
-                    container.clientHeight,
-                    1
-                );
-
-
-            camera.aspect =
-                width / height;
-
-
+            camera.aspect = width / height;
             camera.updateProjectionMatrix();
-
-
-            renderer.setSize(
-                width,
-                height
-            );
-
+            renderer.setSize(width, height);
         }
-
-
-        /* No fake pothole geometry */
-        function createPothole() { }
-
-
-        /* =========================================================
-            CLICK POTHOLE
-        ========================================================== */
 
         function onPotholeClick(event) {
+            if (!renderer || !camera || !raycaster) return;
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-            if (
-                !renderer ||
-                !camera ||
-                !raycaster
-            ) {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(potholes);
+            if (intersects.length === 0) return;
 
-                return;
+            const pothole = intersects[0].object;
+            const data = pothole.userData;
 
-            }
+            const selectedObject = document.getElementById("selectedObject");
+            const confidence3D = document.getElementById("confidence3D");
+            const potholeSeverity = document.getElementById("potholeSeverity");
+            const potholeDetails = document.getElementById("potholeDetails");
 
-
-            const rect =
-                renderer.domElement
-                    .getBoundingClientRect();
-
-
-            mouse.x =
-                (
-                    (
-                        event.clientX -
-                        rect.left
-                    ) /
-                    rect.width
-                ) *
-                2 -
-                1;
-
-
-            mouse.y =
-                -(
-                    (
-                        event.clientY -
-                        rect.top
-                    ) /
-                    rect.height
-                ) *
-                2 +
-                1;
-
-
-            raycaster.setFromCamera(
-                mouse,
-                camera
-            );
-
-
-            const intersects =
-                raycaster.intersectObjects(
-                    potholes
-                );
-
-
-            if (
-                intersects.length === 0
-            ) {
-
-                return;
-
-            }
-
-
-            const pothole =
-                intersects[0].object;
-
-
-            const data =
-                pothole.userData;
-
-
-            const selectedObject =
-                document.getElementById(
-                    "selectedObject"
-                );
-
-
-            const confidence3D =
-                document.getElementById(
-                    "confidence3D"
-                );
-
-
-            const potholeSeverity =
-                document.getElementById(
-                    "potholeSeverity"
-                );
-
-
-            const potholeDetails =
-                document.getElementById(
-                    "potholeDetails"
-                );
-
-
-            if (selectedObject) {
-
-                selectedObject.textContent =
-                    "Pothole";
-
-            }
-
-
-            if (confidence3D) {
-
-                confidence3D.textContent =
-                    data.confidence;
-
-            }
-
-
-            if (potholeSeverity) {
-
-                potholeSeverity.textContent =
-                    data.severity +
-                    " SEVERITY";
-
-            }
-
-
+            if (selectedObject) selectedObject.textContent = "Pothole";
+            if (confidence3D) confidence3D.textContent = data.confidence;
+            if (potholeSeverity) potholeSeverity.textContent = data.severity + " SEVERITY";
             if (potholeDetails) {
-
-                potholeDetails.textContent =
-                    "Interactive road defect selected. " +
-                    "Relative location: " +
-                    data.position +
-                    ". AI confidence: " +
-                    data.confidence;
-
+                potholeDetails.textContent = "Interactive road defect selected. Relative location: " + data.position + ". AI confidence: " + data.confidence;
             }
 
-
-            potholes.forEach(
-                p => {
-
-                    p.scale.set(
-                        1,
-                        1,
-                        1
-                    );
-
-                }
-            );
-
-
-            pothole.scale.set(
-                1.25,
-                1.25,
-                1.25
-            );
-
+            potholes.forEach(p => p.scale.set(1, 1, 1));
+            pothole.scale.set(1.25, 1.25, 1.25);
         }
-
-
-        /* =========================================================
-            ANIMATION
-        ========================================================== */
 
         function animate() {
-
-            requestAnimationFrame(
-                animate
-            );
-
-
-            if (controls) {
-
-                controls.update();
-
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera);
             }
-
-
-            if (
-                renderer &&
-                scene &&
-                camera
-            ) {
-
-                renderer.render(
-                    scene,
-                    camera
-                );
-
-            }
-
         }
-
-
-        /* =========================================================
-            CAMERA CONTROLS
-        ========================================================== */
 
         function resetView() {
-
-            if (
-                !camera ||
-                !controls
-            ) {
-
-                return;
-
-            }
-
-
-            camera.position.set(
-                12,
-                10,
-                16
-            );
-
-
-            controls.target.set(
-                0,
-                0,
-                0
-            );
-
-
+            if (!camera || !controls) return;
+            camera.position.set(12, 10, 16);
+            controls.target.set(0, 0, 0);
             controls.update();
-
         }
-
 
         function topView() {
-
-            if (
-                !camera ||
-                !controls
-            ) {
-
-                return;
-
-            }
-
-
-            camera.position.set(
-                0,
-                28,
-                0.1
-            );
-
-
-            controls.target.set(
-                0,
-                0,
-                0
-            );
-
-
+            if (!camera || !controls) return;
+            camera.position.set(0, 28, 0.1);
+            controls.target.set(0, 0, 0);
             controls.update();
-
         }
-
 
         function sideView() {
-
-            if (
-                !camera ||
-                !controls
-            ) {
-
-                return;
-
-            }
-
-
-            camera.position.set(
-                22,
-                5,
-                0
-            );
-
-
-            controls.target.set(
-                0,
-                0,
-                0
-            );
-
-
+            if (!camera || !controls) return;
+            camera.position.set(22, 5, 0);
+            controls.target.set(0, 0, 0);
             controls.update();
-
         }
-
 
         function focusPotholes() {
-
-            if (
-                !camera ||
-                !controls
-            ) {
-
-                return;
-
-            }
-
-
-            camera.position.set(
-                8,
-                8,
-                12
-            );
-
-
-            controls.target.set(
-                0,
-                0,
-                2
-            );
-
-
+            if (!camera || !controls) return;
+            camera.position.set(8, 8, 12);
+            controls.target.set(0, 0, 2);
             controls.update();
-
         }
-
-
-        /* =========================================================
-            REPORTS API
-        ========================================================== */
 
         async function loadReports() {
             try {
                 const response = await fetch(API_BASE + "/reports/");
-                if (!response.ok) {
-                    throw new Error("Reports API error: " + response.status);
-                }
+                if (!response.ok) throw new Error("Reports API error: " + response.status);
                 const reports = await response.json();
                 renderReportsTable(reports);
             } catch (error) {
@@ -3713,209 +2407,27 @@
             }
         }
 
-
-        /* =========================================================
-            OPEN REAL 3D REPORT
-        ========================================================== */
-
         function openReport3D(reportId) {
-
-            if (!reportId) {
-
-                return;
-
-            }
-
-
-            window.location.href =
-                "/3d-view?report_id=" +
-                encodeURIComponent(
-                    reportId
-                );
-
+            if (!reportId) return;
+            window.location.href = "/3d-view?report_id=" + encodeURIComponent(reportId);
         }
-
-
-        /* =========================================================
-            ESCAPE HTML
-        ========================================================== */
 
         function escapeHtml(value) {
-
             return String(value)
-                .replace(
-                    /&/g,
-                    "&amp;"
-                )
-                .replace(
-                    /</g,
-                    "&lt;"
-                )
-                .replace(
-                    />/g,
-                    "&gt;"
-                )
-                .replace(
-                    /"/g,
-                    "&quot;"
-                )
-                .replace(
-                    /'/g,
-                    "&#039;"
-                );
-
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
-
-        /* =========================================================
-            SEVERITY CLASS
-        ========================================================== */
-
-        function getSeverityClass(
-            severity
-        ) {
-
-            severity =
-                String(
-                    severity
-                ).toUpperCase();
-
-
-            if (
-                severity === "HIGH" ||
-                severity === "CRITICAL"
-            ) {
-
-                return "high";
-
-            }
-
-
-            if (
-                severity === "MODERATE" ||
-                severity === "MEDIUM"
-            ) {
-
-                return "medium";
-
-            }
-
-
+        function getSeverityClass(severity) {
+            severity = String(severity).toUpperCase();
+            if (severity === "HIGH" || severity === "CRITICAL") return "high";
+            if (severity === "MODERATE" || severity === "MEDIUM") return "medium";
             return "low";
-
         }
-
-
-        /* =========================================================
-            UNIFIED SHELL DEEP LINKS
-        ========================================================== */
-
-        (function () {
-
-            const path =
-                window.location.pathname
-                    .replace(
-                        /\/+$/,
-                        ""
-                    ) ||
-                "/";
-
-
-            const hash =
-                (
-                    window.location.hash ||
-                    ""
-                ).replace(
-                    "#",
-                    ""
-                );
-
-
-            let target = "";
-
-
-            if (
-                path === "/analytics"
-            ) {
-
-                target =
-                    "analytics";
-
-            }
-            else if (
-                hash &&
-                document.getElementById(hash)
-            ) {
-
-                target =
-                    hash;
-
-            }
-
-
-            if (!target) {
-
-                return;
-
-            }
-
-
-            const page =
-                document.getElementById(
-                    target
-                );
-
-
-            if (
-                !page ||
-                !page.classList.contains(
-                    "page"
-                )
-            ) {
-
-                return;
-
-            }
-
-
-            showPage(
-                target
-            );
-
-
-            const link =
-                document.querySelector(
-                    '.nav-item[href^="/' +
-                    target +
-                    '"]'
-                );
-
-
-            if (link) {
-
-                document
-                    .querySelectorAll(
-                        ".nav-item"
-                    )
-                    .forEach(
-                        item => {
-                            item.classList.remove(
-                                "active"
-                            );
-                        }
-                    );
-
-
-                link.classList.add(
-                    "active"
-                );
-
-            }
-
-        })();
-
     </script>
-
 </body>
 
 </html>
